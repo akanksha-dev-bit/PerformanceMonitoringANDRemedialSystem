@@ -11,8 +11,22 @@ class MarkController extends Controller
 {
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = Mark::with(['student', 'subject'])->latest();
 
+        // If user is a student, only show their own marks
+        if ($user->isStudent()) {
+            $student = $user->studentProfile;
+            if (!$student) {
+                return redirect()->route('complete-profile');
+            }
+            $query->where('student_id', $student->id);
+            
+            $marks = $query->paginate(20);
+            return view('marks.index', compact('marks'));
+        }
+
+        // Admins and Teachers can filter
         if ($request->filled('student_id')) {
             $query->where('student_id', $request->student_id);
         }
@@ -30,6 +44,10 @@ class MarkController extends Controller
 
     public function create()
     {
+        if (auth()->user()->isStudent()) {
+            abort(403, 'Students cannot add marks.');
+        }
+
         $students = Student::active()->orderedByName()->with('user')->get();
         $subjects = Subject::orderBy('name')->get();
         return view('marks.create', compact('students', 'subjects'));
@@ -37,6 +55,10 @@ class MarkController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->isStudent()) {
+            abort(403, 'Students cannot add marks.');
+        }
+
         $validated = $request->validate([
             'student_id'     => 'required|exists:students,id',
             'subject_id'     => 'required|exists:subjects,id',
@@ -57,6 +79,10 @@ class MarkController extends Controller
 
     public function destroy(Mark $mark)
     {
+        if (auth()->user()->isStudent()) {
+            abort(403, 'Students cannot delete marks.');
+        }
+
         $mark->delete();
         return back()->with('success', 'Mark entry deleted.');
     }

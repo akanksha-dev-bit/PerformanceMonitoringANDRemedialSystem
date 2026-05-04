@@ -72,12 +72,12 @@ class StudentDashboardController extends Controller
 
         // ── Achievements / Badges ────────────────────────────────────────
         $badges = [];
-        if ($marks->count() >= 1)  $badges[] = ['icon' => '📝', 'label' => 'First Exam'];
-        if ($marks->count() >= 5)  $badges[] = ['icon' => '🔥', 'label' => '5 Exams Done'];
-        if ($averagePercentage >= 80) $badges[] = ['icon' => '🏆', 'label' => 'Top Scorer'];
-        if ($averagePercentage >= 60) $badges[] = ['icon' => '⭐', 'label' => 'Passing Grade'];
-        if ($weakSubjects->isEmpty() && $marks->count() > 0) $badges[] = ['icon' => '✅', 'label' => 'All Subjects Passing'];
-        if ($rank === 1) $badges[] = ['icon' => '🥇', 'label' => 'Class Topper'];
+        if ($marks->count() >= 1)  $badges[] = ['icon' => '📝', 'label' => 'First Exam', 'theme' => 'badge-silver'];
+        if ($marks->count() >= 5)  $badges[] = ['icon' => '🔥', 'label' => '5 Exams Done', 'theme' => 'badge-fire'];
+        if ($averagePercentage >= 80) $badges[] = ['icon' => '🏆', 'label' => 'Top Scorer', 'theme' => 'badge-gold'];
+        if ($averagePercentage >= 60) $badges[] = ['icon' => '⭐', 'label' => 'Passing Grade', 'theme' => 'badge-blue'];
+        if ($weakSubjects->isEmpty() && $marks->count() > 0) $badges[] = ['icon' => '✅', 'label' => 'All Subjects Passing', 'theme' => 'badge-purple'];
+        if ($rank === 1) $badges[] = ['icon' => '🥇', 'label' => 'Class Topper', 'theme' => 'badge-gold'];
 
         // ── Study Streak (days since last mark was recorded) ─────────────
         $lastMarkDate = $marks->sortByDesc('created_at')->first()?->created_at;
