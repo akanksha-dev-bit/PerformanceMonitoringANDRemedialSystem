@@ -44,22 +44,22 @@
     /* ── Navbar ── */
     .pmrs-navbar {
       pointer-events: all;
-      height: 64px;
+      height: 60px;
       display: flex;
       align-items: center;
-      padding: 0 20px;
-      gap: 10px;
-      background: rgba(255,255,255,0.72);
+      padding: 0 18px;
+      gap: 8px;
+      background: rgba(255,255,255,0.78);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.75);
+      border: 1px solid rgba(255,255,255,0.55);
       border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(108,92,231,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      transition: background .3s ease, box-shadow .3s ease;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.5) inset;
+      transition: all 0.22s ease;
     }
     .pmrs-navbar.scrolled {
-      background: rgba(255,255,255,0.95);
-      box-shadow: 0 8px 32px rgba(108,92,231,0.12), 0 1px 3px rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 12px 40px rgba(108,92,231,0.10), 0 1px 3px rgba(0,0,0,0.05);
     }
 
     /* ── Logo ── */
@@ -67,7 +67,7 @@
     .nb-logo img { height:34px; width:auto; object-fit:contain; }
 
     /* ── Desktop Nav pills ── */
-    .nb-nav { display:flex; align-items:center; gap:2px; margin-left:12px; }
+    .nb-nav { display:flex; align-items:center; gap:2px; margin-left:10px; }
     .nb-nav a {
       display:flex; align-items:center;
       padding: 6px 13px;
@@ -75,17 +75,18 @@
       font-size: 13px; font-weight:500;
       color: var(--c-text-2);
       text-decoration:none;
-      transition: all .2s cubic-bezier(.4,0,.2,1);
-      white-space:nowrap;
+      transition: all 0.22s cubic-bezier(.4,0,.2,1);
+      white-space:nowrap; letter-spacing: -0.01em;
     }
-    .nb-nav a:hover { color:var(--c-text); background:rgba(0,0,0,0.05); transform:translateY(-1px); }
+    .nb-nav a:hover { color:var(--c-text); background:rgba(108,92,231,0.06); transform:translateY(-1px); box-shadow: 0 2px 8px rgba(108,92,231,0.06); }
     .nb-nav a.active {
       color:#fff;
-      background: var(--grad-primary);
-      font-weight:600;
-      box-shadow: 0 4px 12px rgba(108,92,231,0.35);
+      background: linear-gradient(135deg, #6C5CE7 0%, #8B5CF6 100%);
+      font-weight:650;
+      box-shadow: 0 8px 18px rgba(108,92,231,0.28), 0 2px 6px rgba(108,92,231,0.18);
+      letter-spacing: -0.01em;
     }
-    .nb-nav a.active:hover { opacity:.9; transform:translateY(-1px); }
+    .nb-nav a.active:hover { opacity:.92; transform:translateY(-1px); }
 
     /* ── Spacer ── */
     .nb-spacer { flex:1; }
@@ -94,22 +95,22 @@
     .nb-search-wrap { position:relative; display:flex; align-items:center; }
     .nb-search-icon { position:absolute; left:12px; color:var(--c-muted); pointer-events:none; display:flex; }
     .nb-search-input {
-      width: 190px;
+      width: 200px;
       padding: 8px 72px 8px 36px;
       border-radius: 100px;
-      border: 1.5px solid var(--c-border);
-      background: rgba(248,250,252,0.9);
+      border: 1px solid rgba(0,0,0,0.07);
+      background: rgba(255,255,255,0.55);
       font-size:13px; font-family:'Inter',sans-serif; color:var(--c-text);
       outline:none;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
-      transition: all .25s cubic-bezier(.4,0,.2,1);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+      transition: all 0.25s cubic-bezier(.4,0,.2,1);
     }
-    .nb-search-input::placeholder { color:var(--c-muted); }
+    .nb-search-input::placeholder { color:var(--c-muted); font-size:12.5px; }
     .nb-search-input:focus {
-      width:250px;
-      border-color:var(--c-primary);
+      width:290px;
+      border-color: rgba(108,92,231,0.45);
       background:#fff;
-      box-shadow: 0 0 0 3px rgba(108,92,231,0.13), inset 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 0 0 0 4px rgba(108,92,231,0.10), inset 0 1px 2px rgba(0,0,0,0.02);
     }
     .nb-search-kbd { position:absolute; right:10px; display:flex; align-items:center; gap:3px; pointer-events:none; }
     .nb-search-kbd kbd {
@@ -137,75 +138,122 @@
 
   
 
+    /* ── Notification / Quick-action icon buttons ── */
+    .nb-icon-btn {
+      position: relative; display:flex; align-items:center; justify-content:center;
+      width:36px; height:36px; border-radius:10px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: rgba(255,255,255,0.5);
+      color: var(--c-text-2); cursor:pointer;
+      transition: all 0.2s ease; flex-shrink:0;
+    }
+    .nb-icon-btn:hover { background: var(--c-primary-bg); color:var(--c-primary); border-color:rgba(108,92,231,0.18); transform:translateY(-1px); }
+    .nb-icon-btn .notif-dot {
+      position:absolute; top:7px; right:7px;
+      width:7px; height:7px; border-radius:50%;
+      background:#ef4444; border:1.5px solid #fff;
+    }
+
     /* ── Profile pill ── */
     .nb-profile {
-      position:relative; display:flex; align-items:center; gap:9px; cursor:pointer;
-      padding:4px 12px 4px 4px;
+      position:relative; display:flex; align-items:center; gap:8px; cursor:pointer;
+      padding:4px 10px 4px 4px;
       border-radius:100px;
-      border:1px solid var(--c-border);
-      background:rgba(0,0,0,0.02);
-      transition:all .2s cubic-bezier(.4,0,.2,1); flex-shrink:0;
+      border:1px solid rgba(0,0,0,0.07);
+      background: rgba(255,255,255,0.45);
+      transition: all 0.22s ease; flex-shrink:0;
     }
-    .nb-profile:hover { background:var(--c-primary-bg); border-color:rgba(108,92,231,0.18); }
+    .nb-profile:hover { background: var(--c-primary-bg); border-color:rgba(108,92,231,0.2); }
     .nb-avatar {
-      width:34px; height:34px; border-radius:50%;
-      background: #ffff00ff; 
-      color: #000000ff;
-      font-weight:700; font-size:13px;
+      width:32px; height:32px; border-radius:50%;
+      background: linear-gradient(135deg,#6C5CE7,#8B5CF6);
+      color: #fff;
+      font-weight:700; font-size:12px;
       display:flex; align-items:center; justify-content:center; flex-shrink:0;
       box-shadow:0 2px 8px rgba(108,92,231,0.30);
-      transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease;
+      transition:transform 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.22s ease;
     }
-    .nb-profile:hover .nb-avatar { transform:scale(1.08); box-shadow:0 4px 14px rgba(108,92,231,0.4); }
+    .nb-profile:hover .nb-avatar { transform:scale(1.06); box-shadow:0 4px 14px rgba(108,92,231,0.4); }
     .nb-user-text { display:flex; flex-direction:column; }
-    .nb-user-name { font-size:13px; font-weight:600; color:var(--c-text); line-height:1.3; }
-    .nb-user-role { font-size:11px; color:var(--c-muted); line-height:1.3; }
-    .nb-chevron { color:var(--c-muted); transition:transform .2s ease; flex-shrink:0; }
+    .nb-user-name { font-size:13px; font-weight:650; color:var(--c-text); line-height:1.25; letter-spacing:-0.01em; }
+    .nb-user-role { font-size:10.5px; color:var(--c-muted); line-height:1.25; font-weight:500; }
+    .nb-chevron { color:var(--c-muted); transition:transform 0.22s ease; flex-shrink:0; }
     .nb-profile.open .nb-chevron { transform:rotate(180deg); }
 
     /* ── Profile Dropdown ── */
     .nb-profile-dropdown {
       display:none; position:absolute;
-      top:calc(100% + 10px); right:0; width:236px;
-      background:rgba(255,255,255,0.98);
-      backdrop-filter:blur(16px);
-      border:1px solid var(--c-border);
-      border-radius:14px;
-      box-shadow:0 16px 48px rgba(0,0,0,0.13);
+      top:calc(100% + 12px); right:0; width:248px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius:20px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
       overflow:hidden; z-index:300;
-      animation:nbDropIn .18s ease;
+      animation:nbDropIn .2s cubic-bezier(.4,0,.2,1);
     }
     .nb-profile-dropdown.open { display:block; }
-    .nb-dropdown-header { padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.06); }
-    .nb-dropdown-header .full-name { font-weight:600; color:var(--c-text); font-size:14px; }
-    .nb-dropdown-header .email { font-size:12px; color:var(--c-muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .nb-dropdown-items { padding:6px; }
+    .nb-dropdown-header {
+      padding:16px;
+      border-bottom:1px solid rgba(0,0,0,0.05);
+      display:flex; gap:10px; align-items:center;
+    }
+    .nb-dropdown-header .dd-avatar {
+      width:38px; height:38px; border-radius:50%; flex-shrink:0;
+      background: linear-gradient(135deg,#6C5CE7,#8B5CF6);
+      color:#fff; font-weight:700; font-size:13px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .nb-dropdown-header .full-name { font-weight:700; color:var(--c-text); font-size:14px; line-height:1.3; letter-spacing:-0.01em; }
+    .nb-dropdown-header .email { font-size:11.5px; color:var(--c-muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .nb-dropdown-section { padding:6px 8px; }
+    .nb-dropdown-sep { height:1px; background:rgba(0,0,0,0.05); margin:4px 0; }
     .nb-dropdown-item {
       display:flex; align-items:center; gap:10px;
-      padding:9px 12px; border-radius:8px;
+      padding:9px 10px; border-radius:10px;
       font-size:13px; color:var(--c-text-2); cursor:pointer;
-      transition:all .15s ease; text-decoration:none;
+      transition: all 0.15s ease; text-decoration:none;
       border:none; background:transparent; width:100%; text-align:left;
     }
-    .nb-dropdown-item:hover { background:rgba(0,0,0,0.04); color:var(--c-text); }
-  
-    .nb-dropdown-item.danger {
-  color: #ffffffff;
-  background-color: #ff0000ff;
-  font-weight: 600;
-}
+    .nb-dropdown-item:hover { background:rgba(108,92,231,0.06); color:var(--c-text); transform:translateX(2px); }
+    .nb-dropdown-item .dd-icon {
+      width:28px; height:28px; border-radius:7px; background:#f8fafc;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      font-size:14px;
+    }
+    .nb-dropdown-item.danger { color:#dc2626; }
+    .nb-dropdown-item.danger .dd-icon { background:rgba(239,68,68,0.08); }
+    .nb-dropdown-item.danger:hover { background:rgba(239,68,68,0.08); color:#dc2626; transform:translateX(2px); }
 
-.nb-dropdown-item.danger:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(249, 0, 0, 1),
-    rgba(84, 11, 11, 1)
-  );
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-}
+    /* ── Notification Dropdown ── */
+    .nb-notif-dropdown {
+      display:none; position:absolute;
+      top:calc(100% + 12px); right:0; width:300px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      border:1px solid rgba(255,255,255,0.6);
+      border-radius:18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.10);
+      overflow:hidden; z-index:300;
+      animation:nbDropIn .2s cubic-bezier(.4,0,.2,1);
+    }
+    .nb-notif-dropdown.open { display:block; }
+    .nb-notif-header { padding:14px 16px; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; }
+    .nb-notif-header h4 { font-size:14px; font-weight:700; color:var(--c-text); margin:0; }
+    .nb-notif-item {
+      display:flex; gap:10px; align-items:flex-start;
+      padding:12px 14px; border-bottom:1px solid rgba(0,0,0,0.03);
+      transition:background 0.15s;
+    }
+    .nb-notif-item:last-child { border-bottom:none; }
+    .nb-notif-item:hover { background:rgba(108,92,231,0.04); }
+    .nb-notif-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+    .nb-notif-title { font-size:13px; font-weight:600; color:#1e293b; }
+    .nb-notif-time { font-size:11px; color:var(--c-muted); margin-top:2px; }
 
     @keyframes nbDropIn {
-      from { opacity:0; transform:translateY(-6px) scale(0.98); }
+      from { opacity:0; transform:translateY(-8px) scale(0.97); }
       to   { opacity:1; transform:translateY(0) scale(1); }
     }
 
@@ -389,7 +437,7 @@
         <span class="nb-search-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
-        <input type="text" id="global-search-input" class="nb-search-input" placeholder="Search..." autocomplete="off" spellcheck="false">
+        <input type="text" id="global-search-input" class="nb-search-input" placeholder="Search anything… (Ctrl+K)" autocomplete="off" spellcheck="false">
         <div class="nb-search-kbd">
           <kbd>Ctrl</kbd><kbd>K</kbd>
         </div>
@@ -402,7 +450,31 @@
 
       <div class="nb-divider"></div>
 
-      
+      {{-- Notification Bell --}}
+      <div style="position:relative;" id="nb-notif-wrap">
+        <button class="nb-icon-btn" onclick="toggleNotifMenu()" aria-label="Notifications">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="nb-notif-dropdown" id="nb-notif-menu">
+          <div class="nb-notif-header">
+            <h4>Notifications</h4>
+            <span style="font-size:11px;color:var(--c-primary);font-weight:600;cursor:pointer;">Mark all read</span>
+          </div>
+          <div class="nb-notif-item">
+            <div class="nb-notif-dot" style="background:#6C5CE7;"></div>
+            <div><div class="nb-notif-title">New remedial task assigned</div><div class="nb-notif-time">2 min ago</div></div>
+          </div>
+          <div class="nb-notif-item">
+            <div class="nb-notif-dot" style="background:#10b981;"></div>
+            <div><div class="nb-notif-title">Exam marks updated</div><div class="nb-notif-time">1 hour ago</div></div>
+          </div>
+          <div class="nb-notif-item">
+            <div class="nb-notif-dot" style="background:#f59e0b;"></div>
+            <div><div class="nb-notif-title">Progress report available</div><div class="nb-notif-time">Yesterday</div></div>
+          </div>
+        </div>
+      </div>
 
       <div class="nb-divider"></div>
 
@@ -413,20 +485,47 @@
           <span class="nb-user-name">{{ auth()->user()->name }}</span>
           <span class="nb-user-role">{{ auth()->user()->isAdmin() ? 'Administrator' : (auth()->user()->isTeacher() ? 'Teacher' : 'Student') }}</span>
         </div>
-        <svg class="nb-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg class="nb-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
 
         {{-- Dropdown --}}
         <div class="nb-profile-dropdown" id="nb-profile-menu">
           <div class="nb-dropdown-header">
-            <div class="full-name">{{ auth()->user()->name }}</div>
-            <div class="email">{{ auth()->user()->email }}</div>
+            <div class="dd-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+            <div>
+              <div class="full-name">{{ auth()->user()->name }}</div>
+              <div class="email">{{ auth()->user()->email }}</div>
+            </div>
           </div>
-          <div class="nb-dropdown-items">
+
+          <div class="nb-dropdown-section">
+            @if(auth()->user()->isStudent())
+              <a href="{{ route('dashboard.student') }}" class="nb-dropdown-item">
+                <span class="dd-icon">🏠</span> Dashboard
+              </a>
+              <a href="{{ route('student.progress') }}" class="nb-dropdown-item">
+                <span class="dd-icon">📊</span> My Progress
+              </a>
+              <a href="{{ route('student.tasks') }}" class="nb-dropdown-item">
+                <span class="dd-icon">📋</span> My Tasks
+              </a>
+            @elseif(auth()->user()->isTeacher())
+              <a href="{{ route('dashboard.teacher') }}" class="nb-dropdown-item">
+                <span class="dd-icon">🏠</span> Dashboard
+              </a>
+            @else
+              <a href="{{ route('dashboard.admin') }}" class="nb-dropdown-item">
+                <span class="dd-icon">🏠</span> Dashboard
+              </a>
+            @endif
+          </div>
+
+          <div class="nb-dropdown-sep"></div>
+
+          <div class="nb-dropdown-section">
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
               @csrf
               <button type="submit" class="nb-dropdown-item danger">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Sign Out
+                <span class="dd-icon">🚪</span> Sign Out
               </button>
             </form>
           </div>
@@ -450,8 +549,16 @@
     @auth
     <div class="nb-drawer-overlay" id="nb-drawer-overlay" onclick="closeDrawer()"></div>
     <aside class="nb-drawer" id="nb-drawer">
-      <div class="nb-drawer-header">
-        <img src="{{ asset('logo.png') }}" alt="PMRS" style="height:30px; object-fit:contain;">
+      <div class="nb-drawer-header" style="padding:20px; border-bottom:1px solid var(--c-border); background:linear-gradient(135deg,#f8faff,#fff);">
+        <img src="{{ asset('logo.png') }}" alt="PMRS" style="height:28px; object-fit:contain;">
+      </div>
+      {{-- Mobile profile mini-card --}}
+      <div style="padding:14px 16px; display:flex; align-items:center; gap:10px; background:#f8fafc; border-bottom:1px solid var(--c-border);">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6C5CE7,#8B5CF6);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#111827;">{{ auth()->user()->name }}</div>
+          <div style="font-size:11px;color:var(--c-muted);">{{ auth()->user()->isAdmin() ? 'Administrator' : (auth()->user()->isTeacher() ? 'Teacher' : 'Student') }}</div>
+        </div>
       </div>
       <nav class="nb-drawer-nav">
         @if(auth()->user()->isAdmin())
@@ -488,7 +595,7 @@
       <div class="nb-drawer-footer">
         <form method="POST" action="{{ route('logout') }}" style="margin:0;">
           @csrf
-          <button type="submit" class="nb-dropdown-item danger" style="width:100%;">
+          <button type="submit" style="width:100%; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; border:1px solid rgba(239,68,68,0.18); background:rgba(239,68,68,0.06); color:#dc2626; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Sign Out
           </button>
@@ -573,17 +680,34 @@
   // ── Profile dropdown ──
   function toggleProfileMenu(el) {
     const menu = document.getElementById('nb-profile-menu');
+    const notif = document.getElementById('nb-notif-menu');
+    if (notif) notif.classList.remove('open');
     const isOpen = menu.classList.contains('open');
     menu.classList.toggle('open', !isOpen);
     el.classList.toggle('open', !isOpen);
   }
 
+  // ── Notification dropdown ──
+  function toggleNotifMenu() {
+    const menu = document.getElementById('nb-notif-menu');
+    const profileMenu = document.getElementById('nb-profile-menu');
+    const profileBtn = document.getElementById('nb-profile-btn');
+    if (profileMenu) profileMenu.classList.remove('open');
+    if (profileBtn) profileBtn.classList.remove('open');
+    if (menu) menu.classList.toggle('open');
+  }
+
   document.addEventListener('click', (e) => {
-    const btn = document.getElementById('nb-profile-btn');
-    const menu = document.getElementById('nb-profile-menu');
-    if (btn && !btn.contains(e.target)) {
-      menu.classList.remove('open');
-      btn.classList.remove('open');
+    const profileBtn = document.getElementById('nb-profile-btn');
+    const profileMenu = document.getElementById('nb-profile-menu');
+    const notifWrap = document.getElementById('nb-notif-wrap');
+    const notifMenu = document.getElementById('nb-notif-menu');
+    if (profileBtn && !profileBtn.contains(e.target)) {
+      if (profileMenu) profileMenu.classList.remove('open');
+      profileBtn.classList.remove('open');
+    }
+    if (notifWrap && !notifWrap.contains(e.target)) {
+      if (notifMenu) notifMenu.classList.remove('open');
     }
   });
 
