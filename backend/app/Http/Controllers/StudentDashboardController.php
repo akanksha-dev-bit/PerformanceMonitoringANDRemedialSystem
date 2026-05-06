@@ -83,12 +83,15 @@ class StudentDashboardController extends Controller
         $lastMarkDate = $marks->sortByDesc('created_at')->first()?->created_at;
         $streak       = $lastMarkDate ? max(0, 7 - (int) now()->diffInDays($lastMarkDate)) : 0;
 
+        // ── Assigned Remedial Tasks ──────────────────────────────────────
+        $assignedTasks = $studentProfile->remedialActions()->orderBy('scheduled_date', 'asc')->get();
+
         return view('dashboard.student', compact(
             'studentProfile', 'marks', 'averagePercentage', 'performanceLabel',
             'subjectBreakdown', 'weakSubjects', 'recommendations',
             'rank', 'totalInClass',
             'chartLabels', 'chartData', 'chartColors',
-            'badges', 'streak'
+            'badges', 'streak', 'assignedTasks'
         ));
     }
 
