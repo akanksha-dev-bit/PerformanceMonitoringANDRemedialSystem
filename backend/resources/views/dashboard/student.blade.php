@@ -843,6 +843,61 @@
       </div>
     </div>
 
+    {{-- ── Assigned Remedial Tasks ── --}}
+    @if(count($assignedTasks) > 0)
+    <div class="sd-row full">
+      <div class="sd-card">
+        <div class="sd-card-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>📋 My Assigned Tasks</span>
+          <span style="font-size:12px; background:#fff1f2; color:#be123c; padding:4px 10px; border-radius:100px;">{{ $assignedTasks->where('status', '!=', 'completed')->count() }} Pending</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="sd-table">
+            <thead>
+              <tr>
+                <th>Task / Intervention</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Scheduled Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($assignedTasks as $task)
+                <tr>
+                  <td>
+                    <div style="font-weight:600; color:#111827;">{{ $task->title }}</div>
+                    @if($task->description)
+                      <div style="font-size:12px; color:#64748b; margin-top:2px; max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $task->description }}</div>
+                    @endif
+                  </td>
+                  <td>
+                    <span style="background:#f1f5f9; color:#475569; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:600;">
+                      {{ ucwords(str_replace('_', ' ', $task->action_type)) }}
+                    </span>
+                  </td>
+                  <td>
+                    @if($task->status === 'completed')
+                      <span class="sd-status sd-status-good">Completed</span>
+                    @elseif($task->status === 'in_progress')
+                      <span class="sd-status sd-status-warn" style="background:#dbeafe; color:#1d4ed8;">In Progress</span>
+                    @elseif($task->status === 'pending')
+                      <span class="sd-status sd-status-warn">Pending</span>
+                    @else
+                      <span class="sd-status sd-status-none">Cancelled</span>
+                    @endif
+                  </td>
+                  <td style="color:#64748b; font-size:13px;">
+                    {{ $task->scheduled_date ? $task->scheduled_date->format('M d, Y') : 'Not scheduled' }}
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    @endif
+
     {{-- ── Marks Table + Profile ── --}}
     <div class="sd-row">
       <div class="sd-card">

@@ -120,4 +120,95 @@ class StudentDashboardController extends Controller
 
         return view('dashboard.student-progress', compact('studentProfile', 'marks', 'subjectBreakdown'));
     }
+
+    public function tasks()
+    {
+        $user = auth()->user();
+        if (!$user->isStudent()) abort(403);
+
+        $studentProfile = Student::where('user_id', $user->id)
+            ->with(['marks.subject'])
+            ->first();
+
+        if (!$studentProfile) return redirect()->route('complete-profile');
+
+        $assignedTasks = $studentProfile->remedialActions()
+            ->with('assignedByUser')
+            ->orderBy('scheduled_date', 'asc')
+            ->get();
+
+        // ── Task Statistics ──
+        $now = now()->startOfDay();
+        $tasksData = $assignedTasks->map(function ($t) use ($now) {
+            $t->is_overdue = $t->status !== 'completed' && $t->scheduled_date && $t->scheduled_date < $now;
+            $t->is_due_soon = $t->status !== 'completed' && $t->scheduled_date && $t->scheduled_date >= $now && $t->scheduled_date <= $now->copy()->addDays(3);
+            
+            // Assign fake priority based on action_type for UI purposes
+            $t->priority = match($t->action_type) {
+                'counseling', 'parent_meeting' => 'Critical',
+                'extra_class', 'peer_tutoring' => 'High',
+                'assignment' => 'Medium',
+                default => 'Low',
+            };
+            return $t;
+        });
+
+        $stats = [
+            'total' => $assignedTasks->count(),
+            'completed' => $assignedTasks->where('status', 'completed')->count(),
+            'pending' => $assignedTasks->whereIn('status', ['pending', 'in_progress'])->count(),
+            'overdue' => $tasksData->where('is_overdue', true)->count(),
+            'due_soon' => $tasksData->where('is_due_soon', true)->count(),
+        ];
+
+        // ── Gamification (XP, Rank, Streak) ──
+        $xpEarned = $stats['completed'] * 50 + ($studentProfile->marks->count() * 10);
+        
+        $lastMarkDate = $studentProfile->marks->sortByDesc('created_at')->first()?->created_at;
+        $streak = $lastMarkDate ? max(0, 7 - (int) now()->diffInDays($lastMarkDate)) : 0;
+
+        $classmates = Student::where('class', $studentProfile->class)
+            ->where('section', $studentProfile->section)
+            ->with('marks')->get();
+        $ranked = $classmates->sortByDesc(fn($s) => $s->average_percentage)->values();
+        $rank = $ranked->search(fn($s) => $s->id === $studentProfile->id);
+        $rank = $rank !== false ? $rank + 1 : '-';
+
+        // ── Recommended Practice (Weak Subjects) ──
+        $marks = $studentProfile->marks;
+        $subjectBreakdown = $marks->groupBy('subject_id')->map(function ($subjectMarks) {
+            $totalObtained = $subjectMarks->sum('marks_obtained');
+            $totalMax = $subjectMarks->sum('max_marks');
+            return [
+                'name' => $subjectMarks->first()->subject->name ?? 'Unknown',
+                'pct' => $totalMax > 0 ? round(($totalObtained / $totalMax) * 100, 1) : 0,
+            ];
+        })->values();
+        $weakSubjects = $subjectBreakdown->filter(fn($s) => $s['pct'] < 60)->sortBy('pct')->take(2);
+
+        // ── Activity Timeline ──
+        $activities = collect();
+        foreach ($assignedTasks->sortByDesc('updated_at')->take(4) as $t) {
+            $activities->push([
+                'title' => $t->status === 'completed' ? 'Completed task: ' . $t->title : 'New task assigned: ' . $t->title,
+                'date' => $t->updated_at,
+                'icon' => $t->status === 'completed' ? '✅' : '📌',
+                'color' => $t->status === 'completed' ? '#10b981' : '#6366f1'
+            ]);
+        }
+        foreach ($marks->sortByDesc('created_at')->take(2) as $m) {
+            $activities->push([
+                'title' => 'Exam result recorded: ' . ($m->subject->name ?? 'Subject'),
+                'date' => $m->created_at,
+                'icon' => '📝',
+                'color' => '#f59e0b'
+            ]);
+        }
+        $timeline = $activities->sortByDesc('date')->take(5)->values();
+
+        return view('dashboard.student-tasks', compact(
+            'studentProfile', 'assignedTasks', 'stats', 'xpEarned', 
+            'streak', 'rank', 'weakSubjects', 'timeline'
+        ));
+    }
 }

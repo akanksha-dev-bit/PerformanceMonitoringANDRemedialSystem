@@ -369,6 +369,7 @@
         @elseif(auth()->user()->isStudent())
           <a href="{{ route('dashboard.student') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}">Dashboard</a>
           <a href="{{ route('student.progress') }}" class="{{ request()->routeIs('student.progress') ? 'active' : '' }}">My Progress</a>
+          <a href="{{ route('student.tasks') }}" class="{{ request()->routeIs('student.tasks') ? 'active' : '' }}">My Tasks</a>
         @endif
       </nav>
       @endauth
@@ -480,7 +481,8 @@
           <a href="{{ route('performance.index') }}" class="{{ request()->routeIs('performance.*') ? 'active' : '' }}" onclick="closeDrawer()">Performance</a>
         @elseif(auth()->user()->isStudent())
           <a href="{{ route('dashboard.student') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" onclick="closeDrawer()">Dashboard</a>
-          <a href="#" onclick="closeDrawer()">My Progress</a>
+          <a href="{{ route('student.progress') }}" class="{{ request()->routeIs('student.progress') ? 'active' : '' }}" onclick="closeDrawer()">My Progress</a>
+          <a href="{{ route('student.tasks') }}" class="{{ request()->routeIs('student.tasks') ? 'active' : '' }}" onclick="closeDrawer()">My Tasks</a>
         @endif
       </nav>
       <div class="nb-drawer-footer">
