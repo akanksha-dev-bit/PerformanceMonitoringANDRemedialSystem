@@ -3,276 +3,260 @@
 
     @push('styles')
     <style>
-        /* Overall Page Styles */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        .dashboard-title {
-            font-size: 28px;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.02em;
-            margin: 0 0 4px 0;
-        }
-        .dashboard-subtitle {
-            font-size: 15px;
-            color: #64748b;
-            margin: 0;
-        }
-
-        /* Highly Visible Solid Buttons */
-        .btn-solid-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #6C5CE7, #5A4BD6);
-            color: #ffffff;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-        .btn-solid-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.4);
-            color: #ffffff;
-        }
-        
-        .btn-solid-dark {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: #0f172a;
-            color: #ffffff;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-            border: none;
-            cursor: pointer;
-        }
-        .btn-solid-dark:hover {
-            background: #1e293b;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
-            color: #ffffff;
-        }
-
-        /* Invite Banner */
-        .invite-banner {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        /* ── Page Header ── */
+        .admin-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+            border: 1px solid rgba(0,0,0,0.06);
             border-radius: 20px;
-            padding: 32px;
-            color: #fff;
+            padding: 28px 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+            margin-bottom: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
             position: relative;
             overflow: hidden;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .admin-header::after {
+            content: '';
+            position: absolute; right: 0; top: 0;
+            width: 350px; height: 100%;
+            background: radial-gradient(circle at top right, rgba(108,92,231,0.06), transparent 70%);
+            pointer-events: none;
+        }
+        .admin-title { font-family:'Poppins',sans-serif; font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; margin: 0 0 4px; }
+        .admin-subtitle { font-size: 14px; color: #64748b; margin: 0; }
+
+        /* ── Action Buttons ── */
+        .btn-solid-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6C5CE7, #8B5CF6);
+            color: #fff; border-radius: 12px; font-size: 13px; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(108,92,231,0.28);
+            transition: all 0.22s cubic-bezier(.4,0,.2,1);
+        }
+        .btn-solid-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(108,92,231,0.35); color:#fff; }
+        .btn-solid-dark {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px;
+            background: #0f172a; color: #fff;
+            border-radius: 12px; font-size: 13px; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15,23,42,0.18);
+            transition: all 0.22s cubic-bezier(.4,0,.2,1);
+        }
+        .btn-solid-dark:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(15,23,42,0.25); color:#fff; }
+        .btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 9px; }
+
+        /* ── Invite Banner ── */
+        .invite-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%);
+            border-radius: 22px; padding: 30px 32px; color: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 24px; margin-bottom: 28px;
+            box-shadow: 0 12px 32px -4px rgba(15,23,42,0.3);
+            position: relative; overflow: hidden;
         }
         .invite-banner::before {
-            content: '';
-            position: absolute;
-            top: -50%; right: -10%;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.4) 0%, transparent 70%);
-            border-radius: 50%;
+            content: ''; position: absolute; top: -60%; right: -5%;
+            width: 320px; height: 320px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(108,92,231,0.45) 0%, transparent 70%);
         }
+        .invite-banner::after {
+            content: ''; position: absolute; bottom: -40%; left: 20%;
+            width: 180px; height: 180px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%);
+        }
+        .invite-input {
+            flex: 1; max-width: 360px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #fff; padding: 11px 16px;
+            border-radius: 12px; font-size: 13px; outline: none;
+            transition: border-color 0.2s;
+        }
+        .invite-input:focus { border-color: rgba(139,92,246,0.6); }
 
-        /* KPI Grid */
+        /* ── KPI Grid ── */
         .kpi-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 20px; margin-bottom: 28px;
         }
         .kpi-box {
-            background: #fff;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 4px 20px -2px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.02);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: #fff; border-radius: 18px; padding: 22px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            display: flex; align-items: center; gap: 16px;
+            transition: all 0.25s cubic-bezier(.4,0,.2,1);
+            position: relative; overflow: hidden;
         }
-        .kpi-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px -4px rgba(0,0,0,0.08);
+        .kpi-box::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 3px; border-radius: 0 0 18px 18px; opacity: 0;
+            transition: opacity 0.25s;
         }
-        
+        .kpi-box:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.07); }
+        .kpi-box:hover::after { opacity: 1; }
+        .kpi-primary::after  { background: #6366f1; }
+        .kpi-success::after  { background: #10b981; }
+        .kpi-warning::after  { background: #f59e0b; }
+        .kpi-info::after     { background: #3b82f6; }
+        .kpi-danger::after   { background: #ef4444; }
         .kpi-icon-wrap {
-            width: 52px; height: 52px; border-radius: 14px;
+            width: 50px; height: 50px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .kpi-icon-wrap svg { width: 24px; height: 24px; }
-        
-        .kpi-value { font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.1; }
-        .kpi-label { font-size: 13px; font-weight: 600; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;}
-
+        .kpi-icon-wrap svg { width: 22px; height: 22px; }
+        .kpi-value { font-family:'Poppins',sans-serif; font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .kpi-label { font-size: 12px; font-weight: 600; color: #64748b; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
         .kpi-primary .kpi-icon-wrap { background: #eef2ff; color: #6366f1; }
         .kpi-success .kpi-icon-wrap { background: #ecfdf5; color: #10b981; }
         .kpi-warning .kpi-icon-wrap { background: #fffbeb; color: #f59e0b; }
-        .kpi-info .kpi-icon-wrap { background: #eff6ff; color: #3b82f6; }
-        .kpi-danger .kpi-icon-wrap { background: #fef2f2; color: #ef4444; }
+        .kpi-info    .kpi-icon-wrap { background: #eff6ff; color: #3b82f6; }
+        .kpi-danger  .kpi-icon-wrap { background: #fef2f2; color: #ef4444; }
 
-        /* Main Grid Layout */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
-        @media(max-width: 1024px) {
-            .main-grid { grid-template-columns: 1fr; }
-        }
+        /* ── Layout ── */
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media(max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
 
-        /* Premium Cards */
+        /* ── Premium Cards ── */
         .premium-card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 4px 20px -2px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.02);
-            height: 100%;
+            background: #fff; border-radius: 20px; padding: 24px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
         }
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 20px;
         }
-        .card-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 4px;
-        }
-        .card-subtitle {
-            font-size: 13px;
-            color: #64748b;
-        }
+        .card-title { font-family:'Poppins',sans-serif; font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+        .card-subtitle { font-size: 12px; color: #64748b; }
 
-        /* Quick Action Buttons (Strong Colors & High Contrast) */
+        /* ── Quick Actions ── */
         .btn-quick-action {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 16px;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            color: #1e293b;
-            font-weight: 700;
-            font-size: 14px;
-            transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px;
+            background: #f8fafc; border: 1.5px solid #e2e8f0;
+            border-radius: 14px; color: #1e293b;
+            font-weight: 600; font-size: 13px;
+            transition: all 0.22s cubic-bezier(.4,0,.2,1);
             text-decoration: none;
         }
         .btn-quick-action:hover {
-            background: #1e293b;
-            border-color: #1e293b;
-            color: #fff;
+            background: linear-gradient(135deg, #6C5CE7, #8B5CF6);
+            border-color: transparent; color: #fff;
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.15);
+            box-shadow: 0 8px 20px rgba(108,92,231,0.22);
         }
+        .btn-quick-action:hover svg { stroke: #fff; }
+        .qa-icon {
+            width: 36px; height: 36px; border-radius: 10px; background: #fff;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: background 0.22s;
+        }
+        .btn-quick-action:hover .qa-icon { background: rgba(255,255,255,0.2); box-shadow: none; }
 
-        /* Alerts */
+        /* ── Alerts ── */
         .alert-item {
-            background: #fffbeb;
-            padding: 16px;
-            border-radius: 12px;
-            border-left: 4px solid #f59e0b;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: #fffbeb; padding: 14px 16px; border-radius: 12px;
+            border-left: 3px solid #f59e0b; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px; transition: all 0.18s;
         }
-        .alert-title { font-weight: 700; font-size: 14px; color: #92400e; }
-        .alert-desc { font-size: 12px; color: #b45309; margin-top: 4px; }
-        .btn-review { 
-            font-size: 12px; font-weight: 700; color: #fff; background: #d97706; 
-            padding: 6px 12px; border-radius: 6px; text-decoration: none; transition: 0.2s; 
+        .alert-item:hover { background: #fef3c7; transform: translateX(2px); }
+        .alert-item:last-child { margin-bottom: 0; }
+        .alert-title { font-weight: 700; font-size: 13px; color: #92400e; }
+        .alert-desc { font-size: 11.5px; color: #b45309; margin-top: 2px; }
+        .btn-review {
+            font-size: 12px; font-weight: 700; color: #fff; background: #d97706;
+            padding: 5px 12px; border-radius: 7px; text-decoration: none;
+            transition: all 0.18s; flex-shrink: 0;
         }
-        .btn-review:hover { background: #b45309; }
+        .btn-review:hover { background: #b45309; transform: translateY(-1px); }
 
-        /* Tables */
+        /* ── Table ── */
         .premium-table { width: 100%; border-collapse: collapse; }
-        .premium-table th { text-align: left; padding: 12px 16px; color: #64748b; font-size: 12px; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-        .premium-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-        
-        .student-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: linear-gradient(135deg, #6C5CE7, #5A4BD6);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 12px;
+        .premium-table th {
+            text-align: left; padding: 12px 16px;
+            color: #94a3b8; font-size: 11px; text-transform: uppercase;
+            font-weight: 700; letter-spacing: 0.05em;
+            border-bottom: 1px solid #f1f5f9;
         }
-
+        .premium-table td { padding: 14px 16px; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+        .premium-table tr:last-child td { border-bottom: none; }
+        .premium-table tbody tr:hover { background: rgba(108,92,231,0.02); }
+        .student-avatar {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, #6C5CE7, #8B5CF6);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px; flex-shrink: 0;
+        }
         .status-badge {
             display: inline-flex; padding: 4px 10px; border-radius: 100px;
-            font-size: 12px; font-weight: 700; border: 1px solid transparent;
+            font-size: 11.5px; font-weight: 700;
         }
-        .status-danger { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
-        .status-success { background: #ecfdf5; color: #10b981; border-color: #a7f3d0; }
-        .status-warning { background: #fffbeb; color: #f59e0b; border-color: #fde68a; }
+        .status-danger  { background: #fef2f2; color: #ef4444; }
+        .status-success { background: #ecfdf5; color: #10b981; }
+        .status-warning { background: #fffbeb; color: #f59e0b; }
+        .status-neutral { background: #f8fafc; color: #64748b; }
 
-        /* Modal Overrides */
+        /* ── Subject rankings ── */
+        .subject-rank-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid #f8fafc;
+        }
+        .subject-rank-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .sr-bar-bg { flex: 1; height: 6px; background: #f1f5f9; border-radius: 100px; margin: 0 12px; overflow: hidden; }
+        .sr-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #6C5CE7, #8B5CF6); }
+
+        /* ── Modal ── */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(15,23,42,0.55); backdrop-filter: blur(6px);
             display: flex; align-items: center; justify-content: center;
-            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s;
+            z-index: 1000; opacity:0; visibility:hidden; transition: all 0.3s;
         }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-overlay.active { opacity:1; visibility:visible; }
         .modal-content {
-            background: #fff; border-radius: 24px; width: 100%; max-width: 500px;
-            padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            transform: translateY(20px); transition: all 0.3s;
+            background: #fff; border-radius: 24px; width: 100%; max-width: 480px;
+            padding: 32px; box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+            transform: translateY(24px) scale(0.98); transition: all 0.3s cubic-bezier(.4,0,.2,1);
         }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-overlay.active .modal-content { transform: translateY(0) scale(1); }
         .form-control {
-            width: 100%; padding: 12px 16px; padding-left: 40px; border: 1px solid #cbd5e1;
-            border-radius: 12px; font-size: 14px; transition: 0.2s;
+            width: 100%; padding: 11px 16px 11px 40px;
+            border: 1.5px solid #e2e8f0; border-radius: 12px;
+            font-size: 14px; font-family: 'Inter', sans-serif;
+            transition: all 0.2s; color: #0f172a; background: #fdfdfd;
+            box-sizing: border-box;
         }
-        .form-control:focus { border-color: #6C5CE7; outline: none; box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1); }
-        .input-icon-wrapper { position: relative; margin-top: 8px; margin-bottom: 16px; }
+        .form-control:focus { border-color: #6C5CE7; outline:none; box-shadow: 0 0 0 4px rgba(108,92,231,0.10); background: #fff; }
+        .input-icon-wrapper { position: relative; margin-top: 6px; margin-bottom: 16px; }
         .input-icon-wrapper svg {
             position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-            width: 18px; height: 18px; color: #94a3b8;
+            width: 17px; height: 17px; color: #94a3b8; pointer-events: none;
         }
-        
     </style>
     @endpush
 
-    <div class="dashboard-header">
-        <div>
-            <h2 class="dashboard-title">Welcome back, {{ auth()->user()->name }}</h2>
-            <p class="dashboard-subtitle">Here is what's happening at your academy today.</p>
+    <div class="admin-header">
+        <div style="position:relative;z-index:2;">
+            <h2 class="admin-title">Welcome back, {{ auth()->user()->name }} 👋</h2>
+            <p class="admin-subtitle">Here is what's happening at your academy today.</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:2;">
             <button class="btn-solid-dark" onclick="openTeacherModal()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.1 0-2 .9-2 2v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.1 0-2 .9-2 2v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                 Add Teacher
             </button>
             <a href="{{ route('students.create') }}" class="btn-solid-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
                 Add Student
             </a>
         </div>
@@ -280,12 +264,15 @@
 
     {{-- Invite Section --}}
     <div class="invite-banner">
-        <div style="flex: 1; min-width: 300px; position: relative; z-index: 2;">
-            <h3 class="font-bold text-2xl mb-2">Invite Students & Teachers</h3>
-            <p class="text-sm text-slate-300 mb-6" style="max-width: 500px; line-height: 1.6;">Share this secure link or QR code with your organization members for them to automatically join <strong>{{ auth()->user()->school->name ?? 'your school' }}</strong>.</p>
-            
-            <div class="flex items-center gap-3">
-                <input type="text" value="{{ $inviteLink }}" id="inviteLinkInput" readonly style="flex: 1; max-width: 360px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 14px; outline: none;">
+        <div style="flex:1;min-width:280px;position:relative;z-index:2;">
+            <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:4px 12px;margin-bottom:14px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#10b981;"></span>
+                <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">School Invite Portal</span>
+            </div>
+            <h3 style="font-family:'Poppins',sans-serif;font-weight:800;font-size:22px;margin:0 0 8px;">Invite Students & Teachers</h3>
+            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:0 0 20px;max-width:460px;line-height:1.7;">Share this link with your organization to automatically join <strong style="color:#fff;">{{ auth()->user()->school->name ?? 'your school' }}</strong>.</p>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <input type="text" value="{{ $inviteLink }}" id="inviteLinkInput" readonly style="flex:1;max-width:360px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;outline:none;">
                 <button class="btn-solid-primary" onclick="copyInviteLink()">Copy Link</button>
                 <input type="hidden" value="{{ $schoolCode }}" id="schoolCodeInput">
             </div>
@@ -427,19 +414,31 @@
             
             {{-- Action Buttons --}}
             <div class="premium-card">
-                <div class="card-header"><h3 class="card-title">Quick Actions</h3></div>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                <div class="card-header" style="margin-bottom:16px;"><div><h3 class="card-title">Quick Actions</h3><p class="card-subtitle">Frequently used shortcuts</p></div></div>
+                <div style="display:grid;grid-template-columns:1fr;gap:10px;">
                     <a href="{{ route('marks.create') }}" class="btn-quick-action">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <div class="qa-icon" style="color:#6C5CE7;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </div>
                         Upload Marks
                     </a>
                     <a href="{{ route('remedial.index') }}" class="btn-quick-action">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        <div class="qa-icon" style="color:#10b981;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
                         Assign Remedial Tasks
                     </a>
                     <a href="{{ route('subjects.index') }}" class="btn-quick-action">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        <div class="qa-icon" style="color:#f59e0b;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                        </div>
                         Manage Subjects
+                    </a>
+                    <a href="{{ route('performance.index') }}" class="btn-quick-action">
+                        <div class="qa-icon" style="color:#3b82f6;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </div>
+                        View Performance
                     </a>
                 </div>
             </div>
@@ -471,20 +470,21 @@
 
             {{-- Subject Rankings --}}
             <div class="premium-card">
-                <div class="card-header"><h3 class="card-title">Subject Rankings</h3></div>
-                <div style="display: flex; flex-direction: column; gap: 16px;">
-                    @forelse($subjectAvgs->sortByDesc('avg')->take(4) as $idx => $s)
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="width: 28px; height: 28px; border-radius: 8px; background: {{ $idx === 0 ? 'rgba(108, 92, 231, 0.1)' : '#f1f5f9' }}; color: {{ $idx === 0 ? '#6C5CE7' : '#64748b' }}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;">
-                                    #{{ $idx + 1 }}
-                                </div>
-                                <span style="font-size: 14px; font-weight: 600; color: #1e293b;">{{ $s['subject'] }}</span>
+                <div class="card-header" style="margin-bottom:16px;">
+                    <div><h3 class="card-title">Subject Rankings</h3><p class="card-subtitle">Top performing subjects</p></div>
+                </div>
+                <div>
+                    @forelse($subjectAvgs->sortByDesc('avg')->take(5) as $idx => $s)
+                        <div class="subject-rank-row">
+                            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                <div style="width:24px;height:24px;border-radius:7px;background:{{ $idx===0?'#eef2ff':'#f8fafc' }};color:{{ $idx===0?'#6366f1':'#94a3b8' }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">#{{ $idx+1 }}</div>
+                                <span style="font-size:13px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $s['subject'] }}</span>
                             </div>
-                            <span style="font-size: 14px; font-weight: 800; color: {{ $idx === 0 ? '#6C5CE7' : '#475569' }};">{{ number_format($s['avg'], 1) }}%</span>
+                            <div class="sr-bar-bg"><div class="sr-bar-fill" style="width:{{ min(100, $s['avg']) }}%;"></div></div>
+                            <span style="font-size:13px;font-weight:800;color:{{ $idx===0?'#6C5CE7':'#475569' }};min-width:40px;text-align:right;">{{ number_format($s['avg'],1) }}%</span>
                         </div>
                     @empty
-                        <p style="color: #64748b; font-size: 13px; text-align: center;">No subject data available.</p>
+                        <p style="color:#94a3b8;font-size:13px;text-align:center;padding:16px 0;">No subject data available.</p>
                     @endforelse
                 </div>
             </div>
