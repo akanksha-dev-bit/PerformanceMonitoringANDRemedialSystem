@@ -3,6 +3,8 @@
 
   @push('styles')
   <style>
+  
+  
     .page-layout {
       display: flex;
       gap: 32px;
