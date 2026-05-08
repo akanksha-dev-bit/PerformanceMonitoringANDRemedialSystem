@@ -3,8 +3,6 @@
 
   @push('styles')
   <style>
-  
-  
     .page-layout {
       display: flex;
       gap: 32px;
@@ -12,15 +10,14 @@
       align-items: flex-start;
       width: 100%;
     }
-
     .student-create-card {
       background: #fff;
       border-radius: 20px;
       padding: 32px 40px;
       box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
       border: 1px solid rgba(0,0,0,0.04);
-      flex: 1; /* Takes remaining space */
-      min-width: 0; /* Prevents flex blowout */
+      flex: 1; 
+      min-width: 0; 
     }
 
     .info-panel {
