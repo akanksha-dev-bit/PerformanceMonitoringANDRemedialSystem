@@ -132,7 +132,6 @@
       </a>
     </div>
   </div>
-
   <div class="grid-container">
     {{-- Left: Profile Card --}}
     <div class="profile-card">
@@ -141,7 +140,6 @@
         <div class="profile-avatar-lg">{{ strtoupper(substr($student->name, 0, 2)) }}</div>
         <div class="profile-name">{{ $student->name }}</div>
         <div class="profile-email">{{ $student->email ?? 'No email provided' }}</div>
-        
         <div style="margin-top:16px;">
           @if(!$student->has_marks)
             <span class="badge badge-muted">Not Evaluated</span>
@@ -153,7 +151,6 @@
             <span class="badge badge-warning">~ At Risk</span>
           @endif
         </div>
-
         <div class="info-list">
           @foreach([['Roll No', $student->roll_no], ['Gender', ucfirst($student->gender ?? '—')], ['DOB', $student->dob ? $student->dob->format('d M Y') : '—'], ['Phone', $student->phone ?? '—'], ['Guardian', $student->guardian_name ?? '—']] as [$label, $val])
           <div class="info-item">
@@ -164,7 +161,6 @@
         </div>
       </div>
     </div>
-
     {{-- Right: Content --}}
     <div style="display:flex; flex-direction:column; gap:32px;">
       
