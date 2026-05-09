@@ -133,7 +133,6 @@
     </div>
   </div>
   <div class="grid-container">
-    {{-- Left: Profile Card --}}
     <div class="profile-card">
       <div class="profile-card-top"></div>
       <div class="profile-card-content">
