@@ -393,13 +393,22 @@
     <div class="pmrs-navbar-outer" id="pmrs-navbar-outer">
     <header class="pmrs-navbar" id="pmrs-navbar">
 
-      {{-- LEFT: Logo --}}
+      {{-- LEFT: Logo & School Branding --}}
       <a href="{{ auth()->check() ? route('dashboard') : '/' }}" class="nb-logo">
         <img src="{{ asset('logo.png') }}" alt="PMRS Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-        <div style="display:none; width:32px; height:32px; background:var(--gradient-primary); border-radius:8px; align-items:center; justify-content:center; color:#fff;">
+        <div style="display:none; width:32px; height:32px; background:var(--grad-primary); border-radius:8px; align-items:center; justify-content:center; color:#fff;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
         </div>
       </a>
+
+      @auth
+      @if(auth()->user()->school)
+        <div style="margin-left:8px; padding: 4px 10px; background: rgba(108,92,231,0.08); border: 1px solid rgba(108,92,231,0.2); border-radius: 8px; font-size: 11px; font-weight: 700; color: #5A4BD6; letter-spacing: 0.02em; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(108,92,231,0.05); user-select: none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          {{ strtoupper(auth()->user()->school->name) }}
+        </div>
+      @endif
+      @endauth
 
       {{-- Nav Pills --}}
       @auth

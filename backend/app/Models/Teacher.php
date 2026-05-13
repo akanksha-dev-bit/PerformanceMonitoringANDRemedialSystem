@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Teacher extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = ['user_id', 'school_id', 'subject_id'];
 
@@ -26,3 +26,4 @@ class Teacher extends Model
         return $this->belongsTo(Subject::class);
     }
 }
+

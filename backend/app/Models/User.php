@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\BelongsToSchool;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +27,13 @@ class User extends Authenticatable
         'profile_completed',
         'is_active',
     ];
+
+    /**
+     * The relationships that should always be loaded.
+     *
+     * @var array
+     */
+    protected $with = ['school'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -51,11 +58,6 @@ class User extends Authenticatable
             'profile_completed' => 'boolean',
             'is_active' => 'boolean',
         ];
-    }
-
-    public function school()
-    {
-        return $this->belongsTo(School::class);
     }
 
     public function studentProfile()

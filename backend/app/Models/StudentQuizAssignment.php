@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentQuizAssignment extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'quiz_id', 'student_id', 'assigned_by',
@@ -82,3 +82,4 @@ class StudentQuizAssignment extends Model
         return $latest ? $latest->percentage : null;
     }
 }
+

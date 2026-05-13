@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'user_id', 'school_id', 'roll_no', 'class', 'section',
@@ -132,3 +132,4 @@ class Student extends Model
         };
     }
 }
+

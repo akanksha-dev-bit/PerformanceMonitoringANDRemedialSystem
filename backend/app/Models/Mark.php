@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Mark extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'student_id', 'subject_id', 'marks_obtained',
@@ -36,3 +36,4 @@ class Mark extends Model
         return $this->percentage >= 40;
     }
 }
+

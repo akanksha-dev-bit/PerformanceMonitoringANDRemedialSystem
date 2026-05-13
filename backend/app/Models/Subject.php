@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subject extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'name', 'code', 'class', 'max_marks', 'teaching_staff', 'type', 'is_active',
@@ -18,3 +18,4 @@ class Subject extends Model
         return $this->hasMany(Mark::class);
     }
 }
+

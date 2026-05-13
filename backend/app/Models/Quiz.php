@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Quiz extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'title', 'description', 'subject_id', 'created_by',
@@ -63,3 +63,4 @@ class Quiz extends Model
         };
     }
 }
+

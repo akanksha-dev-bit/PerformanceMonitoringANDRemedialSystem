@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizAttempt extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'assignment_id', 'student_id', 'score', 'total_marks',
@@ -30,3 +30,4 @@ class QuizAttempt extends Model
         return $this->belongsTo(Student::class);
     }
 }
+

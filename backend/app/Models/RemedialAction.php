@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RemedialAction extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'student_id', 'action_type', 'title', 'description',
@@ -40,3 +40,4 @@ class RemedialAction extends Model
         };
     }
 }
+

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuizQuestion extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'quiz_id', 'question', 'option_a', 'option_b',
@@ -19,3 +19,4 @@ class QuizQuestion extends Model
         return $this->belongsTo(Quiz::class);
     }
 }
+
