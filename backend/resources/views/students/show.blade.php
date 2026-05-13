@@ -26,6 +26,8 @@
     .sh-subtitle { font-size: 15px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
     .sh-actions { display: flex; gap: 12px; z-index: 1; }
 
+
+    
     .grid-container {
       display: grid;
       grid-template-columns: 320px 1fr;
