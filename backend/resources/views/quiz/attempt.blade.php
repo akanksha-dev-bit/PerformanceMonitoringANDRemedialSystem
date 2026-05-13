@@ -275,9 +275,12 @@
     function updateDots() {
       for (let i = 0; i < totalQuestions; i++) {
         const dot = document.getElementById('dot-' + i);
-        const qId = document.getElementById('question-' + i).querySelector('input[type="hidden"]').name.match(/\d+/)[0];
-        if (answers[qId]) {
-          dot.classList.add('answered');
+        const qCard = document.getElementById('question-' + i);
+        if (qCard) {
+          const hiddenInput = qCard.querySelector('input[name^="answers["]');
+          if (hiddenInput && hiddenInput.value) {
+            dot.classList.add('answered');
+          }
         }
       }
     }
@@ -293,6 +296,9 @@
     function closeSubmitModal() {
       document.getElementById('submitModal').classList.remove('active');
     }
+
+    // Initialize navigation state on first load
+    updateNav();
   </script>
 
 </body>

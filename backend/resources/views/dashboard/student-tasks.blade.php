@@ -268,11 +268,22 @@
             </div>
 
             <div class="tc-footer">
-              <button class="tc-btn tc-btn-outline" onclick="openTaskModal('{{ $task->title }}', '{{ $task->description ?? 'No extra details provided.' }}')">View Details</button>
+              @php
+                $activeQuiz = (isset($quizAssignments) && $quizAssignments->where('status', 'active')->count() > 0) ? $quizAssignments->where('status', 'active')->first() : null;
+                $quizStartUrl = $activeQuiz ? route('quiz.start', $activeQuiz) : null;
+                $isQuiz = ($task->action_type === 'quiz_test' || $task->action_type === 'practice_session');
+              @endphp
+              <button class="tc-btn tc-btn-outline" onclick="openTaskModal('{{ addslashes($task->title) }}', '{{ addslashes($task->description ?? 'No extra details provided.') }}', {{ $isQuiz ? 'true' : 'false' }}, '{{ $quizStartUrl }}')">View Details</button>
               @if($task->status !== 'completed')
-                <button class="tc-btn tc-btn-primary" onclick="openTaskModal('{{ $task->title }}', 'This task is ready to be worked on.')">
-                  {{ $task->status === 'in_progress' ? 'Continue' : 'Start Task' }}
-                </button>
+                @if($isQuiz && $activeQuiz)
+                  <a href="{{ $quizStartUrl }}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; box-sizing:border-box;">
+                    🚀 Start Quiz
+                  </a>
+                @else
+                  <button class="tc-btn tc-btn-primary" onclick="openTaskModal('{{ addslashes($task->title) }}', 'This task is assigned by your teacher. Make sure to review your study notes and attend any required sessions.', {{ $isQuiz ? 'true' : 'false' }}, '{{ $quizStartUrl }}')">
+                    {{ $task->status === 'in_progress' ? 'Continue' : 'Start Task' }}
+                  </button>
+                @endif
               @endif
             </div>
           </div>
@@ -390,7 +401,7 @@
         <button onclick="closeTaskModal()" style="background:none; border:none; font-size:24px; color:#94a3b8; cursor:pointer;">&times;</button>
       </div>
       <p id="modalDesc" style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:32px;"></p>
-      <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <div style="display:flex; gap:12px; justify-content:flex-end;" id="modalActions">
         <button class="tc-btn tc-btn-outline" onclick="closeTaskModal()">Close</button>
         <button class="tc-btn tc-btn-primary" onclick="alert('Feature coming soon!'); closeTaskModal();">Proceed to Workspace</button>
       </div>
@@ -422,9 +433,28 @@
       });
 
       // ── Modal Logic ──
-      function openTaskModal(title, desc) {
+      function openTaskModal(title, desc, isQuiz, quizUrl) {
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalDesc').innerText = desc;
+
+        const actionsContainer = document.getElementById('modalActions');
+        if (isQuiz && quizUrl) {
+          actionsContainer.innerHTML = `
+            <button class="tc-btn tc-btn-outline" onclick="closeTaskModal()">Close</button>
+            <a href="${quizUrl}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; text-align:center;">🚀 Start Assigned Quiz</a>
+          `;
+        } else if (isQuiz) {
+          actionsContainer.innerHTML = `
+            <button class="tc-btn tc-btn-outline" onclick="closeTaskModal()">Close</button>
+            <button class="tc-btn tc-btn-primary" onclick="alert('No active interactive quiz assigned for this task yet. Check your My Quizzes panel or ask your teacher!'); closeTaskModal();">Check Assigned Quizzes</button>
+          `;
+        } else {
+          actionsContainer.innerHTML = `
+            <button class="tc-btn tc-btn-outline" onclick="closeTaskModal()">Close</button>
+            <button class="tc-btn tc-btn-primary" onclick="alert('Task marked as acknowledged. Keep up the great work in your studies!'); closeTaskModal();">Mark in Progress</button>
+          `;
+        }
+
         document.getElementById('taskModal').classList.add('active');
       }
 
