@@ -46,6 +46,16 @@ class Student extends Model
         return $this->hasMany(RemedialAction::class);
     }
 
+    public function quizAssignments()
+    {
+        return $this->hasMany(StudentQuizAssignment::class);
+    }
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where($this->getTable() . '.is_active', true);

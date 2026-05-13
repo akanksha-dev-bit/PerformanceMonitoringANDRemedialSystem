@@ -149,7 +149,7 @@
           <div class="premium-form-group">
             <label class="premium-label" for="action_type">Intervention Type *</label>
             <select name="action_type" id="action_type" class="premium-input" required>
-              @foreach(['extra_class' => 'Extra Class', 'counseling' => 'Counseling', 'peer_tutoring' => 'Peer Tutoring', 'assignment' => 'Assignment', 'parent_meeting' => 'Parent Meeting', 'other' => 'Other'] as $val => $label)
+              @foreach(['extra_class' => 'Extra Class', 'counseling' => 'Counseling', 'peer_tutoring' => 'Peer Tutoring', 'assignment' => 'Assignment', 'parent_meeting' => 'Parent Meeting', 'quiz_test' => 'Quiz / Test', 'practice_session' => 'Practice Session', 'other' => 'Other'] as $val => $label)
                 <option value="{{ $val }}" {{ old('action_type') == $val ? 'selected' : '' }}>{{ $label }}</option>
               @endforeach
             </select>

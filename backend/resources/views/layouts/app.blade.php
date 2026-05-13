@@ -414,6 +414,7 @@
           <a href="{{ route('dashboard.teacher') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}">Dashboard</a>
           <a href="{{ route('students.index') }}" class="{{ request()->routeIs('students.*') ? 'active' : '' }}">My Students</a>
           <a href="{{ route('performance.index') }}" class="{{ request()->routeIs('performance.*') ? 'active' : '' }}">Performance</a>
+          <a href="{{ route('quizzes.index') }}" class="{{ request()->routeIs('quizzes.*') ? 'active' : '' }}">Quizzes</a>
         @elseif(auth()->user()->isStudent())
           <a href="{{ route('dashboard.student') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}">Dashboard</a>
           <a href="{{ route('student.progress') }}" class="{{ request()->routeIs('student.progress') ? 'active' : '' }}">My Progress</a>
@@ -512,6 +513,9 @@
               <a href="{{ route('dashboard.teacher') }}" class="nb-dropdown-item">
                 <span class="dd-icon">🏠</span> Dashboard
               </a>
+              <a href="{{ route('quizzes.index') }}" class="nb-dropdown-item">
+                <span class="dd-icon">📝</span> My Quizzes
+              </a>
             @else
               <a href="{{ route('dashboard.admin') }}" class="nb-dropdown-item">
                 <span class="dd-icon">🏠</span> Dashboard
@@ -586,6 +590,7 @@
           <a href="{{ route('dashboard.teacher') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" onclick="closeDrawer()">Dashboard</a>
           <a href="{{ route('students.index') }}" class="{{ request()->routeIs('students.*') ? 'active' : '' }}" onclick="closeDrawer()">My Students</a>
           <a href="{{ route('performance.index') }}" class="{{ request()->routeIs('performance.*') ? 'active' : '' }}" onclick="closeDrawer()">Performance</a>
+          <a href="{{ route('quizzes.index') }}" class="{{ request()->routeIs('quizzes.*') ? 'active' : '' }}" onclick="closeDrawer()">Quizzes</a>
         @elseif(auth()->user()->isStudent())
           <a href="{{ route('dashboard.student') }}" class="{{ request()->routeIs('dashboard.*') ? 'active' : '' }}" onclick="closeDrawer()">Dashboard</a>
           <a href="{{ route('student.progress') }}" class="{{ request()->routeIs('student.progress') ? 'active' : '' }}" onclick="closeDrawer()">My Progress</a>

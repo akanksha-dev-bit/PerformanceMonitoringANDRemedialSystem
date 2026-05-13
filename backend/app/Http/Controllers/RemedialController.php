@@ -40,7 +40,7 @@ class RemedialController extends Controller
     {
         $validated = $request->validate([
             'student_id'     => 'required|exists:students,id',
-            'action_type'    => 'required|in:extra_class,counseling,peer_tutoring,assignment,parent_meeting,other',
+            'action_type'    => 'required|in:extra_class,counseling,peer_tutoring,assignment,parent_meeting,other,quiz_test,practice_session',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
             'status'         => 'required|in:pending,in_progress,completed,cancelled',
@@ -64,7 +64,7 @@ class RemedialController extends Controller
     public function update(Request $request, RemedialAction $remedial)
     {
         $validated = $request->validate([
-            'action_type'     => 'required|in:extra_class,counseling,peer_tutoring,assignment,parent_meeting,other',
+            'action_type'     => 'required|in:extra_class,counseling,peer_tutoring,assignment,parent_meeting,other,quiz_test,practice_session',
             'title'           => 'required|string|max:255',
             'description'     => 'nullable|string',
             'status'          => 'required|in:pending,in_progress,completed,cancelled',

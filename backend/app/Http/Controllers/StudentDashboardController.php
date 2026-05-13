@@ -206,9 +206,17 @@ class StudentDashboardController extends Controller
         }
         $timeline = $activities->sortByDesc('date')->take(5)->values();
 
+        // ── Quiz Assignments ──
+        $quizAssignments = $studentProfile->quizAssignments()
+            ->with(['quiz.subject', 'quiz.questions', 'attempts', 'assignedBy'])
+            ->whereIn('status', ['active', 'completed'])
+            ->orderByRaw("FIELD(status, 'active', 'completed')")
+            ->orderBy('start_date', 'asc')
+            ->get();
+
         return view('dashboard.student-tasks', compact(
             'studentProfile', 'assignedTasks', 'stats', 'xpEarned', 
-            'streak', 'rank', 'weakSubjects', 'timeline'
+            'streak', 'rank', 'weakSubjects', 'timeline', 'quizAssignments'
         ));
     }
 }

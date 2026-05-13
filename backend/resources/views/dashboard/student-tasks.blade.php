@@ -288,16 +288,58 @@
 
     {{-- ── Sidebar ── --}}
     <div>
-      {{-- Recommended Practice --}}
+      {{-- Assigned Quizzes --}}
+      @if(isset($quizAssignments) && $quizAssignments->count() > 0)
+        <div class="sb-panel" style="background: linear-gradient(135deg, #fff 0%, #fdfbfb 100%);">
+          <h3 class="sb-title">📝 My Quizzes</h3>
+          @foreach($quizAssignments as $qa)
+            @php
+              $quiz = $qa->quiz;
+              $attemptsUsed = $qa->attempts_used;
+              $totalAttempts = $qa->repeat_days;
+              $progress = $totalAttempts > 0 ? round(($attemptsUsed / $totalAttempts) * 100) : 0;
+              $canAttempt = $qa->today_attempt_available;
+              $latestScore = $qa->latest_score;
+            @endphp
+            <div class="rec-card" style="margin-bottom: {{ $loop->last ? '0' : '12px' }}; border-left: 3px solid {{ $qa->status === 'completed' ? '#10b981' : '#6C5CE7' }};">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+                <div style="font-size:14px; font-weight:700; color:#0f172a;">{{ $quiz->title }}</div>
+                <span style="display:inline-flex;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;
+                  background:{{ $qa->status === 'completed' ? '#ecfdf5' : '#eef2ff' }};
+                  color:{{ $qa->status === 'completed' ? '#10b981' : '#6C5CE7' }};">
+                  {{ $qa->status === 'completed' ? 'Done' : 'Active' }}
+                </span>
+              </div>
+              <div style="font-size:12px;color:#64748b;margin-bottom:4px;">📚 {{ $quiz->subject->name ?? 'General' }} · {{ ucfirst($quiz->difficulty_level) }}</div>
+              <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Attempts: {{ $attemptsUsed }}/{{ $totalAttempts }}
+                @if($latestScore !== null) · Last: {{ $latestScore }}% @endif
+              </div>
+              <div style="height:6px;background:#f1f5f9;border-radius:100px;overflow:hidden;margin-bottom:10px;">
+                <div style="height:100%;width:{{ $progress }}%;background:linear-gradient(90deg,#6C5CE7,#8B5CF6);border-radius:100px;transition:width 0.4s;"></div>
+              </div>
+              @if($canAttempt)
+                <a href="{{ route('quiz.start', $qa) }}" class="tc-btn tc-btn-primary" style="width:100%;padding:8px;font-size:12px;text-align:center;display:block;text-decoration:none;border-radius:8px;">
+                  🚀 Start Quiz
+                </a>
+              @elseif($qa->status === 'completed')
+                <div style="text-align:center;font-size:12px;color:#10b981;font-weight:600;">✅ All attempts completed!</div>
+              @else
+                <div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:500;">⏳ Next attempt unlocks tomorrow</div>
+              @endif
+            </div>
+          @endforeach
+        </div>
+      @endif
+
+      {{-- Recommended Practice (weak subjects) --}}
       @if($weakSubjects->count() > 0)
         <div class="sb-panel" style="background: linear-gradient(135deg, #fff 0%, #fdfbfb 100%);">
-          <h3 class="sb-title">🎯 Recommended Practice</h3>
+          <h3 class="sb-title">🎯 Focus Areas</h3>
           @foreach($weakSubjects as $weak)
             <div class="rec-card" style="margin-bottom: {{ $loop->last ? '0' : '12px' }};">
               <div style="font-size:24px; margin-bottom:8px;">💡</div>
-              <div style="font-size:13px; font-weight:700; color:#b45309; margin-bottom:4px;">Focus Area: {{ $weak['name'] }}</div>
-              <div style="font-size:12px; color:#92400e; margin-bottom:12px;">Your average is currently {{ $weak['pct'] }}%.</div>
-              <button class="tc-btn tc-btn-primary" style="width:100%; padding:6px; font-size:12px;" onclick="alert('Feature coming soon: Quiz generation!')">Start Quick Quiz</button>
+              <div style="font-size:13px; font-weight:700; color:#b45309; margin-bottom:4px;">{{ $weak['name'] }}</div>
+              <div style="font-size:12px; color:#92400e;">Your average is currently {{ $weak['pct'] }}%. Ask your teacher for practice quizzes.</div>
             </div>
           @endforeach
         </div>

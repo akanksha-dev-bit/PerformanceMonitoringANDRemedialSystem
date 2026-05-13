@@ -74,5 +74,17 @@ Route::middleware('auth')->group(function () {
             Route::resource('subjects', \App\Http\Controllers\SubjectController::class)->except(['show']);
             Route::resource('teachers', \App\Http\Controllers\TeacherController::class);
         });
+
+        // Quiz Management (Teachers + Admin)
+        Route::resource('quizzes', \App\Http\Controllers\QuizController::class);
+        Route::get('quizzes/{quiz}/assign', [\App\Http\Controllers\QuizAssignmentController::class, 'create'])->name('quizzes.assign');
+        Route::post('quizzes/{quiz}/assign', [\App\Http\Controllers\QuizAssignmentController::class, 'store'])->name('quizzes.assign.store');
+        Route::get('quiz-assignments/{assignment}/analytics', [\App\Http\Controllers\QuizAssignmentController::class, 'analytics'])->name('quizzes.analytics');
     });
+
+    // Student Quiz Attempt Routes (outside EnsureProfileCompleted since students need this)
+    Route::get('quiz/{assignment}/start', [\App\Http\Controllers\QuizAttemptController::class, 'start'])->name('quiz.start');
+    Route::get('quiz/attempt/{attempt}', [\App\Http\Controllers\QuizAttemptController::class, 'show'])->name('quiz.attempt');
+    Route::post('quiz/attempt/{attempt}/submit', [\App\Http\Controllers\QuizAttemptController::class, 'submit'])->name('quiz.submit');
+    Route::get('quiz/attempt/{attempt}/results', [\App\Http\Controllers\QuizAttemptController::class, 'results'])->name('quiz.results');
 });
