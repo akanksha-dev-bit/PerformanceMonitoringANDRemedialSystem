@@ -24,9 +24,6 @@ trait BelongsToSchool
         });
     }
 
-    /**
-     * Get the school that owns the model.
-     */
     public function school()
     {
         return $this->belongsTo(School::class);
