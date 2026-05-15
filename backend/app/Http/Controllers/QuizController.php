@@ -18,7 +18,6 @@ class QuizController extends Controller
             ->where('school_id', $user->school_id)
             ->latest();
 
-        // Teachers see only their own quizzes; admins see all
         if ($user->isTeacher()) {
             $query->where('created_by', $user->id);
         }

@@ -1,6 +1,6 @@
 # 📊 Performance Monitoring and Remedial System (PMRS)
 
-> A full-stack web application designed to help schools **track student academic performance**, **identify at-risk and slow learners**, and **assign targeted remedial actions** — all within a clean, role-based multi-school environment.
+> A full-stack web application designed to help schools **track student academic performance**, **identify at-risk and slow learners**, **assign targeted remedial actions**, and **conduct adaptive quizzes** — all within a secure, role-based, multi-tenant school environment.
 
 ---
 
@@ -8,69 +8,98 @@
 
 The **Performance Monitoring and Remedial System (PMRS)** is a modern educational management platform built for schools that want to move beyond spreadsheets and manual reporting. It provides a unified dashboard for **Admins**, **Teachers**, and **Students**, each with their own tailored views and actions.
 
-The system automatically evaluates student performance based on marks, categorizes students as **Good**, **At Risk**, or **Slow Learner**, and enables teachers and admins to assign structured remedial interventions.
+The system automatically evaluates student performance based on marks, categorizes students as **Good**, **At Risk**, or **Slow Learner**, enables teachers to assign structured remedial interventions, and supports a fully interactive **Adaptive Quiz Platform** where students can practice and improve.
 
 ---
 
 ## 🎯 Key Features
 
-### 🏫 Multi-School Architecture
-- Each school gets a unique **school code** (e.g., `PMRS-ABC123`)
-- Students and teachers join a school using an invite link
-- All data is fully scoped per school — no cross-school data leakage
+### 🏫 Multi-Tenant School Architecture
+- Every school is completely **isolated** — no cross-school data leakage
+- Each school gets a unique **school code** (e.g., `PMRS-AB3XY2`) auto-generated on registration
+- Teachers and students join a school via a **public invite link** (`/join/{school_code}`)
+- Global `SchoolScope` automatically filters every database query to the authenticated user's school
+- Cross-school URL tampering returns `404 Not Found` — enforced at SQL level via Route Model Binding
 
 ### 👥 Role-Based Access Control
 | Role | Capabilities |
 |---|---|
-| **Admin** | Manage teachers, subjects, view all students & performance reports |
-| **Teacher** | Manage students, enter marks, assign remedial actions, view dashboards |
-| **Student** | View personal performance, progress, and assigned remedial tasks |
+| **Admin** | Register a school, manage teachers & subjects, view all analytics, generate invite links |
+| **Teacher** | Manage students, enter marks, assign remedial tasks, create & assign quizzes |
+| **Student** | View personal marks, progress charts, complete assigned quizzes, track remedial tasks |
 
-### 📈 Performance Analytics
+### 📈 Performance Analytics & Slow Learner Detection
 - Automatic performance grading based on marks:
   - ✅ **Good** — Average ≥ 60%
   - ⚠️ **At Risk** — Average between 40% and 59%
-  - 🔴 **Slow Learner** — Average < 40%, or failed 2+ subjects
-- View per-student breakdown by subject
-- Identify and list all slow learners instantly
+  - 🔴 **Slow Learner** — Average < 40%, **or** failed in 2 or more subjects
+- Subject-wise performance breakdown with color-coded charts
+- Class rank calculated automatically within same class & section
+- Trend chart showing average performance across academic years
 
 ### 📝 Mark Management
-- Enter marks by subject, exam type, and academic year
-- Calculate percentage scores automatically
-- Pass/fail status computed per subject (pass threshold: 40%)
+- Enter marks by subject, exam type (`Unit Test`, `Midterm`, `Final`, `Practical`), and academic year
+- Percentage and pass/fail status computed automatically per entry
+- Pass threshold: **40%** per subject
 
 ### 🛠️ Remedial Action System
-- Assign remedial actions (tutoring, counselling, extra sessions, etc.) to struggling students
-- Track action status: `Pending`, `In Progress`, `Completed`, `Cancelled`
-- Set scheduled and completed dates; record outcomes
+Assign targeted interventions to struggling students:
+- **Action Types**: Extra Class, Counseling, Peer Tutoring, Assignment, Parent Meeting, Quiz Test, Practice Session
+- **Status Tracking**: Pending → In Progress → Completed / Cancelled
+- Set scheduled dates, completion dates, and record outcomes
+- Students see all their tasks in the "My Workspace" dashboard
+
+### 🧩 Adaptive Quiz Platform
+A fully interactive quiz system built inside PMRS:
+- **Teachers** create MCQ quizzes with title, subject, difficulty (`Easy`/`Medium`/`Hard`), duration, and per-question marks
+- **Teachers** assign quizzes to individual students with a date range and number of allowed attempts (`repeat_days`)
+- **Students** take quizzes in a **fullscreen distraction-free interface** with a timer, progress bar, and option selection
+- **Auto-grading** — server grades all answers instantly on submission
+- **Results page** shows score, percentage, XP earned, and per-question breakdown with correct answers and expert explanations
+- **Daily attempt limit** — one attempt per day maximum; total attempts capped by `repeat_days`
+
+### 🎮 Student Gamification
+- **XP Points** — earned by completing tasks and recording exam marks
+- **Study Streak** — days since last mark was recorded
+- **Class Rank** — calculated live against classmates in same class & section
+- **Achievement Badges** — "Top Scorer 🏆", "Class Topper 🥇", "5 Exams Done 🔥", "All Subjects Passing ✅"
 
 ### 🔍 Global Search
-- Search across students, teachers, and subjects from a single search bar
+- `Ctrl+K` keyboard shortcut opens the search bar
+- Search across students, teachers, and subjects in real time
+- All results are automatically scoped to the authenticated user's school
+
+### 🔒 Tenant Audit Logging
+- Every authenticated request is logged with: `[School: X, User: Y, Role: Z] METHOD /url`
+- Logs stored in `storage/logs/laravel.log` for auditing and debugging
 
 ### 📋 Reports
-- Generate and view school-wide academic reports
+- School-wide academic summary
+- Class-wise breakdown (total students, slow learners, performing well)
 
 ### 🌐 Public Landing Page
-- A modern React-based landing page introducing the PMRS platform
-- Features hero section, feature highlights, and call-to-action
+- A modern React-based landing page (`/frontend`) introducing the PMRS platform
+- Features hero section, feature highlights, and call-to-action buttons
 
 ---
 
 ## 🏗️ Project Architecture
 
-This project uses a **decoupled full-stack** approach:
-
 ```
 PerformanceMonitoringANDRemedialSystem/
-├── backend/      # Laravel 12 — API + Server-Rendered Dashboards
+├── backend/      # Laravel 11 — MVC + Blade Dashboards + Auth
 └── frontend/     # React 19 + Vite — Public Landing Page
 ```
 
-### Backend (Laravel 12)
-The backend powers all core business logic, authentication, and role-based dashboards. It uses **Blade templating** for server-rendered views and **Breeze** for authentication scaffolding.
+### Backend (Laravel 11)
+- Handles all business logic, authentication, role-based routing
+- Server-rendered Blade templates for all dashboards
+- **Multi-tenant isolation** via Global Eloquent Scopes
+- **Laravel Breeze** for authentication scaffolding
 
 ### Frontend (React 19 + Vite)
-The frontend is a standalone React application that serves as the **public-facing landing page** of PMRS. It is built with React 19, Vite 6, and Tailwind CSS v4.
+- Standalone React app serving as the public-facing landing page
+- Completely separate from the backend — runs on its own dev server
 
 ---
 
@@ -80,50 +109,53 @@ The frontend is a standalone React application that serves as the **public-facin
 | Technology | Version | Purpose |
 |---|---|---|
 | **PHP** | ^8.2 | Server-side language |
-| **Laravel** | ^12.0 | MVC Web Framework |
-| **Laravel Breeze** | ^2.4 | Authentication scaffolding |
-| **SQLite** | — | Default database (easily switchable) |
+| **Laravel** | ^11.x | MVC Web Framework |
+| **Laravel Breeze** | ^2.x | Authentication scaffolding |
+| **MySQL** | — | Production database (via XAMPP) |
 | **Blade** | — | Server-side templating engine |
-| **Tailwind CSS** | ^3.x | Backend UI styling |
+| **Chart.js** | ^4.4 | Performance charts |
+| **Vanilla CSS** | — | Custom design system |
+| **Vite** | — | Asset bundling |
 
 ### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
 | **React** | ^19.0 | UI Library |
-| **Vite** | ^6.2 | Build tool & dev server |
+| **Vite** | ^6.x | Build tool & dev server |
 | **Tailwind CSS** | ^4.x | Utility-first CSS framework |
-| **Lucide React** | ^0.546 | Icon library |
+| **Lucide React** | latest | Icon library |
 | **Motion** | ^12.x | Animations |
-| **Google GenAI** | ^1.29 | AI integration |
 
 ---
 
 ## 📦 Database Schema
 
-The application uses the following core tables:
-
 | Table | Description |
 |---|---|
-| `schools` | Stores registered schools with a unique `school_code` |
-| `users` | All users (admin, teacher, student) with role field |
-| `students` | Student profiles linked to a user and school |
-| `teachers` | Teacher profiles linked to a user |
-| `teacher_assignments` | Maps teachers to schools |
-| `subjects` | School subjects (name, code, class) |
-| `marks` | Student marks per subject per exam type |
-| `remedial_actions` | Remedial plans assigned to struggling students |
+| `schools` | Registered schools — name, `school_code` (unique), address |
+| `users` | All users — name, email, password, `role` (admin/teacher/student), `school_id` |
+| `students` | Student profiles — roll_no, class, section, DOB, guardian info, `school_id` |
+| `teachers` | Teacher profiles — linked to user, primary subject, `school_id` |
+| `teacher_assignments` | Maps teachers to class/section/subject combinations |
+| `subjects` | School subjects — name, code (unique per school), class, max_marks, `school_id` |
+| `marks` | Exam results — student_id, subject_id, marks_obtained, exam_type, academic_year, `school_id` |
+| `remedial_actions` | Remedial tasks — student_id, action_type, title, status, scheduled_date, `school_id` |
+| `quizzes` | Quiz definitions — title, subject, difficulty, duration, created_by, `school_id` |
+| `quiz_questions` | MCQ questions — quiz_id, options A/B/C/D, correct_answer, explanation, marks |
+| `student_quiz_assignments` | Quiz-to-student assignments — start/end date, repeat_days, status |
+| `quiz_attempts` | Student attempts — answers (JSON), score, percentage, completed_at |
+
+> **Note:** Every tenant table includes `school_id` to enforce strict data isolation across schools.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
-Make sure you have the following installed:
 - **PHP** >= 8.2
 - **Composer**
 - **Node.js** >= 18.x & **npm**
-- **XAMPP** (or any local server with MySQL/SQLite support)
+- **XAMPP** (with MySQL running)
 
 ---
 
@@ -152,9 +184,18 @@ composer install
 cp .env.example .env
 ```
 
-Edit `.env` to set your database connection. The default uses SQLite:
+Edit `.env` for MySQL:
 ```env
-DB_CONNECTION=sqlite
+APP_NAME="Performance Monitoring and Remedial System"
+APP_ENV=local
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pmrs_db
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
 **Generate the application key:**
@@ -167,12 +208,12 @@ php artisan key:generate
 php artisan migrate
 ```
 
-**Start the backend development server:**
+**Start the backend server:**
 ```bash
 php artisan serve
 ```
 
-The backend will be available at: **http://127.0.0.1:8000**
+Backend available at: **http://127.0.0.1:8000**
 
 ---
 
@@ -182,39 +223,32 @@ Open a **new terminal**, then:
 
 ```bash
 cd frontend
-```
-
-**Install Node.js dependencies:**
-```bash
 npm install
-```
-
-**Start the frontend development server:**
-```bash
 npm run dev
 ```
 
-The frontend landing page will be available at: **http://localhost:3000**
+Frontend landing page available at: **http://localhost:5173**
 
 ---
 
-## 🔐 Authentication & User Roles
+## 🔐 Authentication & User Flow
 
-PMRS uses **Laravel Breeze** for authentication. There are three user roles:
+PMRS uses **Laravel Breeze** for session-based authentication.
 
-- `admin` — Full school management access
-- `teacher` — Student and marks management
-- `student` — Personal performance view
+### Admin Registration
+1. Admin visits `/register`
+2. Fills in school name + personal details
+3. System auto-creates a **School** record with a unique code (e.g., `PMRS-AB3XY2`)
+4. Admin is logged in as the school owner
 
-### Joining a School
-Students and teachers join a school via a unique invite URL:
-```
-http://127.0.0.1:8000/join/{school_code}
-```
-The school code is generated automatically (e.g., `PMRS-ABC123`) when a school is created by an admin.
+### Teacher / Student Joining
+1. Admin shares the invite link: `http://127.0.0.1:8000/join/{school_code}`
+2. User registers via the invite form
+3. System sets `school_id` automatically to that school
+4. **Students** are redirected to complete their profile (class, section, roll number, DOB)
 
-### Completing a Profile
-After registering, students must complete their profile (class, section, DOB, guardian info, etc.) before accessing the full system.
+### Profile Completion (Students)
+After first login, students must fill their academic profile before accessing any dashboard features. This is enforced by `EnsureProfileCompleted` middleware.
 
 ---
 
@@ -223,32 +257,36 @@ After registering, students must complete their profile (class, section, DOB, gu
 ### Public Routes
 | Method | URL | Description |
 |---|---|---|
-| GET | `/join/{school_code}` | View school join page |
-| POST | `/join/{school_code}` | Register and join a school |
+| GET | `/join/{school_code}` | View school join/register page |
+| POST | `/join/{school_code}` | Register and join a school (rate-limited: 10/min) |
 
 ### Authenticated Routes
-| Method | URL | Description |
+| URL | Description | Access |
 |---|---|---|
-| GET | `/dashboard` | Role-based dashboard redirect |
-| GET | `/dashboard/admin` | Admin dashboard |
-| GET | `/dashboard/teacher` | Teacher dashboard |
-| GET | `/dashboard/student` | Student dashboard |
-| GET | `/my-progress` | Student's personal progress page |
-| GET | `/my-tasks` | Student's assigned remedial tasks |
-| GET | `/search` | Global search across the system |
-| — | `/students` | Full CRUD for students |
-| — | `/marks` | Mark entry and management |
-| GET | `/performance` | Performance overview |
-| GET | `/performance/student/{id}` | Individual student performance |
-| GET | `/performance/slow-learners` | List of slow learner students |
-| — | `/remedial` | Remedial actions CRUD |
-| GET | `/reports` | Academic reports |
+| `/dashboard` | Role-based redirect | All |
+| `/dashboard/admin` | Admin KPI dashboard | Admin |
+| `/dashboard/teacher` | Teacher overview | Teacher |
+| `/dashboard/student` | Student performance home | Student |
+| `/my-progress` | Student detailed progress | Student |
+| `/my-tasks` | Student workspace — tasks + quizzes + XP | Student |
+| `/students` | Student CRUD | Teacher / Admin |
+| `/marks` | Mark entry & listing | Teacher / Admin |
+| `/performance` | Performance overview all students | All |
+| `/performance/slow-learners` | Slow learner list | All |
+| `/remedial` | Remedial actions CRUD | Teacher / Admin |
+| `/quizzes` | Quiz management | Teacher / Admin |
+| `/quizzes/{quiz}/assign` | Assign quiz to student | Teacher / Admin |
+| `/quiz/{assignment}/start` | Start quiz attempt | Student |
+| `/quiz/attempt/{attempt}` | Fullscreen quiz UI | Student |
+| `/quiz/attempt/{attempt}/results` | Quiz results page | Student |
+| `/reports` | School-wide report | All |
+| `/search` | Global search (AJAX) | All |
 
 ### Admin-Only Routes
-| Method | URL | Description |
-|---|---|---|
-| — | `/subjects` | Subject management |
-| — | `/teachers` | Teacher management |
+| URL | Description |
+|---|---|
+| `/subjects` | Subject CRUD |
+| `/teachers` | Teacher management |
 
 ---
 
@@ -259,92 +297,101 @@ After registering, students must complete their profile (class, section, DOB, gu
 backend/
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/       # All feature controllers
-│   │   ├── Middleware/        # Auth, Role, ProfileCompleted middleware
-│   │   └── Requests/          # Form request validation
-│   ├── Models/                # Eloquent models
-│   │   ├── User.php
-│   │   ├── School.php
-│   │   ├── Student.php
-│   │   ├── Teacher.php
-│   │   ├── Subject.php
-│   │   ├── Mark.php
-│   │   ├── RemedialAction.php
-│   │   └── TeacherAssignment.php
-│   └── Services/              # Business logic services
+│   │   ├── Controllers/           # Feature controllers (19 files)
+│   │   │   ├── Auth/              # Breeze auth controllers
+│   │   │   ├── AdminDashboardController.php
+│   │   │   ├── StudentDashboardController.php
+│   │   │   ├── QuizController.php
+│   │   │   ├── QuizAttemptController.php
+│   │   │   └── ...
+│   │   └── Middleware/
+│   │       ├── EnsureProfileCompleted.php   # Force student profile setup
+│   │       ├── RoleMiddleware.php           # Role-based route protection
+│   │       └── TenantLoggerMiddleware.php   # Audit logging per request
+│   ├── Models/                    # Eloquent models (12 files)
+│   │   ├── User.php               # Auth model — eager loads school
+│   │   ├── School.php             # Tenant root
+│   │   ├── Student.php            # With performance computed attributes
+│   │   ├── Quiz.php / QuizAttempt.php / ...
+│   ├── Scopes/
+│   │   └── SchoolScope.php        # Global tenant query scope
+│   ├── Traits/
+│   │   └── BelongsToSchool.php    # Auto school_id injection trait
+│   └── Services/
+│       ├── SlowLearnerService.php # Detect slow learners & at-risk
+│       └── PerformanceService.php # Analytics calculations
 ├── database/
-│   ├── migrations/            # All DB schema definitions
-│   └── seeders/               # Data seeders
-├── resources/
-│   └── views/                 # Blade templates (dashboards, students, marks, etc.)
+│   ├── migrations/                # 16 migration files
+│   └── seeders/
+├── resources/views/               # Blade templates
+│   ├── layouts/app.blade.php      # Master layout + navbar
+│   ├── dashboard/                 # Admin, Teacher, Student dashboards
+│   ├── quiz/                      # Attempt UI + Results page
+│   ├── students/ marks/ remedial/ subjects/ teachers/ performance/
 └── routes/
-    ├── web.php                # All web routes
-    └── auth.php               # Auth routes (Breeze)
+    ├── web.php                    # All routes
+    └── auth.php                   # Breeze auth routes
 ```
 
 ### Frontend
 ```
 frontend/
 ├── src/
-│   ├── App.jsx                # Main app component (landing page)
-│   ├── main.jsx               # React entry point
-│   └── index.css              # Global styles
-├── index.html                 # HTML shell
-└── vite.config.js             # Vite configuration
+│   ├── App.jsx       # Landing page component
+│   ├── main.jsx      # React entry point
+│   └── index.css     # Global styles
+├── index.html
+└── vite.config.js
 ```
 
 ---
 
-## 🎨 Performance Labels & Color Coding
+## 🎨 Performance Color Coding
 
-The system uses a consistent color scheme for performance statuses throughout the UI:
+Used consistently across all dashboards and views:
 
 | Status | Criteria | Color |
 |---|---|---|
-| 🟢 **Good** | Average ≥ 60% | `#00C48C` (Green) |
-| 🟡 **At Risk** | Average 40–59% | `#F59E0B` (Amber) |
-| 🔴 **Slow Learner** | Average < 40% or failed 2+ subjects | `#FF5252` (Red) |
-| ⚪ **Not Evaluated** | No marks entered yet | `#9CA3AF` (Gray) |
+| 🟢 **Good** | Average ≥ 60% | `#22c55e` (Green) |
+| 🟡 **At Risk** | Average 40–59% | `#f59e0b` (Amber) |
+| 🔴 **Slow Learner** | Average < 40% or failed 2+ subjects | `#ef4444` (Red) |
+| ⚪ **Not Evaluated** | No marks entered yet | `#9ca3af` (Gray) |
 
 ---
 
-## 🧪 Running Tests
+## 🔒 Security Features
 
-```bash
-cd backend
-php artisan test
-```
+| Feature | Implementation |
+|---|---|
+| Authentication | Laravel Breeze (session-based) |
+| Role protection | `RoleMiddleware` on admin-only routes |
+| Profile enforcement | `EnsureProfileCompleted` middleware |
+| Multi-tenant isolation | `SchoolScope` global query scope |
+| URL tamper protection | Route Model Binding + SchoolScope → auto 404 |
+| CSRF protection | `@csrf` on all forms (Laravel default) |
+| Password hashing | `bcrypt` via `Hash::make()` |
+| Rate limiting | Join route throttled at 10 req/min |
+| Audit logging | `TenantLoggerMiddleware` on every request |
 
 ---
 
-## 📌 Environment Variables
+## 📌 Key Environment Variables (`backend/.env`)
 
-### Backend (`backend/.env`)
 ```env
 APP_NAME="Performance Monitoring and Remedial System"
 APP_ENV=local
-APP_KEY=base64:...
+APP_KEY=base64:...           # Auto-generated with php artisan key:generate
 APP_URL=http://127.0.0.1:8000
 
-DB_CONNECTION=sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pmrs_db
+DB_USERNAME=root
+DB_PASSWORD=
 
-MAIL_MAILER=log
+MAIL_MAILER=log              # Logs emails locally, no SMTP needed for dev
 ```
-
-### Frontend (`frontend/.env`)
-```env
-VITE_API_URL=http://127.0.0.1:8000
-```
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a new feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m "Add your feature"`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request
 
 ---
 
@@ -357,7 +404,7 @@ This project is open-sourced software licensed under the [MIT License](https://o
 ## 👨‍💻 Author
 
 Developed with ❤️ as an academic and real-world educational management tool.  
-Built using **Laravel 12**, **React 19**, and a passion for helping students succeed.
+Built using **Laravel 11**, **React 19**, **MySQL**, and a passion for helping students succeed.
 
 ---
 
