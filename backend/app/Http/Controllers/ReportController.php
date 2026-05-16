@@ -20,14 +20,16 @@ class ReportController extends Controller
             ->get()
             ->groupBy('class')
             ->map(function ($students, $class) {
-                $slow = $students->filter(fn($s) => $s->is_slow_learner)->count();
+                $evaluated = $students->filter(fn($s) => $s->has_marks);
+                $slow = $evaluated->filter(fn($s) => $s->is_slow_learner)->count();
                 return [
                     'class'   => $class,
-                    'total'   => $students->count(),
+                    'total'   => $evaluated->count(),
                     'slow'    => $slow,
-                    'good'    => $students->count() - $slow,
+                    'good'    => $evaluated->count() - $slow,
                 ];
             })
+            ->filter(fn($row) => $row['total'] > 0)
             ->values();
 
         return view('reports.index', compact('summary', 'slowLearners', 'classBreakdown'));

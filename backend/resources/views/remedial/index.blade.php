@@ -201,10 +201,10 @@
             <td style="font-weight:700; color:#0f172a;">{{ $action->title }}</td>
             <td>
               <div style="display:flex; align-items:center; gap:12px;">
-                <div class="avatar-initials">{{ strtoupper(substr($action->student->name, 0, 2)) }}</div>
+                <div class="avatar-initials">{{ strtoupper(substr($action->student?->name ?? 'NA', 0, 2)) }}</div>
                 <div>
-                  <div style="font-weight:700; color:#1e293b;">{{ $action->student->name }}</div>
-                  <div style="font-size:12px; color:#64748b;">Roll: {{ $action->student->roll_no }}</div>
+                  <div style="font-weight:700; color:#1e293b;">{{ $action->student?->name ?? 'Unknown Student' }}</div>
+                  <div style="font-size:12px; color:#64748b;">Roll: {{ $action->student?->roll_no ?? 'N/A' }}</div>
                 </div>
               </div>
             </td>

@@ -410,6 +410,13 @@
       var ctx = document.getElementById('classBreakdownChart');
       if(ctx) {
         var rawData = {!! json_encode($classBreakdown) !!};
+        
+        if (rawData.length === 0) {
+            document.getElementById('classBreakdownChart').style.display = 'none';
+            ctx.parentElement.innerHTML = '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; font-weight:500;">No analytical data available yet. Please add marks to view class performance.</div>';
+            return;
+        }
+
         var labels = rawData.map(d => 'Class ' + d.class);
         var goodData = rawData.map(d => d.good);
         var slowData = rawData.map(d => d.slow);

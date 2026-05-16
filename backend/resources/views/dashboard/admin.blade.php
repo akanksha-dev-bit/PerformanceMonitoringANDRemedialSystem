@@ -595,10 +595,10 @@
                 var labels = trendData.map(d => d.date || d.label || d.assessment_name || 'Assessment');
                 var dataPoints = trendData.map(d => d.avg_score || d.value || d.score || 0);
                 
-                // Fallback dummy data if empty
                 if(dataPoints.length === 0) {
-                    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
-                    dataPoints = [65, 72, 68, 81, 85];
+                    document.getElementById('performanceChart').style.display = 'none';
+                    ctx.parentElement.innerHTML = '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; font-weight:500;">No performance data available yet. Please add marks to view trends.</div>';
+                    return;
                 }
 
                 Chart.defaults.font.family = "'Inter', 'Segoe UI', Roboto, sans-serif";

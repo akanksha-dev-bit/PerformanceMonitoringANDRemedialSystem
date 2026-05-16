@@ -205,18 +205,24 @@
             <td>{{ ucfirst($student->gender ?? '—') }}</td>
             <td><span class="status-badge status-neutral" style="background:#eef2ff; color:#6366f1; border-color:#e0e7ff;">{{ $student->marks_count }}</span></td>
             <td>
-              @php $avg = $student->average_percentage; @endphp
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-weight:700; color:{{ $avg >= 75 ? '#10b981' : ($avg >= 40 ? '#f59e0b' : '#ef4444') }}">{{ $avg }}%</span>
-                <div style="width:60px; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
-                  <div style="height:100%; width:{{ $avg }}%; background:{{ $avg >= 75 ? '#10b981' : ($avg >= 40 ? '#f59e0b' : '#ef4444') }};"></div>
+              @if($student->marks_count == 0)
+                <span style="font-weight:600; color:#94a3b8; font-style:italic; font-size:13px;">Not Evaluated</span>
+              @else
+                @php $avg = $student->average_percentage; @endphp
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-weight:700; color:{{ $avg >= 75 ? '#10b981' : ($avg >= 40 ? '#f59e0b' : '#ef4444') }}">{{ $avg }}%</span>
+                  <div style="width:60px; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden;">
+                    <div style="height:100%; width:{{ $avg }}%; background:{{ $avg >= 75 ? '#10b981' : ($avg >= 40 ? '#f59e0b' : '#ef4444') }};"></div>
+                  </div>
                 </div>
-              </div>
+              @endif
             </td>
             <td>
-              @if($student->is_slow_learner)
+              @if($student->marks_count == 0)
+                <span class="status-badge status-neutral">N/A</span>
+              @elseif($student->is_slow_learner)
                 <span class="status-badge status-danger">Slow Learner</span>
-              @elseif($avg >= 75)
+              @elseif($student->average_percentage >= 75)
                 <span class="status-badge status-success">Excellent</span>
               @else
                 <span class="status-badge status-warning">Average</span>
@@ -224,7 +230,7 @@
             </td>
             <td>
               <div style="display:flex; gap:6px;">
-                <button type="button" class="action-btn" onclick="openStudentModal('{{ $student->name }}', '{{ $student->roll_no }}', '{{ $student->class }}', '{{ $student->section }}', '{{ $avg }}')">
+                <button type="button" class="action-btn" onclick="openStudentModal('{{ $student->name }}', '{{ $student->roll_no }}', '{{ $student->class }}', '{{ $student->section }}', '{{ $student->marks_count == 0 ? 'Not Evaluated' : $student->average_percentage . '%' }}')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
                 <a href="{{ route('students.show', $student) }}" class="action-btn primary" id="view-student-{{ $student->id }}">Profile</a>
