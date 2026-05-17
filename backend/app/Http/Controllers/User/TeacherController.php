@@ -71,7 +71,7 @@ class TeacherController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'min:6'],
+            'password' => ['required', \Illuminate\Validation\Rules\Password::defaults()],
             'subject_id' => ['nullable', 'exists:subjects,id'],
         ]);
         $admin = auth()->user();
@@ -97,7 +97,7 @@ class TeacherController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $teacher->user_id],
-            'password' => ['nullable', 'min:6'],
+            'password' => ['nullable', \Illuminate\Validation\Rules\Password::defaults()],
             'subject_id' => ['nullable', 'exists:subjects,id'],
         ]);
         $teacher->user->update(['name' => $request->name, 'email' => $request->email]);

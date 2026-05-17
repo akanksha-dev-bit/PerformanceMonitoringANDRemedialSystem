@@ -70,7 +70,7 @@ class StudentController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255', 'email' => 'nullable|email|unique:users,email',
-            'password' => 'nullable|string|min:8', 'roll_no' => 'required|string|unique:students,roll_no',
+            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()], 'roll_no' => 'required|string|unique:students,roll_no',
             'class' => 'required|string|max:50', 'section' => 'nullable|string|max:10',
             'dob' => 'nullable|date', 'gender' => 'nullable|in:male,female,other',
             'phone' => 'nullable|string|max:20', 'guardian_name' => 'nullable|string|max:255',
@@ -108,7 +108,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . ($student->user_id ?? 'NULL'),
-            'password' => 'nullable|string|min:8',
+            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
             'roll_no' => 'required|string|unique:students,roll_no,' . $student->id,
             'class' => 'required|string|max:50', 'section' => 'nullable|string|max:10',
             'dob' => 'nullable|date', 'gender' => 'nullable|in:male,female,other',
