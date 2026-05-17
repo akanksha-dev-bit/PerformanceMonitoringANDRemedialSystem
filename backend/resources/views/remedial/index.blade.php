@@ -209,8 +209,8 @@
               </div>
             </td>
             <td>
-              <span style="font-weight: 600; font-size: 13px; color: #475569; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                {{ str_replace('_', ' ', ucfirst($action->action_type)) }}
+              <span style="font-weight:600; font-size:13px; color:#475569; background:#f1f5f9; padding:4px 10px; border-radius:6px; border:1px solid #cbd5e1;">
+                {{ $action->action_type_label }}
               </span>
             </td>
             <td style="font-weight: 600;">
@@ -229,7 +229,17 @@
               </span>
             </td>
             <td>
-              <div style="display:flex; gap:6px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                @if($action->is_interactive)
+                  <a href="{{ route('remedial.submissions', $action) }}"
+                    style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#eef2ff;color:#6C5CE7;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;"
+                    id="submissions-remedial-{{ $action->id }}">
+                    📥 Submissions
+                    @if($action->submission)
+                      <span style="background:#6C5CE7;color:#fff;border-radius:100px;padding:0 6px;font-size:10px;">1</span>
+                    @endif
+                  </a>
+                @endif
                 <a href="{{ route('remedial.edit', $action) }}" class="action-btn" id="edit-remedial-{{ $action->id }}">Edit</a>
                 <form method="POST" action="{{ route('remedial.destroy', $action) }}" onsubmit="return confirm('Delete this action?')">
                   @csrf @method('DELETE')

@@ -11,7 +11,7 @@ class StudentQuizAssignment extends Model
 
     protected $fillable = [
         'quiz_id', 'student_id', 'assigned_by',
-        'start_date', 'end_date', 'repeat_days', 'status',
+        'start_date', 'end_date', 'repeat_days', 'max_attempts', 'status',
     ];
 
     protected $casts = [
@@ -52,7 +52,9 @@ class StudentQuizAssignment extends Model
      */
     public function getAttemptsRemainingAttribute()
     {
-        return max(0, $this->repeat_days - $this->attempts_used);
+        // max_attempts takes precedence; fall back to repeat_days
+        $limit = $this->max_attempts ?? $this->repeat_days;
+        return max(0, $limit - $this->attempts_used);
     }
 
     /**
@@ -62,7 +64,8 @@ class StudentQuizAssignment extends Model
     {
         if ($this->status !== 'active') return false;
         if (now()->lt($this->start_date) || now()->gt($this->end_date)) return false;
-        if ($this->attempts_used >= $this->repeat_days) return false;
+        $limit = $this->max_attempts ?? $this->repeat_days;
+        if ($this->attempts_used >= $limit) return false;
 
         // Check if already attempted today
         $attemptedToday = $this->attempts()
