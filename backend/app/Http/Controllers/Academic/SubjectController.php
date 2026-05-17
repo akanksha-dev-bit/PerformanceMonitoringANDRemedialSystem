@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Academic;
 
+use App\Http\Controllers\Controller;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 

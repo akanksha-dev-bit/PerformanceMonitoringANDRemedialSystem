@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Academic;
 
+use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Services\PerformanceService;
 use App\Services\SlowLearnerService;
