@@ -1,5 +1,30 @@
 <?php
-
+/**
+ * ============================================================================
+ * VerificationOtpMail — Email for OTP Verification
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Sends a time-sensitive One-Time Password (OTP) to users for email verification
+ *   during registration or password reset.
+ *
+ * HOW IT WORKS:
+ *   1. Constructor: Initializes with OTP and user name
+ *   2. envelope(): Sets the email subject
+ *   3. content(): Renders the verify-otp blade template
+ *   4. attachments(): Returns empty array (no attachments)
+ *
+ * USAGE IN CONTROLLERS:
+ *   // Send OTP to student
+ *   $otp = rand(100000, 999999);
+ *   Mail::to($student->email)->send(new VerificationOtpMail($otp, $student->name));
+ *
+ * RELATED FILES:
+ *   - View:       resources/views/emails/verify-otp.blade.php
+ *   - Controller: Registration & password reset controllers
+ *   - Mail config: config/mail.php
+ * ============================================================================
+ */
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;

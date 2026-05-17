@@ -1,4 +1,31 @@
 <?php
+/**
+ * ============================================================================
+ * SlowLearnerService — Student Performance Analysis Engine
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Detects slow learners and at-risk students based on performance data.
+ *   Centralizes all slow learner logic for easy access by controllers.
+ *
+ * HOW IT WORKS:
+ *   - Filters students who have marks and are performing below standard
+ *   - Supports detection by class and general system-wide detection
+ *   - Provides at-risk student identification (borderline cases)
+ *   - Generates summary statistics for dashboards
+ *
+ * KEY METHODS:
+ *   - detect(): Finds all slow learners across the system
+ *   - detectByClass(string $class): Filters by specific class
+ *   - detectAtRisk(): Finds students between 40-50% (borderline)
+ *   - getSummary(): Returns KPI counts for dashboards
+ *
+ * RELATED FILES:
+ *   - Models:     App\Models\Student
+ *   - Controllers: StudentController, TeacherController
+ *   - Dashboard:  resources/views/dashboard/teacher.blade.php
+ * ============================================================================
+ */
 
 namespace App\Services;
 
