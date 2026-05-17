@@ -1,5 +1,34 @@
 <?php
 
+/**
+ * ============================================================================
+ * TeacherDashboardController — Teacher's Class Overview Panel
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Renders the Teacher's dashboard showing only the classes and students
+ *   they are assigned to. Uses TeacherAssignment records to determine
+ *   which class+section combinations belong to this teacher.
+ *
+ * DATA PROVIDED TO THE VIEW:
+ *   - recentStudents:        Up to 10 students from the teacher's assigned classes
+ *   - assignments:           All TeacherAssignment records for this teacher
+ *   - assignedClassesCount:  Number of unique classes the teacher handles
+ *   - assignedStudentsCount: Total students across assigned classes
+ *
+ * ROUTES:
+ *   GET /dashboard/teacher → index() — Teacher dashboard page
+ *
+ * SECURITY:
+ *   - Aborts 403 if the user is not a teacher.
+ *   - Queries are scoped to the teacher's school and assigned classes.
+ *
+ * RELATED FILES:
+ *   - View:   resources/views/dashboard/teacher.blade.php
+ *   - Model:  App\Models\TeacherAssignment
+ *   - Routes: routes/web.php → 'dashboard.teacher'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;

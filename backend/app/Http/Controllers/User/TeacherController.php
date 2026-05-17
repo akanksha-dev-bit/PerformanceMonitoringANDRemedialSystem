@@ -1,5 +1,43 @@
 <?php
 
+/**
+ * ============================================================================
+ * TeacherController — Admin-Only Teacher Management
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Allows school Admins to manage their teaching staff. Admins can add
+ *   new teachers (auto-creating a User account with role='teacher'),
+ *   assign them to a subject, edit their details, or remove them entirely.
+ *
+ * HOW IT WORKS:
+ *   - Admin navigates to "Teachers" in the navbar.
+ *   - Index page shows all teachers in the admin's school with pagination.
+ *   - "Add Teacher" creates both a User record (login credentials) and a
+ *     Teacher record (school + subject assignment) in one transaction.
+ *   - Edit allows changing name, email, password, and subject assignment.
+ *   - Delete removes the User record entirely (cascading to Teacher record).
+ *
+ * ROUTES (Resource — Admin Only):
+ *   GET    /teachers              → index()   — List all teachers
+ *   GET    /teachers/create       → create()  — Add teacher form
+ *   POST   /teachers              → store()   — Create teacher + user account
+ *   GET    /teachers/{teacher}/edit → edit()  — Edit form
+ *   PUT    /teachers/{teacher}    → update()  — Save changes
+ *   DELETE /teachers/{teacher}    → destroy() — Remove teacher + user account
+ *
+ * SECURITY:
+ *   - Protected by RoleMiddleware('admin') — only admins can access.
+ *   - Cross-school protection: edit/update/delete abort(403) if the
+ *     teacher's school_id doesn't match the admin's school_id.
+ *   - New teacher accounts are auto-verified (email_verified_at = now()).
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/teachers/ (index, create, edit)
+ *   - Model:  App\Models\Teacher, App\Models\User, App\Models\Subject
+ *   - Routes: routes/web.php → 'teachers.*' (inside admin middleware group)
+ * ============================================================================
+ */
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;

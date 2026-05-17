@@ -1,5 +1,34 @@
 <?php
 
+/**
+ * ============================================================================
+ * DashboardController — Role-Based Dashboard Router
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Acts as the central entry point for the /dashboard URL. Instead of
+ *   showing a generic page, it inspects the logged-in user's role and
+ *   redirects them to their role-specific dashboard:
+ *     - Admin   → /dashboard/admin   (AdminDashboardController)
+ *     - Teacher → /dashboard/teacher (TeacherDashboardController)
+ *     - Student → /dashboard/student (StudentDashboardController)
+ *
+ * HOW IT WORKS:
+ *   1. User logs in → Laravel redirects to /dashboard (the default).
+ *   2. This controller checks auth()->user()->isAdmin/isTeacher/isStudent.
+ *   3. Immediately redirects to the correct role-specific dashboard.
+ *   4. No view is rendered by this controller — it's purely a dispatcher.
+ *
+ * ROUTES:
+ *   GET /dashboard → index() — Redirect based on user role
+ *
+ * RELATED FILES:
+ *   - Dashboard\AdminDashboardController   → /dashboard/admin
+ *   - Dashboard\TeacherDashboardController → /dashboard/teacher
+ *   - Dashboard\StudentDashboardController → /dashboard/student
+ *   - Routes: routes/web.php → 'dashboard'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;

@@ -1,5 +1,56 @@
 <?php
 
+/**
+ * ============================================================================
+ * RemedialSubmissionController — Student Submission & Teacher Review Engine
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles the two-sided submission workflow for remedial actions:
+ *   STUDENT SIDE: View workspace, auto-save drafts, submit text/files.
+ *   TEACHER SIDE: Review submissions, grade with score + feedback, or
+ *   request resubmission if work needs improvement.
+ *
+ * STUDENT METHODS:
+ *   show()       — Opens the submission workspace. Auto-creates a draft
+ *                  RemedialSubmission record if one doesn't exist yet.
+ *   saveDraft()  — AJAX endpoint called every 30 seconds to silently
+ *                  auto-save the student's work-in-progress content.
+ *   submit()     — Final submission with word count validation against
+ *                  min_words/max_words limits. Awards +30 XP on submit.
+ *   uploadFile() — File upload submission (PDF, DOC, images, ZIP).
+ *                  Max 10MB, school-isolated storage path. Awards +30 XP.
+ *
+ * TEACHER METHODS:
+ *   teacherShow() — View a single student's submission for review.
+ *   grade()       — Assign a score + written feedback, mark as 'reviewed'.
+ *                   Awards +20 XP to the student. Sets action → 'completed'.
+ *   reopen()      — Request resubmission with feedback. Resets submission
+ *                   status to 'needs_improvement' and action to 'pending'.
+ *
+ * ROUTES:
+ *   GET  /remedial/{remedial}/workspace              → show()        — Student workspace
+ *   POST /remedial/{remedial}/draft                  → saveDraft()   — Auto-save (AJAX)
+ *   POST /remedial/{remedial}/submit                 → submit()      — Final submit
+ *   POST /remedial/{remedial}/upload                 → uploadFile()  — File upload
+ *   GET  /remedial-submissions/{submission}/review   → teacherShow() — Teacher review
+ *   POST /remedial-submissions/{submission}/grade    → grade()       — Grade submission
+ *   POST /remedial-submissions/{submission}/reopen   → reopen()      — Request redo
+ *
+ * SECURITY:
+ *   - Every method enforces cross-school checks (school_id matching).
+ *   - Students can only access their own submissions.
+ *   - Teachers/Admins can only review submissions from their school.
+ *   - Reviewed submissions cannot be edited (can_edit = false).
+ *   - File uploads restricted: mimes:pdf,doc,docx,jpg,jpeg,png,zip, max:10MB.
+ *   - Storage path: schools/{school_id}/submissions/ (tenant isolation).
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/remedial/ (submission, teacher-review)
+ *   - Model:  App\Models\RemedialSubmission, App\Models\RemedialAction
+ *   - Routes: 'remedial.submit.*', 'remedial.review', 'remedial.grade', 'remedial.reopen'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Remedial;
 
 use App\Http\Controllers\Controller;

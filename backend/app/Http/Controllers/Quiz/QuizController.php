@@ -1,5 +1,44 @@
 <?php
 
+/**
+ * ============================================================================
+ * QuizController — Quiz Creation & Management (Teachers + Admins)
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Full CRUD for quizzes. Teachers create MCQ-based quizzes linked to a
+ *   subject, with configurable difficulty and time limits. Each quiz
+ *   contains multiple questions with 4 options (A-D), a correct answer,
+ *   optional explanation, and per-question marks.
+ *
+ * HOW IT WORKS:
+ *   - Teacher/Admin navigates to "Quizzes" in the navbar.
+ *   - Index shows all quizzes in their school (teachers see only their own).
+ *   - Create page: dynamic form to add quiz title, subject, difficulty,
+ *     duration, and multiple questions with options.
+ *   - Questions are created inside a DB transaction with the quiz.
+ *   - Show page displays quiz details + assigned students + attempt history.
+ *   - Update deletes all old questions and re-creates them (simpler than diffing).
+ *
+ * ROUTES (Full Resource):
+ *   GET    /quizzes              → index()   — List quizzes
+ *   GET    /quizzes/create       → create()  — Quiz builder form
+ *   POST   /quizzes              → store()   — Save quiz + questions
+ *   GET    /quizzes/{quiz}       → show()    — Quiz details + assignments
+ *   GET    /quizzes/{quiz}/edit  → edit()    — Edit quiz form
+ *   PUT    /quizzes/{quiz}       → update()  — Update quiz + rebuild questions
+ *   DELETE /quizzes/{quiz}       → destroy() — Delete quiz
+ *
+ * SECURITY:
+ *   - School-scoped: queries filter by school_id.
+ *   - Teachers only see quizzes they created.
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/quizzes/ (index, create, show, edit)
+ *   - Model:  App\Models\Quiz, App\Models\QuizQuestion, App\Models\Subject
+ *   - Routes: routes/web.php → 'quizzes.*'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Quiz;
 
 use App\Http\Controllers\Controller;

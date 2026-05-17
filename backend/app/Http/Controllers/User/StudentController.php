@@ -1,5 +1,46 @@
 <?php
 
+/**
+ * ============================================================================
+ * StudentController — CRUD Management of Student Records
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Full resource controller for managing student records. Used by Admins
+ *   and Teachers to add, view, edit, and remove students. Students themselves
+ *   can only view their own data through the dashboard (not this controller).
+ *
+ * HOW IT WORKS:
+ *   - Admin/Teacher navigates to "Students" in the navbar.
+ *   - Index page shows a paginated, searchable list of all students in
+ *     their school with filters by class and a keyword search (name/roll/class).
+ *   - "Add Student" form allows creating a student record with optional
+ *     linked User account (if email is provided, a User with role='student'
+ *     is auto-created so the student can log in).
+ *   - Show page displays full student profile with marks history and
+ *     remedial actions assigned to them.
+ *   - Edit/Update allows modifying student details and linking/creating
+ *     a login account retroactively.
+ *
+ * ROUTES (Resource):
+ *   GET    /students              → index()   — Paginated list with search
+ *   GET    /students/create       → create()  — Add student form
+ *   POST   /students              → store()   — Save new student
+ *   GET    /students/{student}    → show()    — Student detail page
+ *   GET    /students/{student}/edit → edit()  — Edit form
+ *   PUT    /students/{student}    → update()  — Save changes
+ *   DELETE /students/{student}    → destroy() — Remove student
+ *
+ * SECURITY:
+ *   - Protected by 'auth', 'verified', and EnsureProfileCompleted middleware.
+ *   - School-scoped: students belong to the authenticated user's school.
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/students/ (index, create, show, edit)
+ *   - Model:  App\Models\Student, App\Models\User
+ *   - Routes: routes/web.php → 'students.*'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;

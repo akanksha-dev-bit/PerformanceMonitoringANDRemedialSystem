@@ -1,5 +1,33 @@
 <?php
 
+/**
+ * ============================================================================
+ * ReportController — School-Wide Academic Reports
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Generates high-level academic reports for Admins. Shows overall slow
+ *   learner statistics plus a class-wise breakdown of how many students
+ *   are performing well vs. struggling in each class.
+ *
+ * DATA PROVIDED TO THE VIEW:
+ *   - summary:        Overall slow learner stats (count, percentage)
+ *   - slowLearners:   Collection of all students flagged as slow learners
+ *   - classBreakdown: Per-class stats showing:
+ *       • class name
+ *       • total evaluated students
+ *       • slow learner count
+ *       • good performer count
+ *
+ * ROUTES:
+ *   GET /reports → index() — Main reports page
+ *
+ * RELATED FILES:
+ *   - View:    resources/views/reports/index.blade.php
+ *   - Service: App\Services\SlowLearnerService
+ *   - Routes:  routes/web.php → 'reports.index'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;

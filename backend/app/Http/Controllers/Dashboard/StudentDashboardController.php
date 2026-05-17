@@ -1,5 +1,60 @@
 <?php
 
+/**
+ * ============================================================================
+ * StudentDashboardController — Student's Personal Learning Hub
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   The most feature-rich dashboard in the system. Provides students with
+ *   a comprehensive view of their academic performance, assigned tasks,
+ *   quiz assignments, progress tracking, gamification badges, and
+ *   personalized recommendations. Powers THREE separate student pages.
+ *
+ * METHODS & WHAT THEY DO:
+ *
+ *   index() — Main Student Dashboard (/dashboard/student)
+ *     - Subject-wise performance breakdown with color-coded percentages
+ *     - Weak subjects detection (below 60%)
+ *     - Personalized study recommendations based on weak areas
+ *     - Class rank calculation among same class+section peers
+ *     - Chart data (labels, percentages, colors) for radar/bar charts
+ *     - Gamification: badges (First Exam, Top Scorer, Class Topper, etc.)
+ *     - Study streak tracking (days since last exam result)
+ *     - Assigned remedial tasks overview
+ *
+ *   progress() — My Progress Page (/my-progress)
+ *     - Detailed subject-wise breakdown with obtained vs max marks
+ *     - Historical marks data sorted chronologically
+ *     - Performance trend visualization data
+ *
+ *   tasks() — My Tasks Page (/my-tasks)
+ *     - All remedial actions assigned to the student
+ *     - Overdue/due-soon detection (computed, never stored)
+ *     - Priority levels based on action_type
+ *     - Task statistics (total, completed, pending, overdue, due_soon)
+ *     - XP points and study streak from the student profile
+ *     - Smart quiz recommendations for weak subjects
+ *     - Activity timeline (recent task + exam events)
+ *     - Quiz assignment cards with attempt tracking
+ *
+ * ROUTES:
+ *   GET /dashboard/student → index()    — Main dashboard
+ *   GET /my-progress       → progress() — Progress tracking page
+ *   GET /my-tasks          → tasks()    — Task management page
+ *
+ * SECURITY:
+ *   - Aborts 403 if user is not a student.
+ *   - Redirects to /complete-profile if no Student record exists.
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/dashboard/student.blade.php
+ *             resources/views/dashboard/student-progress.blade.php
+ *             resources/views/dashboard/student-tasks.blade.php
+ *   - Model:  App\Models\Student, App\Models\Mark, App\Models\Quiz
+ *   - Routes: 'dashboard.student', 'student.progress', 'student.tasks'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;

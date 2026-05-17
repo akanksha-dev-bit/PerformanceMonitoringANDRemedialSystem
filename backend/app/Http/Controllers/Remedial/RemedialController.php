@@ -1,5 +1,48 @@
 <?php
 
+/**
+ * ============================================================================
+ * RemedialController — Remedial Action Assignment & Management
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   The core of PMRS's remedial system. When a student is identified as a
+ *   slow learner, Teachers/Admins use this controller to assign targeted
+ *   remedial actions (extra classes, assignments, essays, file uploads,
+ *   counseling sessions, parent meetings, etc.)
+ *
+ * ACTION TYPES SUPPORTED:
+ *   extra_class, counseling, peer_tutoring, assignment, parent_meeting,
+ *   quiz_test, practice_session, written_assignment, essay, file_upload, other
+ *
+ * HOW IT WORKS:
+ *   - Teacher identifies slow learners via Performance/Reports pages.
+ *   - Clicks "Create Remedial" → selects student, action type, title,
+ *     description, due date, word limits (for essays), max score, etc.
+ *   - Each action is tracked with status: pending → in_progress → completed.
+ *   - Teacher can view all submissions for a specific remedial action.
+ *   - Actions are school-scoped (school_id enforced on create + queries).
+ *
+ * ROUTES (Full Resource + Submissions):
+ *   GET    /remedial                          → index()           — List all actions
+ *   GET    /remedial/create                   → create()          — Create form
+ *   POST   /remedial                          → store()           — Save new action
+ *   GET    /remedial/{remedial}               → show()            — Action details
+ *   GET    /remedial/{remedial}/edit          → edit()            — Edit form
+ *   PUT    /remedial/{remedial}               → update()          — Save changes
+ *   DELETE /remedial/{remedial}               → destroy()         — Remove action
+ *   GET    /remedial/{remedial}/submissions   → showSubmissions() — View submissions
+ *
+ * SECURITY:
+ *   - Cross-school check on showSubmissions (abort 403 if mismatch).
+ *   - Only Teachers/Admins can view submissions.
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/remedial/ (index, create, edit, submissions)
+ *   - Model:  App\Models\RemedialAction, App\Models\RemedialSubmission
+ *   - Routes: routes/web.php → 'remedial.*'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Remedial;
 
 use App\Http\Controllers\Controller;

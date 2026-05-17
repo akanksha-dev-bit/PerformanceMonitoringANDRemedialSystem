@@ -1,5 +1,34 @@
 <?php
 
+/**
+ * ============================================================================
+ * QuizAssignmentController — Assign Quizzes to Students & View Analytics
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   After a teacher creates a quiz, they use this controller to assign it
+ *   to individual students with a start date and repeat count (how many
+ *   daily practice attempts the student gets). Also provides per-assignment
+ *   analytics showing attempt history and score progression.
+ *
+ * HOW IT WORKS:
+ *   - Teacher clicks "Assign" on a quiz → sees student picker form.
+ *   - Selects a student, start date, and number of practice days.
+ *   - System creates a StudentQuizAssignment record with calculated end_date.
+ *   - Student sees the assignment on their "My Tasks" dashboard page.
+ *   - Analytics page shows all completed attempts with scores over time.
+ *
+ * ROUTES:
+ *   GET  /quizzes/{quiz}/assign                     → create()    — Assignment form
+ *   POST /quizzes/{quiz}/assign                     → store()     — Save assignment
+ *   GET  /quiz-assignments/{assignment}/analytics   → analytics() — Score analytics
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/quizzes/ (assign, analytics)
+ *   - Model:  App\Models\StudentQuizAssignment, App\Models\Quiz, App\Models\Student
+ *   - Routes: 'quizzes.assign', 'quizzes.assign.store', 'quizzes.analytics'
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Quiz;
 
 use App\Http\Controllers\Controller;
