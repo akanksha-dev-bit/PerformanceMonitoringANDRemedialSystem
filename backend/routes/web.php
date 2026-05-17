@@ -26,8 +26,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/join/{school_code}', [JoinController::class, 'store'])->name('join.store')->middleware('throttle:10,1');
 });
 
-// Protected routes — require authentication
-Route::middleware('auth')->group(function () {
+// Protected routes — require authentication and email verification
+Route::middleware(['auth', 'verified'])->group(function () {
     
     // Complete Profile (for Students)
     Route::get('/complete-profile', [StudentProfileController::class, 'create'])->name('complete-profile');
@@ -40,9 +40,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/student', [\App\Http\Controllers\StudentDashboardController::class, 'index'])->name('dashboard.student');
     Route::get('/my-progress', [\App\Http\Controllers\StudentDashboardController::class, 'progress'])->name('student.progress');
     Route::get('/my-tasks', [\App\Http\Controllers\StudentDashboardController::class, 'tasks'])->name('student.tasks');
-
-    // Global Search
-    Route::get('/search', [\App\Http\Controllers\SearchController::class, 'search'])->name('search');
 
     Route::middleware(\App\Http\Middleware\EnsureProfileCompleted::class)->group(function () {
 

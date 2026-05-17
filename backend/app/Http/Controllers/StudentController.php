@@ -52,6 +52,7 @@ class StudentController extends Controller
             $user = \App\Models\User::create([
                 'name'              => $validated['name'],
                 'email'             => $validated['email'],
+                'email_verified_at' => now(),
                 'password'          => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
                 'role'              => 'student',
                 'school_id'         => auth()->user()->school_id,
