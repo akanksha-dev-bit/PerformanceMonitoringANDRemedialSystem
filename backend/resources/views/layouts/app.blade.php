@@ -441,25 +441,6 @@
 
       <div class="nb-spacer"></div>
 
-      {{-- CENTER / RIGHT: Search --}}
-      @auth
-      <div class="nb-search-wrap" id="global-search-container">
-        <span class="nb-search-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </span>
-        <input type="text" id="global-search-input" class="nb-search-input" placeholder="Search anything… (Ctrl+K)" autocomplete="off" spellcheck="false">
-        <div class="nb-search-kbd">
-          <kbd>Ctrl</kbd><kbd>K</kbd>
-        </div>
-        <div id="search-dropdown" class="nb-search-dropdown">
-          <div id="search-results"></div>
-          <div id="search-loading" style="display:none;" class="nb-result-msg">Searching...</div>
-          <div id="search-empty"   style="display:none;" class="nb-result-msg">No results found.</div>
-        </div>
-      </div>
-
-      <div class="nb-divider"></div>
-
       {{-- Notification Bell --}}
       <div style="position:relative;" id="nb-notif-wrap">
         <button class="nb-icon-btn" onclick="toggleNotifMenu()" aria-label="Notifications">
@@ -545,18 +526,7 @@
         </div>
       </div>
       @endauth
-    </header>
     </div>{{-- end .pmrs-navbar-outer --}}
-
-    {{-- Mobile Search Bar --}}
-    @auth
-    <div class="nb-search-mobile-wrap" id="nb-search-mobile-wrap">
-      <span class="nb-search-mobile-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </span>
-      <input type="text" class="nb-search-mobile-input" placeholder="Search students, teachers..." id="mobile-search-input" autocomplete="off">
-    </div>
-    @endauth
 
     {{-- Mobile Drawer Overlay --}}
     @auth
@@ -682,15 +652,6 @@
     document.body.style.overflow = '';
   }
 
-  // ── Mobile Search ──
-  function toggleMobileSearch() {
-    const wrap = document.getElementById('nb-search-mobile-wrap');
-    if (!wrap) return;
-    const open = wrap.classList.toggle('open');
-    if (open) { const inp = document.getElementById('mobile-search-input'); if (inp) inp.focus(); }
-  }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); const wrap = document.getElementById('nb-search-mobile-wrap'); if (wrap) wrap.classList.remove('open'); } });
-
   // ── Profile dropdown ──
   function toggleProfileMenu(el) {
     const menu = document.getElementById('nb-profile-menu');
@@ -725,65 +686,7 @@
     }
   });
 
-  // ── Global Search ──
-  const searchInput   = document.getElementById('global-search-input');
-  const searchDropdown = document.getElementById('search-dropdown');
-  const searchResults  = document.getElementById('search-results');
-  const searchLoading  = document.getElementById('search-loading');
-  const searchEmpty    = document.getElementById('search-empty');
-  let searchTimeout;
-
-  if (searchInput) {
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); }
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!document.getElementById('global-search-container').contains(e.target))
-        searchDropdown.style.display = 'none';
-    });
-
-    searchInput.addEventListener('focus', () => {
-      if (searchInput.value.length >= 2) searchDropdown.style.display = 'block';
-    });
-
-    searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.trim();
-      if (query.length < 2) { searchDropdown.style.display = 'none'; return; }
-      searchDropdown.style.display = 'block';
-      searchResults.innerHTML = '';
-      searchEmpty.style.display = 'none';
-      searchLoading.style.display = 'block';
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => {
-        fetch(`/search?query=${encodeURIComponent(query)}`, {
-          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(res => res.json())
-        .then(data => {
-          searchLoading.style.display = 'none';
-          if (data.length === 0) { searchEmpty.style.display = 'block'; return; }
-          data.forEach(item => {
-            const iconPath = item.type === 'student'
-              ? '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'
-              : item.type === 'teacher'
-              ? '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'
-              : '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>';
-            const el = document.createElement('a');
-            el.href = item.url;
-            el.className = 'nb-result-item';
-            el.innerHTML = `
-              <div class="nb-result-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${iconPath}</svg></div>
-              <div style="flex:1"><div class="nb-result-title">${item.title}</div><div class="nb-result-sub">${item.subtitle}</div></div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            `;
-            searchResults.appendChild(el);
-          });
-        })
-        .catch(() => { searchLoading.style.display = 'none'; });
-      }, 300);
-    });
-  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); } });
 </script>
 @stack('scripts')
 </body>
