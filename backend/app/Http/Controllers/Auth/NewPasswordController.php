@@ -1,5 +1,36 @@
 <?php
 
+/**
+ * ============================================================================
+ * NewPasswordController — Handle Password Reset Completion
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles the final stage of the password reset process where the user provides
+ *   their email, a new password, and their valid password reset token to complete
+ *   the password update.
+ *
+ * HOW IT WORKS:
+ *   1. Displays the reset password form showing a secure password entry screen.
+ *   2. Validates incoming input (token, email, password match/strength).
+ *   3. Calls Laravel's built-in password broker to validate reset token eligibility.
+ *   4. Updates the user's password using standard Hash security measures.
+ *   5. Dispatches a PasswordReset event.
+ *   6. Redirects the user to the login screen with a success state message.
+ *
+ * ROUTES:
+ *   - GET  /reset-password/{token} → create() — Render the password reset page
+ *   - POST /reset-password         → store()  — Process and save updated password
+ *
+ * SECURITY:
+ *   - Strictly guarded by the password reset token signature.
+ *   - Password confirmation and minimum character validation rules are applied.
+ *
+ * RELATED FILES:
+ *   - View:       resources/views/auth/reset-password.blade.php
+ *   - Controller: App\Http\Controllers\Auth\PasswordResetLinkController (token request)
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;

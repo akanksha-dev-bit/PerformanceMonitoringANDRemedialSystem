@@ -1,3 +1,5 @@
+<?php
+
 /**
  * ============================================================================
  * Web Routes — Application Navigation & Controllers
@@ -31,8 +33,6 @@
  *   - Models:            App\Models\User.php (role attribute)
  * ============================================================================
  */
-
-<?php
 
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Academic\MarkController;
