@@ -205,47 +205,53 @@
       <div class="tasks-grid">
         @forelse($assignedTasks as $task)
           @php
-            $statusClass = $task->status;
-            if($task->is_overdue) $statusClass .= ' overdue';
-
             $progress = 0;
             if($task->status === 'completed') $progress = 100;
             elseif($task->status === 'in_progress') $progress = 50;
-            
+            elseif($task->submission && $task->submission->submission_status === 'submitted') $progress = 75;
+
             $urgencyClass = 'u-normal';
-            $urgencyText = 'No deadline';
+            $urgencyText  = 'No deadline';
             if($task->status === 'completed') {
-              $urgencyClass = 'u-done'; $urgencyText = 'Done on ' . ($task->completed_date ? $task->completed_date->format('M d') : 'time');
+              $urgencyClass = 'u-done';
+              $urgencyText  = 'Completed ✓';
             } elseif($task->is_overdue) {
-              $urgencyClass = 'u-overdue'; $urgencyText = 'Overdue by ' . (int) now()->diffInDays($task->scheduled_date) . ' days';
+              $urgencyClass = 'u-overdue';
+              $urgencyText  = 'Overdue by ' . (int) now()->diffInDays($task->due_date) . ' days';
             } elseif($task->is_due_soon) {
-              $urgencyClass = 'u-soon'; $urgencyText = 'Due in ' . max(1, (int) now()->diffInDays($task->scheduled_date)) . ' days';
-            } elseif($task->scheduled_date) {
-              $urgencyClass = 'u-normal'; $urgencyText = 'Due ' . $task->scheduled_date->format('M d, Y');
+              $urgencyClass = 'u-soon';
+              $urgencyText  = 'Due in ' . max(1, (int) now()->diffInDays($task->due_date)) . ' days';
+            } elseif($task->due_date) {
+              $urgencyText  = 'Due ' . $task->due_date->format('M d, Y');
             }
+
+            $isQuiz = in_array($task->action_type, ['quiz_test', 'practice_session']);
+            $activeQuiz = $quizAssignments->where('status', 'active')->first();
+            $quizStartUrl = $activeQuiz ? route('quiz.start', $activeQuiz) : null;
+
+            $subStatus = $task->submission?->submission_status ?? null;
           @endphp
 
           <div class="task-card filter-item" data-status="{{ $task->status }}" data-overdue="{{ $task->is_overdue ? '1' : '0' }}">
-            {{-- Priority Strip --}}
-            <div class="tc-priority-strip 
-              @if($task->priority === 'Critical') p-critical 
-              @elseif($task->priority === 'High') p-high 
-              @elseif($task->priority === 'Medium') p-medium 
+            <div class="tc-priority-strip
+              @if($task->priority === 'Critical') p-critical
+              @elseif($task->priority === 'High') p-high
+              @elseif($task->priority === 'Medium') p-medium
               @else p-low @endif"></div>
-            
+
             <div class="tc-header">
-              <div class="tc-subject">
-                @if($task->action_type == 'extra_class') 📚 Extra Class
-                @elseif($task->action_type == 'counseling') 🤝 Counseling
-                @elseif($task->action_type == 'peer_tutoring') 👥 Peer Tutoring
-                @elseif($task->action_type == 'assignment') 📝 Assignment
-                @elseif($task->action_type == 'parent_meeting') 👪 Parent Meeting
-                @else 📌 General Task @endif
-              </div>
+              <div class="tc-subject">{{ $task->action_type_label }}</div>
               <h3 class="tc-title">{{ $task->title }}</h3>
               <div class="tc-teacher">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                Assigned by {{ $task->assignedByUser->name ?? 'Teacher' }}
+                {{ $task->assignedByUser?->name ?? 'Teacher' }}
+                @if($subStatus)
+                  &nbsp;·
+                  <span style="padding:1px 7px; border-radius:100px; font-size:10px; font-weight:700;
+                    background:{{ $task->submission->status_color }}20; color:{{ $task->submission->status_color }}">
+                    {{ $task->submission->status_label }}
+                  </span>
+                @endif
               </div>
             </div>
 
@@ -257,9 +263,8 @@
                 <span>Progress</span>
                 <span style="color:var(--{{ $progress == 100 ? 'success' : 'primary' }});">{{ $progress }}%</span>
               </div>
-
               <div class="tc-urgency {{ $urgencyClass }}">
-                @if($urgencyClass === 'u-overdue') 🚨 
+                @if($urgencyClass === 'u-overdue') 🚨
                 @elseif($urgencyClass === 'u-soon') ⏳
                 @elseif($urgencyClass === 'u-done') ✅
                 @else 📅 @endif
@@ -268,22 +273,18 @@
             </div>
 
             <div class="tc-footer">
-              @php
-                $activeQuiz = (isset($quizAssignments) && $quizAssignments->where('status', 'active')->count() > 0) ? $quizAssignments->where('status', 'active')->first() : null;
-                $quizStartUrl = $activeQuiz ? route('quiz.start', $activeQuiz) : null;
-                $isQuiz = ($task->action_type === 'quiz_test' || $task->action_type === 'practice_session');
-              @endphp
-              <button class="tc-btn tc-btn-outline" onclick="openTaskModal('{{ addslashes($task->title) }}', '{{ addslashes($task->description ?? 'No extra details provided.') }}', {{ $isQuiz ? 'true' : 'false' }}, '{{ $quizStartUrl }}')">View Details</button>
               @if($task->status !== 'completed')
                 @if($isQuiz && $activeQuiz)
-                  <a href="{{ $quizStartUrl }}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; box-sizing:border-box;">
-                    🚀 Start Quiz
+                  <a href="{{ $quizStartUrl }}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; box-sizing:border-box;">🚀 Start Quiz</a>
+                @elseif($task->is_interactive)
+                  <a href="{{ route('remedial.submit.show', $task) }}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; box-sizing:border-box;">
+                    {{ $subStatus === 'needs_improvement' ? '🔄 Resubmit' : ($subStatus === 'submitted' ? '👁 View Submission' : ($task->status === 'in_progress' ? '▶ Continue' : '🚀 Start Task')) }}
                   </a>
                 @else
-                  <button class="tc-btn tc-btn-primary" onclick="openTaskModal('{{ addslashes($task->title) }}', 'This task is assigned by your teacher. Make sure to review your study notes and attend any required sessions.', {{ $isQuiz ? 'true' : 'false' }}, '{{ $quizStartUrl }}')">
-                    {{ $task->status === 'in_progress' ? 'Continue' : 'Start Task' }}
-                  </button>
+                  <a href="{{ route('remedial.submit.show', $task) }}" class="tc-btn tc-btn-primary" style="display:inline-block; text-decoration:none; box-sizing:border-box;">✅ Confirm</a>
                 @endif
+              @else
+                <span class="tc-btn" style="background:#ecfdf5; color:#10b981; cursor:default;">✅ Completed</span>
               @endif
             </div>
           </div>
@@ -291,7 +292,7 @@
           <div style="grid-column: 1 / -1; background:#fff; border:1px dashed #cbd5e1; border-radius:16px; padding:64px; text-align:center;">
             <div style="width:80px; height:80px; border-radius:50%; background:#f8fafc; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 16px;">🎉</div>
             <h3 class="font-poppins font-bold text-xl text-gray-900 mb-2">You're all caught up!</h3>
-            <p class="text-muted max-w-md mx-auto">You have no tasks assigned to you right now. Great job keeping on top of your learning.</p>
+            <p class="text-muted max-w-md mx-auto">You have no tasks assigned right now. Great work!</p>
           </div>
         @endforelse
       </div>
@@ -337,6 +338,21 @@
               @else
                 <div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:500;">⏳ Next attempt unlocks tomorrow</div>
               @endif
+            </div>
+          @endforeach
+        </div>
+      @endif
+
+      {{-- Recommended Quizzes (Smart Recommendations) --}}
+      @if(isset($recommendedQuizzes) && $recommendedQuizzes->count() > 0)
+        <div class="sb-panel" style="background: linear-gradient(135deg, #eef2ff 0%, #fff 100%); border-color:#c7d2fe;">
+          <h3 class="sb-title" style="color:#4338ca;">🎯 Recommended for You</h3>
+          <p style="font-size:12px; color:#6366f1; margin:-8px 0 14px;">Based on your weak subjects</p>
+          @foreach($recommendedQuizzes as $rq)
+            <div style="padding:12px 14px; background:#fff; border:1px solid #e0e7ff; border-radius:12px; margin-bottom:10px;">
+              <div style="font-weight:700; font-size:13px; color:#1e293b; margin-bottom:4px;">{{ $rq->title }}</div>
+              <div style="font-size:12px; color:#64748b; margin-bottom:8px;">📚 {{ $rq->subject->name ?? 'General' }} · {{ ucfirst($rq->difficulty_level) }} · {{ $rq->question_count }} Qs</div>
+              <div style="font-size:11px; color:#6366f1; font-weight:700;">Ask your teacher to assign this quiz!</div>
             </div>
           @endforeach
         </div>

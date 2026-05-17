@@ -12,11 +12,13 @@ class Student extends Model
     protected $fillable = [
         'user_id', 'school_id', 'roll_no', 'class', 'section',
         'dob', 'gender', 'phone', 'guardian_name', 'is_active',
+        'xp_points', 'study_streak', 'last_activity_date',
     ];
 
     protected $casts = [
-        'dob' => 'date',
-        'is_active' => 'boolean',
+        'dob'                => 'date',
+        'is_active'          => 'boolean',
+        'last_activity_date' => 'date',
     ];
 
     protected $appends = ['name', 'email'];
@@ -131,5 +133,44 @@ class Student extends Model
             default   => '#9CA3AF', // Gray for no_data
         };
     }
+
+    /**
+     * Increment XP and persist to DB.
+     */
+    public function addXP(int $amount): void
+    {
+        $this->increment('xp_points', $amount);
+        $this->updateStreak();
+    }
+
+    /**
+     * Update study streak based on last_activity_date.
+     */
+    public function updateStreak(): void
+    {
+        $today = now()->toDateString();
+
+        if ($this->last_activity_date === null) {
+            $this->update(['study_streak' => 1, 'last_activity_date' => $today]);
+            return;
+        }
+
+        $daysSinceLast = now()->startOfDay()->diffInDays($this->last_activity_date->startOfDay());
+
+        if ($daysSinceLast === 0) {
+            // Already active today — no change
+            return;
+        } elseif ($daysSinceLast === 1) {
+            // Consecutive day — extend streak
+            $this->update([
+                'study_streak'       => $this->study_streak + 1,
+                'last_activity_date' => $today,
+            ]);
+        } else {
+            // Streak broken — reset
+            $this->update(['study_streak' => 1, 'last_activity_date' => $today]);
+        }
+    }
 }
+
 

@@ -148,14 +148,26 @@
         <div class="premium-row">
           <div class="premium-form-group">
             <label class="premium-label" for="action_type">Intervention Type *</label>
-            <select name="action_type" id="action_type" class="premium-input" required>
-              @foreach(['extra_class' => 'Extra Class', 'counseling' => 'Counseling', 'peer_tutoring' => 'Peer Tutoring', 'assignment' => 'Assignment', 'parent_meeting' => 'Parent Meeting', 'quiz_test' => 'Quiz / Test', 'practice_session' => 'Practice Session', 'other' => 'Other'] as $val => $label)
-                <option value="{{ $val }}" {{ old('action_type') == $val ? 'selected' : '' }}>{{ $label }}</option>
-              @endforeach
+            <select name="action_type" id="action_type" class="premium-input" required onchange="toggleInteractiveFields()">
+              <optgroup label="Attendance-based">
+                <option value="extra_class"    {{ old('action_type') == 'extra_class'    ? 'selected' : '' }}>📚 Extra Class</option>
+                <option value="counseling"     {{ old('action_type') == 'counseling'     ? 'selected' : '' }}>🤝 Counseling</option>
+                <option value="peer_tutoring"  {{ old('action_type') == 'peer_tutoring'  ? 'selected' : '' }}>👥 Peer Tutoring</option>
+                <option value="parent_meeting" {{ old('action_type') == 'parent_meeting' ? 'selected' : '' }}>👪 Parent Meeting</option>
+              </optgroup>
+              <optgroup label="In-App Interactive">
+                <option value="assignment"         {{ old('action_type') == 'assignment'         ? 'selected' : '' }}>📝 Assignment</option>
+                <option value="written_assignment"  {{ old('action_type') == 'written_assignment'  ? 'selected' : '' }}>✍️ Written Assignment</option>
+                <option value="essay"               {{ old('action_type') == 'essay'               ? 'selected' : '' }}>📄 Essay</option>
+                <option value="file_upload"         {{ old('action_type') == 'file_upload'         ? 'selected' : '' }}>📎 File Upload</option>
+                <option value="quiz_test"           {{ old('action_type') == 'quiz_test'           ? 'selected' : '' }}>🧩 Quiz / Test</option>
+                <option value="practice_session"    {{ old('action_type') == 'practice_session'    ? 'selected' : '' }}>🔁 Practice Session</option>
+              </optgroup>
+              <option value="other" {{ old('action_type') == 'other' ? 'selected' : '' }}>📌 Other</option>
             </select>
-            @error('action_type')<div class="form-error" style="color:var(--error); font-size:12px; margin-top:6px;">
-            {{ $message }}</div>@enderror
+            @error('action_type')<div class="form-error" style="color:var(--error); font-size:12px; margin-top:6px;">{{ $message }}</div>@enderror
           </div>
+
           <div class="premium-form-group">
             <label class="premium-label" for="status">Initial Status *</label>
             <select name="status" id="status" class="premium-input" required>
@@ -183,14 +195,35 @@
         <div class="premium-row">
           <div class="premium-form-group" style="margin-bottom:0;">
             <label class="premium-label" for="scheduled_date">Scheduled Date</label>
-            <input type="date" id="scheduled_date" name="scheduled_date" value="{{ old('scheduled_date') }}"
-              class="premium-input" />
+            <input type="date" id="scheduled_date" name="scheduled_date" value="{{ old('scheduled_date') }}" class="premium-input" />
           </div>
           <div class="premium-form-group" style="margin-bottom:0;">
-            <label class="premium-label" for="outcome">Expected Outcome</label>
-            <input type="text" id="outcome" name="outcome" value="{{ old('outcome') }}" class="premium-input"
-              placeholder="e.g. Improve to 60%+ in next test" />
+            <label class="premium-label" for="due_date">Due Date (Deadline)</label>
+            <input type="date" id="due_date" name="due_date" value="{{ old('due_date') }}" class="premium-input" />
           </div>
+        </div>
+
+        {{-- Interactive-only fields --}}
+        <div id="interactiveFields" style="display:none; margin-top:24px; padding-top:20px; border-top:1px solid #f1f5f9;">
+          <div style="font-size:12px; font-weight:700; color:#6C5CE7; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:16px;">📋 Submission Settings</div>
+          <div class="premium-row" style="margin-bottom:16px;">
+            <div class="premium-form-group" style="margin-bottom:0;">
+              <label class="premium-label" for="max_score">Max Score (optional)</label>
+              <input type="number" id="max_score" name="max_score" value="{{ old('max_score') }}" class="premium-input" min="1" max="1000" placeholder="e.g. 100" />
+            </div>
+            <div class="premium-form-group" style="margin-bottom:0;" id="wordLimitFields">
+              <label class="premium-label">Word Limits (optional)</label>
+              <div style="display:flex; gap:8px;">
+                <input type="number" name="min_words" value="{{ old('min_words') }}" class="premium-input" placeholder="Min words" min="1" />
+                <input type="number" name="max_words" value="{{ old('max_words') }}" class="premium-input" placeholder="Max words" min="1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="premium-form-group">
+          <label class="premium-label" for="outcome">Expected Outcome</label>
+          <input type="text" id="outcome" name="outcome" value="{{ old('outcome') }}" class="premium-input" placeholder="e.g. Improve to 60%+ in next test" />
         </div>
       </div>
 
@@ -200,5 +233,22 @@
       </div>
     </form>
   </div>
+
+  @push('scripts')
+  <script>
+    const INTERACTIVE_TYPES = ['assignment','written_assignment','essay','file_upload','quiz_test','practice_session'];
+    const WRITTEN_TYPES = ['assignment','written_assignment','essay'];
+
+    function toggleInteractiveFields() {
+      const type = document.getElementById('action_type').value;
+      const ifEl = document.getElementById('interactiveFields');
+      const wlEl = document.getElementById('wordLimitFields');
+      if (ifEl) ifEl.style.display = INTERACTIVE_TYPES.includes(type) ? 'block' : 'none';
+      if (wlEl) wlEl.style.display = WRITTEN_TYPES.includes(type) ? 'block' : 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleInteractiveFields);
+  </script>
+  @endpush
 
 </x-app-layout>

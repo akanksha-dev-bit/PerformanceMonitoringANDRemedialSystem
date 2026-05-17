@@ -5,6 +5,7 @@ use App\Http\Controllers\MarkController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RemedialController;
+ use App\Http\Controllers\RemedialSubmissionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,12 @@ Route::middleware('auth')->group(function () {
 
         // Remedial actions
         Route::resource('remedial', RemedialController::class);
+        Route::get('/remedial/{remedial}/submissions', [RemedialController::class, 'showSubmissions'])->name('remedial.submissions');
+
+        // Remedial Submissions — Teacher review routes
+        Route::get('/remedial-submissions/{submission}/review', [RemedialSubmissionController::class, 'teacherShow'])->name('remedial.review');
+        Route::post('/remedial-submissions/{submission}/grade', [RemedialSubmissionController::class, 'grade'])->name('remedial.grade');
+        Route::post('/remedial-submissions/{submission}/reopen', [RemedialSubmissionController::class, 'reopen'])->name('remedial.reopen');
 
         // Reports
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -82,9 +89,15 @@ Route::middleware('auth')->group(function () {
         Route::get('quiz-assignments/{assignment}/analytics', [\App\Http\Controllers\QuizAssignmentController::class, 'analytics'])->name('quizzes.analytics');
     });
 
-    // Student Quiz Attempt Routes (outside EnsureProfileCompleted since students need this)
+    // Student Quiz Attempt Routes
     Route::get('quiz/{assignment}/start', [\App\Http\Controllers\QuizAttemptController::class, 'start'])->name('quiz.start');
     Route::get('quiz/attempt/{attempt}', [\App\Http\Controllers\QuizAttemptController::class, 'show'])->name('quiz.attempt');
     Route::post('quiz/attempt/{attempt}/submit', [\App\Http\Controllers\QuizAttemptController::class, 'submit'])->name('quiz.submit');
     Route::get('quiz/attempt/{attempt}/results', [\App\Http\Controllers\QuizAttemptController::class, 'results'])->name('quiz.results');
+
+    // Student Remedial Submission Routes (outside EnsureProfileCompleted)
+    Route::get('/remedial/{remedial}/workspace', [RemedialSubmissionController::class, 'show'])->name('remedial.submit.show');
+    Route::post('/remedial/{remedial}/draft', [RemedialSubmissionController::class, 'saveDraft'])->name('remedial.submit.draft');
+    Route::post('/remedial/{remedial}/submit', [RemedialSubmissionController::class, 'submit'])->name('remedial.submit.store');
+    Route::post('/remedial/{remedial}/upload', [RemedialSubmissionController::class, 'uploadFile'])->name('remedial.submit.upload');
 });
