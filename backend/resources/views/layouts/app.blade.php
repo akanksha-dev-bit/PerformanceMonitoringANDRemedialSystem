@@ -441,34 +441,7 @@
 
       <div class="nb-spacer"></div>
 
-      {{-- Notification Bell --}}
-      <div style="position:relative;" id="nb-notif-wrap">
-        <button class="nb-icon-btn" onclick="toggleNotifMenu()" aria-label="Notifications">
-          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span class="notif-dot"></span>
-        </button>
-        <div class="nb-notif-dropdown" id="nb-notif-menu">
-          <div class="nb-notif-header">
-            <h4>Notifications</h4>
-            <span style="font-size:11px;color:var(--c-primary);font-weight:600;cursor:pointer;">Mark all read</span>
-          </div>
-          <div class="nb-notif-item">
-            <div class="nb-notif-dot" style="background:#6C5CE7;"></div>
-            <div><div class="nb-notif-title">New remedial task assigned</div><div class="nb-notif-time">2 min ago</div></div>
-          </div>
-          <div class="nb-notif-item">
-            <div class="nb-notif-dot" style="background:#10b981;"></div>
-            <div><div class="nb-notif-title">Exam marks updated</div><div class="nb-notif-time">1 hour ago</div></div>
-          </div>
-          <div class="nb-notif-item">
-            <div class="nb-notif-dot" style="background:#f59e0b;"></div>
-            <div><div class="nb-notif-title">Progress report available</div><div class="nb-notif-time">Yesterday</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="nb-divider"></div>
-
+      @auth
       {{-- Profile --}}
       <div class="nb-profile" id="nb-profile-btn" onclick="toggleProfileMenu(this)">
         <div class="nb-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
@@ -655,34 +628,17 @@
   // ── Profile dropdown ──
   function toggleProfileMenu(el) {
     const menu = document.getElementById('nb-profile-menu');
-    const notif = document.getElementById('nb-notif-menu');
-    if (notif) notif.classList.remove('open');
     const isOpen = menu.classList.contains('open');
     menu.classList.toggle('open', !isOpen);
     el.classList.toggle('open', !isOpen);
   }
 
-  // ── Notification dropdown ──
-  function toggleNotifMenu() {
-    const menu = document.getElementById('nb-notif-menu');
-    const profileMenu = document.getElementById('nb-profile-menu');
-    const profileBtn = document.getElementById('nb-profile-btn');
-    if (profileMenu) profileMenu.classList.remove('open');
-    if (profileBtn) profileBtn.classList.remove('open');
-    if (menu) menu.classList.toggle('open');
-  }
-
   document.addEventListener('click', (e) => {
     const profileBtn = document.getElementById('nb-profile-btn');
     const profileMenu = document.getElementById('nb-profile-menu');
-    const notifWrap = document.getElementById('nb-notif-wrap');
-    const notifMenu = document.getElementById('nb-notif-menu');
     if (profileBtn && !profileBtn.contains(e.target)) {
       if (profileMenu) profileMenu.classList.remove('open');
       profileBtn.classList.remove('open');
-    }
-    if (notifWrap && !notifWrap.contains(e.target)) {
-      if (notifMenu) notifMenu.classList.remove('open');
     }
   });
 
