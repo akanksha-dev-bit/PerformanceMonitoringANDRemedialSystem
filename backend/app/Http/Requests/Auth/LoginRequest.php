@@ -1,5 +1,31 @@
 <?php
 
+/**
+ * ============================================================================
+ * LoginRequest — Authenticated Login Form
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles the LoginController authentication flow with rate limiting and
+ *   user throttling to prevent brute-force attacks.
+ *
+ * HOW IT WORKS:
+ *   1. authorize(): Always true (public form).
+ *   2. rules(): Validates email + password.
+ *   3. authenticate(): Attempts login using Auth::attempt().
+ *      - If fails → increments rate limiter → throws ValidationException.
+ *      - If succeeds → clears rate limiter → user is logged in.
+ *   4. ensureIsNotRateLimited(): Checks throttle status (5 attempts per 1 minute).
+ *   5. throttleKey(): Unique key per (email + IP) combination.
+ *
+ * ROUTES AFFECTED:
+ *   POST /login
+ *
+ * RELATED FILES:
+ *   - Controller: app/Http/Controllers/Auth/LoginController.php
+ *   - Middleware: app/Http/Middleware/TenantLoggerMiddleware.php (logs this login)
+ * ============================================================================
+ */
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;

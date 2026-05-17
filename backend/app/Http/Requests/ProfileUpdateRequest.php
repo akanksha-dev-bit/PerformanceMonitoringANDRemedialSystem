@@ -1,5 +1,24 @@
 <?php
 
+/**
+ * ============================================================================
+ * ProfileUpdateRequest — Edit Profile Validation
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Validates the profile update form submitted by authenticated users.
+ *
+ * HOW IT WORKS:
+ *   1. authorize(): Always true (authenticated users can edit their own profile).
+ *   2. rules():
+ *      - name: Required, string, max 255
+ *      - email: Required, lowercase, email format, unique to user (ignoring self)
+ *
+ * RELATED FILES:
+ *   - Controller: app/Http/Controllers/Auth/ProfileController.php
+ *   - View:       resources/views/profile/edit.blade.php
+ * ============================================================================
+ */
 namespace App\Http\Requests;
 
 use App\Models\User;
