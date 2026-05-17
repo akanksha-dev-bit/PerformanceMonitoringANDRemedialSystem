@@ -26,8 +26,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/join/{school_code}', [JoinController::class, 'store'])->name('join.store')->middleware('throttle:10,1');
 });
 
-// Protected routes — require authentication
-Route::middleware('auth')->group(function () {
+// Protected routes — require authentication and email verification
+Route::middleware(['auth', 'verified'])->group(function () {
     
     // Complete Profile (for Students)
     Route::get('/complete-profile', [StudentProfileController::class, 'create'])->name('complete-profile');
