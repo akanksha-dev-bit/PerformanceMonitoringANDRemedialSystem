@@ -1,3 +1,37 @@
+/**
+ * ============================================================================
+ * Web Routes — Application Navigation & Controllers
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Defines all public and protected routes for the web interface.
+ *   Organizes routes by functionality and user role.
+ *
+ * SECURITY MODEL:
+ *   - Public: Unauthenticated users can access join/invite pages
+ *   - Protected: Requires auth + email verification
+ *   - Role-Based: Middleware ensures role-specific access
+ *   - Profile Check: Requires complete profile before accessing protected features
+ *
+ * ROUTE STRUCTURE:
+ * 1. Public Routes (guest middleware)
+ * 2. Protected Routes (auth + verified)
+ * 3. Profile Completion (mandatory for students)
+ * 4. Dashboard & Navigation
+ * 5. Academic Features (marks, performance, reports)
+ * 6. Remedial System
+ * 7. Student-Specific Features
+ * 8. Admin-Only Features
+ * 9. Quiz Management
+ *
+ * RELATED FILES:
+ *   - Middleware:        App\Http\Middleware\EnsureProfileCompleted.php
+ *   - Middleware:        App\Http\Middleware\RoleMiddleware.php
+ *   - Controllers:       App\Http\Controllers\...
+ *   - Models:            App\Models\User.php (role attribute)
+ * ============================================================================
+ */
+
 <?php
 
 use App\Http\Controllers\Dashboard\DashboardController;

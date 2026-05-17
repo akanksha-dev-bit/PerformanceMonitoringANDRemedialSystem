@@ -1,4 +1,33 @@
 <?php
+/**
+ * ============================================================================
+ * UserFactory — Eloquent Factory for User Model
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Creates fake user records for development, testing, and seeding.
+ *
+ * FEATURES:
+ *   - Generates realistic fake data (names, emails)
+ *   - Auto-creates verified status and password
+ *   - Supports role assignment for testing different user types
+ *
+ * USAGE:
+ *   // Create single user
+ *   \App\Models\User::factory()->create();
+ *
+ *   // Create user with specific role
+ *   \App\Models\User::factory()->create(['role' => 'teacher']);
+ *
+ *   // Create multiple users
+ *   \App\Models\User::factory(10)->create();
+ *
+ * RELATED FILES:
+ *   - Model:     App\Models\User.php
+ *   - Seeder:    database\seeders\DatabaseSeeder.php
+ *   - Controller: Used by admin seeders
+ * ============================================================================
+ */
 
 namespace Database\Factories;
 
