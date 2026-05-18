@@ -1,5 +1,30 @@
 <?php
 
+/**
+ * ============================================================================
+ * Auth Routes — Authentication & Authorization Management
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles all authentication-related flows including:
+ *   - User registration and login
+ *   - Email verification with OTP
+ *   - Password reset and confirmation
+ *   - Account lockout and logout
+ *
+ * SECURITY FEATURES:
+ *   - Email verification required for all accounts
+ *   - OTP (One-Time Password) for verification
+ *   - Throttle protection against brute-force attacks
+ *   - Password confirmation for sensitive operations
+ *
+ * RELATED FILES:
+ *   - Controllers: Auth\...
+ *   - Middleware:  App\Http\Middleware\EnsureProfileCompleted.php
+ *   - Models:      App\Models\User.php
+ * ============================================================================
+ */
+
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;

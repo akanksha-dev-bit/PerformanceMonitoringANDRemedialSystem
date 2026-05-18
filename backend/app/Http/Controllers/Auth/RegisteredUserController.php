@@ -1,5 +1,39 @@
 <?php
 
+/**
+ * ============================================================================
+ * RegisteredUserController — School Administrator Self-Registration
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles the registration of a new School Admin and the automatic creation
+ *   of their respective School entity. In this multi-tenant PMRS system,
+ *   a registering administrator establishes a new school tenant upon registration.
+ *
+ * HOW IT WORKS:
+ *   1. Displays the signup/registration screen.
+ *   2. Validates incoming request parameters:
+ *      - school_name: the name of the new school.
+ *      - name, email, password: admin account details.
+ *   3. Creates the School record in the DB with a unique, automatically generated PMRS invite code.
+ *   4. Creates the Admin User record, linking it to the newly created School via school_id.
+ *   5. Dispatches a standard Registered event (triggers verification OTP delivery).
+ *   6. Logs the newly registered administrator in automatically.
+ *   7. Redirects the admin user directly to the application dashboard.
+ *
+ * ROUTES:
+ *   - GET  /register → create() — Show registration form
+ *   - POST /register → store()  — Process and create school tenant + admin account
+ *
+ * SECURITY:
+ *   - Wrapped in 'guest' middleware (only available to non-logged-in visitors).
+ *   - Explicitly sets role to 'admin' and sets profile_completed to true.
+ *
+ * RELATED FILES:
+ *   - View:   resources/views/auth/register.blade.php
+ *   - Models: App\Models\School, App\Models\User
+ * ============================================================================
+ */
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;

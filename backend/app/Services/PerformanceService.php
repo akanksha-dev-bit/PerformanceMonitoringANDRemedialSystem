@@ -1,4 +1,31 @@
 <?php
+/**
+ * ============================================================================
+ * PerformanceService — Automated Student Evaluation Engine
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Centralized service for all student performance calculations:
+ *   - Grading from marks
+ *   - Detecting slow learners
+ *   - Generating performance labels
+ *   - Trend analysis
+ *
+ * KEY FEATURES:
+ *   - Pass threshold: 40% (configurable in config/app.php)
+ *   - Student labels: "good", "at_risk", "slow_learner"
+ *   - Auto-generates performance reports without manual grading
+ *
+ * ROUTES AFFECTED:
+ *   - None directly - called by controllers: 
+ *     StudentController (updateStatus), TeacherController (updateStudentStatus)
+ *
+ * RELATED FILES:
+ *   - Models:     App\Models\Student, App\Models\Mark
+ *   - Config:     config/app.php (PASS_THRESHOLD constant)
+ *   - Controllers: StudentController, TeacherController
+ * ============================================================================
+ */
 
 namespace App\Services;
 

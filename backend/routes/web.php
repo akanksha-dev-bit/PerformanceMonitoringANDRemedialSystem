@@ -1,24 +1,58 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\MarkController;
-use App\Http\Controllers\PerformanceController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RemedialController;
- use App\Http\Controllers\RemedialSubmissionController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\StudentController;
+/**
+ * ============================================================================
+ * Web Routes — Application Navigation & Controllers
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Defines all public and protected routes for the web interface.
+ *   Organizes routes by functionality and user role.
+ *
+ * SECURITY MODEL:
+ *   - Public: Unauthenticated users can access join/invite pages
+ *   - Protected: Requires auth + email verification
+ *   - Role-Based: Middleware ensures role-specific access
+ *   - Profile Check: Requires complete profile before accessing protected features
+ *
+ * ROUTE STRUCTURE:
+ * 1. Public Routes (guest middleware)
+ * 2. Protected Routes (auth + verified)
+ * 3. Profile Completion (mandatory for students)
+ * 4. Dashboard & Navigation
+ * 5. Academic Features (marks, performance, reports)
+ * 6. Remedial System
+ * 7. Student-Specific Features
+ * 8. Admin-Only Features
+ * 9. Quiz Management
+ *
+ * RELATED FILES:
+ *   - Middleware:        App\Http\Middleware\EnsureProfileCompleted.php
+ *   - Middleware:        App\Http\Middleware\RoleMiddleware.php
+ *   - Controllers:       App\Http\Controllers\...
+ *   - Models:            App\Models\User.php (role attribute)
+ * ============================================================================
+ */
+
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Academic\MarkController;
+use App\Http\Controllers\Academic\PerformanceController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\Remedial\RemedialController;
+use App\Http\Controllers\Remedial\RemedialSubmissionController;
+use App\Http\Controllers\Academic\ReportController;
+use App\Http\Controllers\User\StudentController;
 use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\User\JoinController;
+use App\Http\Controllers\User\StudentProfileController;
+use App\Http\Controllers\User\TeacherController;
 
 // Redirect root to dashboard (or login if unauthenticated)
 Route::get('/', fn() => redirect()->route('dashboard'));
 
 // Auth routes (provided by Breeze)
 require __DIR__ . '/auth.php';
-
-use App\Http\Controllers\JoinController;
-use App\Http\Controllers\StudentProfileController;
-use App\Http\Controllers\TeacherController;
 
 // Public Invite Routes
 Route::middleware('guest')->group(function () {
@@ -34,12 +68,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/complete-profile', [StudentProfileController::class, 'store'])->name('complete-profile.store');
 
     // Dashboard Router & Specific Endpoints
-    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/admin', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard.admin');
-    Route::get('/dashboard/teacher', [\App\Http\Controllers\TeacherDashboardController::class, 'index'])->name('dashboard.teacher');
-    Route::get('/dashboard/student', [\App\Http\Controllers\StudentDashboardController::class, 'index'])->name('dashboard.student');
-    Route::get('/my-progress', [\App\Http\Controllers\StudentDashboardController::class, 'progress'])->name('student.progress');
-    Route::get('/my-tasks', [\App\Http\Controllers\StudentDashboardController::class, 'tasks'])->name('student.tasks');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/admin', [\App\Http\Controllers\Dashboard\AdminDashboardController::class, 'index'])->name('dashboard.admin');
+    Route::get('/dashboard/teacher', [\App\Http\Controllers\Dashboard\TeacherDashboardController::class, 'index'])->name('dashboard.teacher');
+    Route::get('/dashboard/student', [\App\Http\Controllers\Dashboard\StudentDashboardController::class, 'index'])->name('dashboard.student');
+    Route::get('/my-progress', [\App\Http\Controllers\Dashboard\StudentDashboardController::class, 'progress'])->name('student.progress');
+    Route::get('/my-tasks', [\App\Http\Controllers\Dashboard\StudentDashboardController::class, 'tasks'])->name('student.tasks');
 
     Route::middleware(\App\Http\Middleware\EnsureProfileCompleted::class)->group(function () {
 
@@ -75,22 +109,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Admin Only Routes
         Route::middleware([\App\Http\Middleware\RoleMiddleware::class.':admin'])->group(function () {
-            Route::resource('subjects', \App\Http\Controllers\SubjectController::class)->except(['show']);
-            Route::resource('teachers', \App\Http\Controllers\TeacherController::class);
+            Route::resource('subjects', \App\Http\Controllers\Academic\SubjectController::class)->except(['show']);
+            Route::resource('teachers', TeacherController::class);
         });
 
         // Quiz Management (Teachers + Admin)
-        Route::resource('quizzes', \App\Http\Controllers\QuizController::class);
-        Route::get('quizzes/{quiz}/assign', [\App\Http\Controllers\QuizAssignmentController::class, 'create'])->name('quizzes.assign');
-        Route::post('quizzes/{quiz}/assign', [\App\Http\Controllers\QuizAssignmentController::class, 'store'])->name('quizzes.assign.store');
-        Route::get('quiz-assignments/{assignment}/analytics', [\App\Http\Controllers\QuizAssignmentController::class, 'analytics'])->name('quizzes.analytics');
+        Route::resource('quizzes', \App\Http\Controllers\Quiz\QuizController::class);
+        Route::get('quizzes/{quiz}/assign', [\App\Http\Controllers\Quiz\QuizAssignmentController::class, 'create'])->name('quizzes.assign');
+        Route::post('quizzes/{quiz}/assign', [\App\Http\Controllers\Quiz\QuizAssignmentController::class, 'store'])->name('quizzes.assign.store');
+        Route::get('quiz-assignments/{assignment}/analytics', [\App\Http\Controllers\Quiz\QuizAssignmentController::class, 'analytics'])->name('quizzes.analytics');
     });
 
     // Student Quiz Attempt Routes
-    Route::get('quiz/{assignment}/start', [\App\Http\Controllers\QuizAttemptController::class, 'start'])->name('quiz.start');
-    Route::get('quiz/attempt/{attempt}', [\App\Http\Controllers\QuizAttemptController::class, 'show'])->name('quiz.attempt');
-    Route::post('quiz/attempt/{attempt}/submit', [\App\Http\Controllers\QuizAttemptController::class, 'submit'])->name('quiz.submit');
-    Route::get('quiz/attempt/{attempt}/results', [\App\Http\Controllers\QuizAttemptController::class, 'results'])->name('quiz.results');
+    Route::get('quiz/{assignment}/start', [\App\Http\Controllers\Quiz\QuizAttemptController::class, 'start'])->name('quiz.start');
+    Route::get('quiz/attempt/{attempt}', [\App\Http\Controllers\Quiz\QuizAttemptController::class, 'show'])->name('quiz.attempt');
+    Route::post('quiz/attempt/{attempt}/submit', [\App\Http\Controllers\Quiz\QuizAttemptController::class, 'submit'])->name('quiz.submit');
+    Route::get('quiz/attempt/{attempt}/results', [\App\Http\Controllers\Quiz\QuizAttemptController::class, 'results'])->name('quiz.results');
 
     // Student Remedial Submission Routes (outside EnsureProfileCompleted)
     Route::get('/remedial/{remedial}/workspace', [RemedialSubmissionController::class, 'show'])->name('remedial.submit.show');

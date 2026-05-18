@@ -1,7 +1,47 @@
 <?php
 
-namespace App\Http\Controllers;
+/**
+ * ============================================================================
+ * QuizAttemptController — Student Quiz Taking & Auto-Grading Engine
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles the entire student quiz-taking experience: starting a new
+ *   attempt, rendering the fullscreen quiz interface, auto-grading on
+ *   submission, and showing detailed results with per-question breakdown.
+ *
+ * QUIZ ATTEMPT LIFECYCLE:
+ *   1. Student clicks "Start Quiz" on their tasks page.
+ *   2. start() verifies: is it the right student? Is an attempt available today?
+ *   3. If an in-progress attempt exists, resume it; otherwise create new one.
+ *   4. show() renders the fullscreen quiz UI with timer and question navigation.
+ *   5. submit() receives answers, auto-grades by comparing with correct_answer,
+ *      calculates score + percentage, marks attempt as completed.
+ *   6. If all daily attempts are used up, the assignment status → 'completed'.
+ *   7. results() shows per-question breakdown: correct/incorrect, explanations,
+ *      and XP earned (50 XP if ≥40%, else 25 XP).
+ *
+ * ROUTES:
+ *   GET  /quiz/{assignment}/start         → start()   — Begin new attempt
+ *   GET  /quiz/attempt/{attempt}          → show()    — Fullscreen quiz UI
+ *   POST /quiz/attempt/{attempt}/submit   → submit()  — Submit & auto-grade
+ *   GET  /quiz/attempt/{attempt}/results  → results() — Results breakdown
+ *
+ * SECURITY:
+ *   - Only students can take quizzes (abort 403 for others).
+ *   - Ownership check: attempt.student_id must match logged-in student.
+ *   - Completed attempts cannot be re-submitted.
+ *   - Daily attempt limits enforced via today_attempt_available attribute.
+ *
+ * RELATED FILES:
+ *   - Views:  resources/views/quiz/ (attempt, results)
+ *   - Model:  App\Models\QuizAttempt, App\Models\StudentQuizAssignment
+ *   - Routes: 'quiz.start', 'quiz.attempt', 'quiz.submit', 'quiz.results'
+ * ============================================================================
+ */
+namespace App\Http\Controllers\Quiz;
 
+use App\Http\Controllers\Controller;
 use App\Models\QuizAttempt;
 use App\Models\StudentQuizAssignment;
 use App\Models\Student;

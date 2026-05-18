@@ -1,4 +1,31 @@
 <?php
+/**
+ * ============================================================================
+ * AuthenticatedSessionController — Login & Logout Management
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Handles user authentication and session management.
+ *   Manages login, logout, and session regeneration.
+ *
+ * SECURITY FEATURES:
+ *   - Username/email + password authentication
+ *   - Session regeneration to prevent fixation attacks
+ *   - Logout with session invalidation
+ *   - Throttle protection (via LoginRequest)
+ *
+ * ROUTES:
+ *   - GET    /login         → create() - Show login form
+ *   - POST   /login         → store()  - Authenticate user
+ *   - POST   /logout        → destroy() - Logout user
+ *
+ * RELATED FILES:
+ *   - Requests:     App\Http\Requests\Auth\LoginRequest.php
+ *   - Middleware:   App\Http\Middleware\EnsureProfileCompleted.php
+ *   - Models:       App\Models\User.php
+ *   - Views:        resources/views/auth/login.blade.php
+ * ============================================================================
+ */
 
 namespace App\Http\Controllers\Auth;
 
