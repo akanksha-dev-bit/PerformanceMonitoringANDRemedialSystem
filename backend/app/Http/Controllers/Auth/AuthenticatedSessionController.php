@@ -51,6 +51,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        $user = \App\Models\User::where('email', $request->email)->first();
+        if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            if (!$user->hasVerifiedEmail()) {
+                session(['verify_email' => $user->email]);
+                if (!$user->email_verification_otp) {
+                    try {
+                        $user->sendEmailVerificationNotification();
+                    } catch (\Exception $e) {
+                        // ignore or handle mailer failure
+                    }
+                }
+                return redirect()->route('verification.notice')->with('status', 'verification-link-sent');
+            }
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();

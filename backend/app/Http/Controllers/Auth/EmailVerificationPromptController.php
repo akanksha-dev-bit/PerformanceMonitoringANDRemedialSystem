@@ -38,12 +38,18 @@ use Illuminate\View\View;
 
 class EmailVerificationPromptController extends Controller
 {
-    /**
-     * Display the email verification prompt.
-     */
     public function __invoke(Request $request): RedirectResponse|View
     {
-        return $request->user()->hasVerifiedEmail()
+        $user = $request->user();
+        if (!$user && session()->has('verify_email')) {
+            $user = \App\Models\User::where('email', session('verify_email'))->first();
+        }
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        return $user->hasVerifiedEmail()
                     ? redirect()->intended(route('dashboard', absolute: false))
                     : view('auth.verify-email');
     }
