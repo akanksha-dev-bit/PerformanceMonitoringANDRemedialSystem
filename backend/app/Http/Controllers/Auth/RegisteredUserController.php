@@ -72,24 +72,34 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $school = School::create([
-            'name' => $request->school_name,
-            'school_code' => School::generateUniqueCode(),
-        ]);
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $school = School::create([
+                'name' => $request->school_name,
+                'school_code' => School::generateUniqueCode(),
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'admin',
-            'school_id' => $school->id,
-            'profile_completed' => true,
-        ]);
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'admin',
+                'school_id' => $school->id,
+                'profile_completed' => true,
+            ]);
 
-        event(new Registered($user));
+            event(new Registered($user));
 
-        Auth::login($user);
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->withInput()->withErrors([
+                'email' => 'Failed to send verification email. Registration cancelled. (' . $e->getMessage() . ')',
+            ]);
+        }
 
-        return redirect(route('dashboard', absolute: false));
+        session(['verify_email' => $user->email]);
+
+        return redirect()->route('verification.notice');
     }
 }

@@ -53,7 +53,7 @@ class VerifyEmailController extends Controller
     }
 
     /**
-     * Mark the authenticated user's email address as verified using OTP.
+     * Mark the user's email address as verified using OTP.
      */
     public function verifyOtp(\Illuminate\Http\Request $request): RedirectResponse
     {
@@ -61,19 +61,38 @@ class VerifyEmailController extends Controller
             'otp' => 'required|string|size:6',
         ]);
 
-        if ($request->user()->hasVerifiedEmail()) {
+        $user = $request->user();
+        if (!$user && session()->has('verify_email')) {
+            $user = \App\Models\User::where('email', session('verify_email'))->first();
+        }
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            if (!\Illuminate\Support\Facades\Auth::check()) {
+                \Illuminate\Support\Facades\Auth::login($user);
+            }
+            session()->forget('verify_email');
             return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
         }
 
-        if ($request->user()->email_verification_otp !== $request->otp) {
+        if ($user->email_verification_otp !== $request->otp) {
             return back()->withErrors(['otp' => 'The provided OTP is incorrect or expired.']);
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            $request->user()->email_verification_otp = null;
-            $request->user()->save();
-            event(new Verified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            $user->email_verification_otp = null;
+            $user->save();
+            event(new Verified($user));
         }
+
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            \Illuminate\Support\Facades\Auth::login($user);
+        }
+
+        session()->forget('verify_email');
 
         return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
     }

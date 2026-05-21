@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * ============================================================================
  * AppServiceProvider — Global Application Service Provider
@@ -28,6 +29,7 @@
  *   - Config:      config/app.php
  * ============================================================================
  */
+
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;

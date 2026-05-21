@@ -269,7 +269,7 @@
                 <span style="width:7px;height:7px;border-radius:50%;background:#10b981;"></span>
                 <span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">School Invite Portal</span>
             </div>
-            <h3 style="font-family:'Poppins',sans-serif;font-weight:800;font-size:22px;margin:0 0 8px;">Invite Students & Teachers</h3>
+            <h3 style="font-family:'Poppins',sans-serif;font-weight:800;font-size:22px;margin:0 0 8px;">Invite Students</h3>
             <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:0 0 20px;max-width:460px;line-height:1.7;">Share this link with your organization to automatically join <strong style="color:#fff;">{{ auth()->user()->school->name ?? 'your school' }}</strong>.</p>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                 <input type="text" value="{{ $inviteLink }}" id="inviteLinkInput" readonly style="flex:1;max-width:360px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;outline:none;">

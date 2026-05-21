@@ -49,12 +49,18 @@
             </button>
           </form>
 
-          <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" style="background: transparent; border: none; color: #999; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;">
-              {{ __('Log Out') }}
-            </button>
-          </form>
+          @if(\Illuminate\Support\Facades\Auth::check())
+            <form method="POST" action="{{ route('logout') }}">
+              @csrf
+              <button type="submit" style="background: transparent; border: none; color: #999; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;">
+                {{ __('Log Out') }}
+              </button>
+            </form>
+          @else
+            <a href="{{ route('login') }}" style="color: #999; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline;">
+              {{ __('Return to Login') }}
+            </a>
+          @endif
         </div>
       </div>
     </main>

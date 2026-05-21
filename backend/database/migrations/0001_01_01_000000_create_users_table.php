@@ -1,5 +1,38 @@
 <?php
 
+/**
+ * ============================================================================
+ * 0001_01_01_000000_create_users_table — User Authentication Database Schema
+ * ============================================================================
+ *
+ * PURPOSE:
+ *   Defines the core database tables for user authentication and sessions
+ *   within the Performance Monitoring and Remedial System (PMRS).
+ *
+ * TABLES CREATED:
+ *
+ *   1. users
+ *      - Central user authentication table.
+ *      - Stores user credentials, role information, school assignments,
+ *        profile completion status, and authentication tokens.
+ *      - Supports three distinct roles: admin, teacher, and student.
+ *
+ *   2. password_reset_tokens
+ *      - Secure token storage for password reset functionality.
+ *      - Stores unique tokens linked to user email addresses.
+ *
+ *   3. sessions
+ *      - Manages user session data for authentication and state management.
+ *      - Stores session ID, user information, IP address, user agent,
+ *        payload data, and last activity timestamp.
+ *
+ * RELATED FILES:
+ *   - Model:      app/Models/User.php
+ *   - Provider:   app/Providers/AppServiceProvider.php (password defaults)
+ *   - Config:     config/auth.php (authentication configuration)
+ * ============================================================================
+ */
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
