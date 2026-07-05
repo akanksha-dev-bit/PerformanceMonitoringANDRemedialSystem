@@ -67,7 +67,7 @@ class AdminDashboardController extends Controller
         $activeRemedials = RemedialAction::whereIn('status', ['pending', 'in_progress'])->count();
 
         $subjectAvgs = Mark::with('subject')
-            ->selectRaw('subject_id, ROUND(SUM(marks_obtained)/SUM(max_marks)*100, 2) as avg_pct')
+            ->selectRaw('subject_id, ROUND(SUM(marks_obtained) * 100.0 / SUM(max_marks), 2) as avg_pct')
             ->groupBy('subject_id')
             ->with('subject')
             ->get()

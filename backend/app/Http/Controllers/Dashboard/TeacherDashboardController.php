@@ -28,6 +28,8 @@
  *   - Model:  App\Models\TeacherAssignment
  *   - Routes: routes/web.php → 'dashboard.teacher'
  * ============================================================================
+
+ * 
  */
 namespace App\Http\Controllers\Dashboard;
 
@@ -60,8 +62,17 @@ class TeacherDashboardController extends Controller
         $assignedClassesCount = $assignments->unique('class')->count();
         $assignedStudentsCount = $recentStudents->count();
 
+        $todayClassesCount = \App\Models\Timetable::where('teacher_id', $user->id)
+            ->where('day_of_week', now()->format('l'))
+            ->count();
+
+        $todayMarkedCount = \App\Models\AttendanceSession::where('teacher_id', $user->id)
+            ->whereDate('date', now()->toDateString())
+            ->count();
+
         return view('dashboard.teacher', compact(
-            'recentStudents', 'assignments', 'assignedClassesCount', 'assignedStudentsCount'
+            'recentStudents', 'assignments', 'assignedClassesCount', 'assignedStudentsCount',
+            'todayClassesCount', 'todayMarkedCount'
         ));
     }
 }

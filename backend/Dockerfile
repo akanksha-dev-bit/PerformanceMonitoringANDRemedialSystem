@@ -8,8 +8,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     libzip-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql gd zip opcache
+    && docker-php-ext-install pdo_mysql pdo_pgsql gd zip opcache
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite

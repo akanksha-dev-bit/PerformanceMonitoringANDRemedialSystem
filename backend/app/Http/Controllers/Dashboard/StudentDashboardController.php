@@ -139,12 +139,23 @@ class StudentDashboardController extends Controller
 
         $assignedTasks = $studentProfile->remedialActions()->orderBy('scheduled_date', 'asc')->get();
 
+        // Fetch Today's Classes for Student
+        $todayName = now()->format('l');
+        $todayClasses = collect();
+        if ($studentProfile->classroom_id) {
+            $todayClasses = \App\Models\Timetable::where('classroom_id', $studentProfile->classroom_id)
+                ->where('day_of_week', $todayName)
+                ->with(['subject', 'teacher'])
+                ->orderBy('period_number', 'asc')
+                ->get();
+        }
+
         return view('dashboard.student', compact(
             'studentProfile', 'marks', 'averagePercentage', 'performanceLabel',
             'subjectBreakdown', 'weakSubjects', 'recommendations',
             'rank', 'totalInClass',
             'chartLabels', 'chartData', 'chartColors',
-            'badges', 'streak', 'assignedTasks'
+            'badges', 'streak', 'assignedTasks', 'todayClasses'
         ));
     }
 
@@ -285,7 +296,7 @@ class StudentDashboardController extends Controller
         $quizAssignments = $studentProfile->quizAssignments()
             ->with(['quiz.subject', 'quiz.questions', 'attempts', 'assignedBy'])
             ->whereIn('status', ['active', 'completed'])
-            ->orderByRaw("FIELD(status, 'active', 'completed')")
+            ->orderByRaw("CASE WHEN status = 'active' THEN 1 WHEN status = 'completed' THEN 2 ELSE 3 END")
             ->orderBy('start_date', 'asc')
             ->get();
 

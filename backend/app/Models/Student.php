@@ -10,7 +10,7 @@ class Student extends Model
     use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
-        'user_id', 'school_id', 'roll_no', 'class', 'section',
+        'user_id', 'school_id', 'classroom_id', 'roll_no', 'class', 'section',
         'dob', 'gender', 'phone', 'guardian_name', 'is_active',
         'xp_points', 'study_streak', 'last_activity_date',
     ];
@@ -21,7 +21,7 @@ class Student extends Model
         'last_activity_date' => 'date',
     ];
 
-    protected $appends = ['name', 'email'];
+    protected $appends = ['name', 'email', 'overall_attendance'];
 
     public function user()
     {
@@ -170,6 +170,55 @@ class Student extends Model
             // Streak broken — reset
             $this->update(['study_streak' => 1, 'last_activity_date' => $today]);
         }
+    }
+
+    public function classroom()
+    {
+        return $this->belongsTo(Classroom::class, 'classroom_id');
+    }
+
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class, 'student_id');
+    }
+
+    public function getOverallAttendanceAttribute()
+    {
+        $total = $this->attendanceRecords()->count();
+        if ($total === 0) return 100.0;
+        $present = $this->attendanceRecords()->where('status', 'present')->count();
+        return round(($present / $total) * 100, 2);
+    }
+
+    public function getSubjectAttendance($subjectId)
+    {
+        $total = $this->attendanceRecords()
+            ->whereHas('session', function($q) use ($subjectId) {
+                $q->where('subject_id', $subjectId);
+            })->count();
+
+        if ($total === 0) return 100.0;
+
+        $present = $this->attendanceRecords()
+            ->whereHas('session', function($q) use ($subjectId) {
+                $q->where('subject_id', $subjectId);
+            })
+            ->where('status', 'present')
+            ->count();
+
+        return round(($present / $total) * 100, 2);
+    }
+
+    public function getIsHighRiskAttribute(): bool
+    {
+        // Low Marks (< 40%) AND Low Attendance (< 75%)
+        return $this->overall_attendance < 75 && $this->average_percentage < 40;
+    }
+
+    public function getIsLearningDifficultyAttribute(): bool
+    {
+        // Good Attendance (>= 75%) AND Low Marks (< 40%)
+        return $this->overall_attendance >= 75 && $this->average_percentage < 40;
     }
 }
 

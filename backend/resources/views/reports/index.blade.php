@@ -3,495 +3,964 @@
 
   @push('styles')
   <style>
-    /* Premium Page Header */
-    .reports-header {
+    /* ─── Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    .rp-wrap {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      color: #1e293b;
+    }
+
+    /* ─── Page Header ───────────────────────────────────────── */
+    .rp-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 32px;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
     }
-    .reports-title {
-      font-size: 24px;
-      font-weight: 800;
+    .rp-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+    .rp-title {
+      font-size: 22px;
+      font-weight: 700;
       color: #0f172a;
-      letter-spacing: -0.02em;
-      margin: 0 0 4px 0;
+      line-height: 1.2;
+      margin: 0 0 3px;
     }
-    .reports-subtitle {
-      font-size: 14px;
+    .rp-subtitle {
+      font-size: 13px;
       color: #64748b;
       margin: 0;
     }
+    .rp-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
 
-    /* Action Buttons */
-    .btn-action {
+    /* ─── Buttons ───────────────────────────────────────────── */
+    .btn-rp {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      border-radius: 12px;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
-      transition: all 0.2s;
-      border: 1px solid transparent;
       cursor: pointer;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #475569;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
     }
-    .btn-export {
+    .btn-rp:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+      transform: translateY(-1px);
+    }
+    .btn-rp svg { flex-shrink: 0; }
+
+    .btn-rp-primary {
+      background: #4f46e5;
+      color: #ffffff;
+      border-color: #4f46e5;
+    }
+    .btn-rp-primary:hover {
+      background: #4338ca;
+      border-color: #4338ca;
+      color: #ffffff;
+    }
+    .btn-rp-export {
       background: #f0fdf4;
       color: #15803d;
       border-color: #bbf7d0;
     }
-    .btn-export:hover {
+    .btn-rp-export:hover {
       background: #dcfce7;
-      transform: translateY(-1px);
-    }
-    .btn-print {
-      background: #f8fafc;
-      color: #475569;
-      border-color: #e2e8f0;
-    }
-    .btn-print:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-      transform: translateY(-1px);
+      border-color: #86efac;
+      color: #166534;
     }
 
-    /* KPI Grid */
-    .kpi-container {
+    /* ─── KPI Grid ──────────────────────────────────────────── */
+    .rp-kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
-    .kpi-box {
-      background: #fff;
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.04);
-      border: 1px solid rgba(0,0,0,0.02);
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .kpi-box:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px -4px rgba(0,0,0,0.08);
-    }
-    .kpi-icon-wrap {
-      width: 56px;
-      height: 56px;
+    .rp-kpi {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
       border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .rp-kpi:hover {
+      box-shadow: 0 8px 24px -4px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .rp-kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
-    .kpi-icon-wrap svg {
-      width: 28px;
-      height: 28px;
-    }
-    .kpi-details {
-      display: flex;
-      flex-direction: column;
-    }
-    .kpi-value {
+    .rp-kpi-icon svg { width: 22px; height: 22px; }
+    .rp-kpi-icon.violet  { background: #ede9fe; color: #6d28d9; }
+    .rp-kpi-icon.red     { background: #fee2e2; color: #b91c1c; }
+    .rp-kpi-icon.amber   { background: #fef3c7; color: #b45309; }
+    .rp-kpi-icon.emerald { background: #d1fae5; color: #065f46; }
+
+    .rp-kpi-body { flex: 1; min-width: 0; }
+    .rp-kpi-value {
       font-size: 28px;
       font-weight: 800;
       color: #0f172a;
-      line-height: 1.2;
+      line-height: 1;
+      margin-bottom: 4px;
     }
-    .kpi-label {
-      font-size: 13px;
+    .rp-kpi-label {
+      font-size: 12px;
       font-weight: 600;
-      color: #64748b;
+      color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      margin-top: 2px;
     }
+    .rp-kpi-note {
+      font-size: 11px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .rp-kpi-note.good { color: #059669; }
+    .rp-kpi-note.bad  { color: #dc2626; }
 
-    /* KPI Colors */
-    .kpi-primary .kpi-icon-wrap { background: #eef2ff; color: #6366f1; }
-    .kpi-danger .kpi-icon-wrap { background: #fef2f2; color: #ef4444; }
-    .kpi-warning .kpi-icon-wrap { background: #fffbeb; color: #f59e0b; }
-    .kpi-success .kpi-icon-wrap { background: #ecfdf5; color: #10b981; }
-
-    /* Layout Grids */
-    .content-grid {
+    /* ─── Content Grid ──────────────────────────────────────── */
+    .rp-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 16px;
     }
-    @media(max-width: 1024px) {
-      .content-grid { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .rp-grid { grid-template-columns: 1fr; }
     }
 
-    /* Cards */
-    .premium-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.04);
-      border: 1px solid rgba(0,0,0,0.02);
-      display: flex;
-      flex-direction: column;
+    /* ─── Cards ─────────────────────────────────────────────── */
+    .rp-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 16px;
+      overflow: hidden;
     }
-    .card-header {
+    .rp-card-inner { padding: 24px; }
+    .rp-card-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-    .card-title {
-      font-size: 16px;
+    .rp-card-title {
+      font-size: 14px;
       font-weight: 700;
       color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .rp-card-title svg { color: #6d28d9; flex-shrink: 0; }
+    .rp-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+    .rp-tag-violet { background: #ede9fe; color: #5b21b6; }
+    .rp-tag-slate  { background: #f1f5f9; color: #475569; }
+
+    /* ─── Chart ─────────────────────────────────────────────── */
+    .rp-chart-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .rp-chart-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .rp-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .rp-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Perf Distribution Card (new layout) ────────────────── */
+    .rp-perf-card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .rp-perf-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0;
+    }
+    /* Left: horizontal bar chart */
+    .rp-perf-bars {
+      padding: 24px 20px 24px 24px;
+      flex: 1;
+      min-width: 0;
+    }
+    .rp-hbar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .rp-hbar-row:last-child { margin-bottom: 0; }
+    .rp-hbar-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      width: 52px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .rp-hbar-track {
+      flex: 1;
+      height: 28px;
+      background: #f8fafc;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      min-width: 0;
+    }
+    .rp-hbar-good {
+      background: #10b981;
+      height: 100%;
+      border-radius: 8px 0 0 8px;
+      transition: width 0.6s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+    }
+    .rp-hbar-good-txt {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .rp-hbar-bad {
+      background: #fca5a5;
+      height: 100%;
+      border-radius: 0 8px 8px 0;
+      transition: width 0.6s ease;
+      display: flex;
+      align-items: center;
+      padding-left: 5px;
+    }
+    .rp-hbar-bad-txt {
+      font-size: 10px;
+      font-weight: 700;
+      color: #991b1b;
+      white-space: nowrap;
+    }
+    .rp-hbar-total {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      width: 28px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    /* Right: donut summary */
+    .rp-perf-donut {
+      width: 168px;
+      flex-shrink: 0;
+      border-left: 1px solid #f1f5f9;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+    .rp-donut-wrap {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+    .rp-donut-canvas { width: 100px; height: 100px; }
+    .rp-donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .rp-donut-pct {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .rp-donut-sub {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .rp-donut-stats {
+      width: 100%;
+    }
+    .rp-donut-stat {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #f8fafc;
+    }
+    .rp-donut-stat:last-child { border-bottom: none; }
+    .rp-donut-stat-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+    }
+    .rp-donut-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .rp-donut-stat-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Legend row */
+    .rp-perf-legend {
+      display: flex;
+      gap: 20px;
+      padding: 12px 24px;
+      border-top: 1px solid #f8fafc;
+      background: #fafafa;
+      flex-wrap: wrap;
+    }
+
+    /* ─── Tables ─────────────────────────────────────────────── */
+    .rp-table-wrap { overflow-x: auto; }
+    .rp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .rp-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94a3b8;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+      white-space: nowrap;
+    }
+    .rp-table td {
+      padding: 13px 14px;
+      color: #334155;
+      border-bottom: 1px solid #f8fafc;
+      vertical-align: middle;
+    }
+    .rp-table tbody tr:last-child td { border-bottom: none; }
+    .rp-table tbody tr:hover td { background: #fafafa; }
+    .rp-table .fw { font-weight: 700; color: #0f172a; }
+
+    /* ─── Badges ─────────────────────────────────────────────── */
+    .rp-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .rp-badge-red    { background: #fee2e2; color: #991b1b; }
+    .rp-badge-green  { background: #d1fae5; color: #065f46; }
+    .rp-badge-amber  { background: #fef3c7; color: #92400e; }
+    .rp-badge-slate  { background: #f1f5f9; color: #475569; }
+    .rp-badge-violet { background: #ede9fe; color: #5b21b6; }
+
+    /* ─── Alert Bar ──────────────────────────────────────────── */
+    .rp-alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+    .rp-alert svg { flex-shrink: 0; margin-top: 1px; color: #c2410c; }
+    .rp-alert-text { font-size: 13px; color: #7c2d12; line-height: 1.5; }
+    .rp-alert-text strong { color: #9a3412; }
+
+    /* ─── Student Rows ───────────────────────────────────────── */
+    .rp-student-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 24px;
+      border-bottom: 1px solid #f8fafc;
+      transition: background 0.12s;
+    }
+    .rp-student-row:last-child { border-bottom: none; }
+    .rp-student-row:hover { background: #fafafa; }
+
+    .rp-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6d28d9, #4f46e5);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+    .rp-stu-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .rp-stu-meta {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .rp-stu-pct {
+      font-size: 17px;
+      font-weight: 800;
+      color: #dc2626;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .rp-stu-status { margin-left: 12px; flex-shrink: 0; }
+
+    /* ─── Progress bar (Risk %) ──────────────────────────────── */
+    .rp-risk-bar-wrap {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-
-    /* Tables */
-    .premium-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+    .rp-risk-bar {
+      flex: 1;
+      height: 6px;
+      background: #f1f5f9;
+      border-radius: 100px;
+      overflow: hidden;
+      min-width: 50px;
     }
-    .premium-table th {
-      text-align: left;
-      font-size: 12px;
+    .rp-risk-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.4s;
+    }
+    .fill-low    { background: #10b981; }
+    .fill-medium { background: #f59e0b; }
+    .fill-high   { background: #ef4444; }
+
+    /* ─── Empty States ───────────────────────────────────────── */
+    .rp-empty {
+      text-align: center;
+      padding: 48px 24px;
+      color: #94a3b8;
+    }
+    .rp-empty svg {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      color: #cbd5e1;
+      display: block;
+    }
+    .rp-empty-title { font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+    .rp-empty-desc  { font-size: 13px; }
+
+    /* ─── View-all footer ────────────────────────────────────── */
+    .rp-view-all {
+      text-align: center;
+      padding: 14px 24px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .rp-view-all a,
+    .rp-view-all button {
+      font-size: 13px;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #64748b;
-      padding: 16px 12px;
-      border-bottom: 1px solid #e2e8f0;
-      background: #f8fafc;
-    }
-    .premium-table th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-    .premium-table th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-    
-    .premium-table td {
-      padding: 16px 12px;
-      font-size: 14px;
-      color: #334155;
-      border-bottom: 1px solid #f1f5f9;
-      vertical-align: middle;
-    }
-    .premium-table tr:last-child td { border-bottom: none; }
-    .premium-table tbody tr:hover td {
-      background: #f8fafc;
-    }
-
-    /* Badges */
-    .status-badge {
+      color: #4f46e5;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      padding: 4px 10px;
-      border-radius: 100px;
-      font-size: 12px;
-      font-weight: 600;
+      gap: 4px;
+      padding: 0;
     }
-    .status-danger { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-    .status-success { background: #ecfdf5; color: #10b981; border: 1px solid #a7f3d0; }
-    .status-warning { background: #fffbeb; color: #f59e0b; border: 1px solid #fde68a; }
-    .status-neutral { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+    .rp-view-all a:hover,
+    .rp-view-all button:hover { color: #4338ca; text-decoration: underline; }
 
-    /* Student Avatar */
-    .student-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #6C5CE7, #5A4BD6);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 12px;
-      box-shadow: 0 2px 4px rgba(108, 92, 231, 0.3);
-    }
+    /* ─── Divider ────────────────────────────────────────────── */
+    .rp-divider { height: 1px; background: #f1f5f9; margin: 0; }
   </style>
   @endpush
 
-  <div class="reports-header">
-    <div>
-      <h2 class="reports-title">Reports & Analytics</h2>
-      <p class="reports-subtitle">Comprehensive overview of institutional performance</p>
-    </div>
-    <div style="display:flex; gap:12px;">
-      <button onclick="exportTableToCSV('pmrs-report.csv')" class="btn-action btn-export">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Export CSV
-      </button>
-      <button onclick="window.print()" class="btn-action btn-print">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print Report
-      </button>
-    </div>
-  </div>
+  <div class="rp-wrap">
 
-  {{-- Top KPIs --}}
-  <div class="kpi-container">
-    <div class="kpi-box kpi-primary">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    {{-- ── Page Header ── --}}
+    <div class="rp-header">
+      <div>
+        <p class="rp-eyebrow">Academic Year {{ date('Y') }}&ndash;{{ date('y', strtotime('+1 year')) }}</p>
+        <h2 class="rp-title">Reports &amp; Analytics</h2>
+        <p class="rp-subtitle">Institutional performance &mdash; class-wise breakdown &amp; student insights</p>
       </div>
-      <div class="kpi-details">
-        <div class="kpi-value">{{ $summary['total_students'] }}</div>
-        <div class="kpi-label">Total Students</div>
-      </div>
-    </div>
-    <div class="kpi-box kpi-danger">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      </div>
-      <div class="kpi-details">
-        <div class="kpi-value">{{ $summary['slow_learners'] }}</div>
-        <div class="kpi-label">Slow Learners</div>
+      <div class="rp-actions">
+        <button onclick="window.print()" class="btn-rp">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
+        </button>
+        <button onclick="exportTableToCSV('pmrs-report.csv')" class="btn-rp btn-rp-export">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
       </div>
     </div>
-    <div class="kpi-box kpi-warning">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </div>
-      <div class="kpi-details">
-        <div class="kpi-value">{{ $summary['at_risk'] }}</div>
-        <div class="kpi-label">At Risk Students</div>
-      </div>
-    </div>
-    <div class="kpi-box kpi-success">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="kpi-details">
-        <div class="kpi-value">{{ $summary['performing_well'] }}</div>
-        <div class="kpi-label">Performing Well</div>
-      </div>
-    </div>
-  </div>
 
-  {{-- Chart and Tables Layout --}}
-  <div class="content-grid">
-    
-    {{-- Class Breakdown Chart --}}
-    <div class="premium-card">
-      <div class="card-header">
-        <div class="card-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-          Performance Distribution
+    {{-- ── KPI Cards ── --}}
+    <div class="rp-kpi-grid">
+      <div class="rp-kpi">
+        <div class="rp-kpi-icon violet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="rp-kpi-body">
+          <div class="rp-kpi-value">{{ $summary['total_students'] }}</div>
+          <div class="rp-kpi-label">Total Students</div>
+          <div class="rp-kpi-note good">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            Enrolled this session
+          </div>
         </div>
       </div>
-      <div style="flex:1; min-height: 320px; position: relative; width:100%;">
-        <canvas id="classBreakdownChart"></canvas>
-      </div>
-    </div>
 
-    {{-- Class Breakdown Table --}}
-    <div class="premium-card" style="padding:0; overflow:hidden;">
-      <div class="card-header" style="padding: 24px 28px 0 28px; margin-bottom: 16px;">
-        <div class="card-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          Class-wise Analytics
+      <div class="rp-kpi">
+        <div class="rp-kpi-icon red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="rp-kpi-body">
+          <div class="rp-kpi-value">{{ $summary['slow_learners'] }}</div>
+          <div class="rp-kpi-label">Slow Learners</div>
+          @if($summary['total_students'] > 0)
+          <div class="rp-kpi-note bad">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ round($summary['slow_learners'] / $summary['total_students'] * 100, 1) }}% of total
+          </div>
+          @endif
         </div>
       </div>
-      <div style="overflow-x: auto; padding: 0 20px 20px 20px;">
-        <table class="premium-table" id="reportTable">
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Total</th>
-              <th>Slow</th>
-              <th>Good</th>
-              <th>Risk %</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($classBreakdown as $row)
-            <tr>
-              <td style="font-weight:700; color:#0f172a;">Class {{ $row['class'] }}</td>
-              <td style="font-weight:600;">{{ $row['total'] }}</td>
-              <td><span class="status-badge status-danger">{{ $row['slow'] }}</span></td>
-              <td><span class="status-badge status-success">{{ $row['good'] }}</span></td>
-              <td>
-                @php $pct = $row['total'] > 0 ? round($row['slow']/$row['total']*100,1) : 0; @endphp
-                <span class="status-badge {{ $pct > 30 ? 'status-danger' : ($pct > 15 ? 'status-warning' : 'status-success') }}">
-                  {{ $pct }}%
-                </span>
-              </td>
-            </tr>
-            @empty
-            <tr><td colspan="5" style="text-align:center; padding:32px; color:#94a3b8;">No analytical data available.</td></tr>
-            @endforelse
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
 
-  {{-- Slow Learners List --}}
-  <div class="premium-card" style="padding:0; overflow:hidden;">
-    <div class="card-header" style="padding: 24px 28px 0 28px; margin-bottom: 16px;">
-      <div class="card-title" style="color: #ef4444;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Critical Attention Required: Slow Learners
+      <div class="rp-kpi">
+        <div class="rp-kpi-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="rp-kpi-body">
+          <div class="rp-kpi-value">{{ $summary['at_risk'] }}</div>
+          <div class="rp-kpi-label">At Risk</div>
+          <div class="rp-kpi-note bad">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Needs intervention
+          </div>
+        </div>
+      </div>
+
+      <div class="rp-kpi">
+        <div class="rp-kpi-icon emerald">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="rp-kpi-body">
+          <div class="rp-kpi-value">{{ $summary['performing_well'] }}</div>
+          <div class="rp-kpi-label">Performing Well</div>
+          @if($summary['total_students'] > 0)
+          <div class="rp-kpi-note good">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            {{ round($summary['performing_well'] / $summary['total_students'] * 100, 1) }}% of total
+          </div>
+          @endif
+        </div>
       </div>
     </div>
-    <div style="overflow-x: auto;">
-      <table class="premium-table">
-        <thead>
-          <tr>
-            <th style="padding-left: 28px;">Student Profile</th>
-            <th>Roll No</th>
-            <th>Class</th>
-            <th>Average %</th>
-            <th style="padding-right: 28px;">Remedial Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($slowLearners as $student)
-          <tr>
-            <td style="padding-left: 28px;">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <div class="student-avatar">{{ strtoupper(substr($student->name, 0, 2)) }}</div>
-                <div>
-                  <div style="font-weight:700; color:#0f172a;">{{ $student->name }}</div>
-                  <div style="font-size:12px; color:#64748b;">{{ $student->email }}</div>
+
+    {{-- ── Chart + Class Table ── --}}
+    <div class="rp-grid">
+
+      {{-- Performance Distribution — horizontal bars + donut --}}
+      <div class="rp-perf-card">
+        {{-- Header --}}
+        <div class="rp-card-inner" style="padding-bottom:0; flex-shrink:0;">
+          <div class="rp-card-head" style="margin-bottom:16px;">
+            <div class="rp-card-title">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              Performance Distribution
+            </div>
+            <span class="rp-tag rp-tag-violet">By class</span>
+          </div>
+        </div>
+
+        @if(count($classBreakdown) > 0)
+        {{-- Body: bars + donut side by side --}}
+        <div class="rp-perf-top">
+          {{-- Horizontal bars --}}
+          <div class="rp-perf-bars">
+            @foreach($classBreakdown as $row)
+            @php
+              $total   = max($row['total'], 1);
+              $goodPct = round($row['good'] / $total * 100);
+              $badPct  = round($row['slow'] / $total * 100);
+            @endphp
+            <div class="rp-hbar-row">
+              <div class="rp-hbar-label">Cls {{ $row['class'] }}</div>
+              <div class="rp-hbar-track">
+                <div class="rp-hbar-good" style="width:{{ $goodPct }}%;">
+                  @if($goodPct > 12)<span class="rp-hbar-good-txt">{{ $row['good'] }}</span>@endif
+                </div>
+                <div class="rp-hbar-bad" style="width:{{ $badPct }}%;">
+                  @if($badPct > 8)<span class="rp-hbar-bad-txt">{{ $row['slow'] }}</span>@endif
                 </div>
               </div>
-            </td>
-            <td><span class="status-badge status-neutral">{{ $student->roll_no }}</span></td>
-            <td style="font-weight:500;">Class {{ $student->class }}{{ $student->section ? '-'.$student->section : '' }}</td>
-            <td>
-              <span style="font-weight:700; color:#ef4444; font-size:16px;">{{ $student->average_percentage }}%</span>
-            </td>
-            <td style="padding-right: 28px;">
-              @if($student->remedialActions->count() > 0)
-                <span class="status-badge status-warning">{{ $student->remedialActions->count() }} Active Tasks</span>
-              @else
-                <span class="status-badge status-danger">No Remedials Assigned</span>
-              @endif
-            </td>
-          </tr>
-          @empty
-          <tr><td colspan="5" style="text-align:center; padding:40px; color:#94a3b8; font-weight:500;">All students are performing well. No critical attention needed.</td></tr>
-          @endforelse
-        </tbody>
-      </table>
+              <div class="rp-hbar-total">{{ $row['total'] }}</div>
+            </div>
+            @endforeach
+          </div>
+
+          {{-- Donut summary --}}
+          @php
+            $totalAll = $classBreakdown->sum('total');
+            $goodAll  = $classBreakdown->sum('good');
+            $slowAll  = $classBreakdown->sum('slow');
+            $goodPctAll = $totalAll > 0 ? round($goodAll / $totalAll * 100) : 0;
+          @endphp
+          <div class="rp-perf-donut">
+            <div class="rp-donut-wrap">
+              <canvas id="donutChart" class="rp-donut-canvas"
+                width="100" height="100"
+                aria-label="Donut chart: {{ $goodPctAll }}% performing well"></canvas>
+              <div class="rp-donut-center">
+                <div class="rp-donut-pct">{{ $goodPctAll }}%</div>
+                <div class="rp-donut-sub">on track</div>
+              </div>
+            </div>
+            <div class="rp-donut-stats">
+              <div class="rp-donut-stat">
+                <div class="rp-donut-stat-left">
+                  <div class="rp-donut-dot" style="background:#10b981;"></div>
+                  Good
+                </div>
+                <div class="rp-donut-stat-val">{{ $goodAll }}</div>
+              </div>
+              <div class="rp-donut-stat">
+                <div class="rp-donut-stat-left">
+                  <div class="rp-donut-dot" style="background:#fca5a5;"></div>
+                  Slow
+                </div>
+                <div class="rp-donut-stat-val">{{ $slowAll }}</div>
+              </div>
+              <div class="rp-donut-stat">
+                <div class="rp-donut-stat-left">
+                  <div class="rp-donut-dot" style="background:#e2e8f0;"></div>
+                  Total
+                </div>
+                <div class="rp-donut-stat-val">{{ $totalAll }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Legend footer --}}
+        <div class="rp-perf-legend">
+          <div class="rp-legend-item">
+            <div class="rp-legend-dot" style="background:#10b981;"></div>
+            Performing well
+          </div>
+          <div class="rp-legend-item">
+            <div class="rp-legend-dot" style="background:#fca5a5;"></div>
+            Slow learners
+          </div>
+          <div class="rp-legend-item" style="margin-left:auto; color:#94a3b8; font-size:11px;">
+            Numbers shown = student count
+          </div>
+        </div>
+
+        @else
+        <div class="rp-empty" style="padding: 48px 24px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;margin:0 auto 12px;color:#cbd5e1;display:block;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <div class="rp-empty-title">No chart data yet</div>
+          <div class="rp-empty-desc">Add marks to students to see class performance here.</div>
+        </div>
+        @endif
+      </div>
+
+      {{-- Class breakdown table --}}
+      <div class="rp-card" style="display:flex; flex-direction:column;">
+        <div class="rp-card-inner" style="padding-bottom:0;">
+          <div class="rp-card-head" style="margin-bottom:0;">
+            <div class="rp-card-title">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Class-wise Analytics
+            </div>
+            <span class="rp-tag rp-tag-slate">{{ count($classBreakdown) }} classes</span>
+          </div>
+        </div>
+        <div class="rp-divider" style="margin-top:16px;"></div>
+        <div class="rp-table-wrap" style="flex:1;">
+          <table class="rp-table" id="reportTable">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>Total</th>
+                <th>Slow</th>
+                <th>Good</th>
+                <th>Risk %</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($classBreakdown as $row)
+              @php
+                $pct = $row['total'] > 0 ? round($row['slow'] / $row['total'] * 100, 1) : 0;
+                $fillClass = $pct > 30 ? 'fill-high' : ($pct > 15 ? 'fill-medium' : 'fill-low');
+                $badgePct  = $pct > 30 ? 'rp-badge-red' : ($pct > 15 ? 'rp-badge-amber' : 'rp-badge-green');
+              @endphp
+              <tr>
+                <td class="fw">Class {{ $row['class'] }}</td>
+                <td style="font-weight:600;">{{ $row['total'] }}</td>
+                <td><span class="rp-badge rp-badge-red">{{ $row['slow'] }}</span></td>
+                <td><span class="rp-badge rp-badge-green">{{ $row['good'] }}</span></td>
+                <td>
+                  <div class="rp-risk-bar-wrap">
+                    <div class="rp-risk-bar">
+                      <div class="rp-risk-bar-fill {{ $fillClass }}" style="width:{{ min($pct, 100) }}%;"></div>
+                    </div>
+                    <span class="rp-badge {{ $badgePct }}" style="min-width:42px; justify-content:center;">{{ $pct }}%</span>
+                  </div>
+                </td>
+              </tr>
+              @empty
+              <tr>
+                <td colspan="5">
+                  <div class="rp-empty" style="padding:32px 16px;">
+                    <div class="rp-empty-title">No class data available</div>
+                    <div class="rp-empty-desc">Class analytics will appear once marks are recorded.</div>
+                  </div>
+                </td>
+              </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  </div>
+
+    {{-- ── Slow Learners ── --}}
+    <div class="rp-card">
+      {{-- Header --}}
+      <div class="rp-card-inner" style="padding-bottom:16px;">
+        <div class="rp-card-head" style="margin-bottom:0;">
+          <div class="rp-card-title" style="color:#991b1b;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Critical Attention — Slow Learners
+            <span class="rp-badge rp-badge-red" style="margin-left:4px;">{{ count($slowLearners) }}</span>
+          </div>
+        </div>
+      </div>
+
+      {{-- Alert --}}
+      @php $noRemedial = $slowLearners->filter(fn($s) => $s->remedialActions->count() === 0)->count(); @endphp
+      @if($noRemedial > 0)
+      <div style="padding: 0 24px 16px;">
+        <div class="rp-alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="rp-alert-text">
+            <strong>{{ $noRemedial }} student{{ $noRemedial > 1 ? 's have' : ' has' }} no remedial actions assigned.</strong>
+            Review the list below and assign tasks to ensure timely support.
+          </div>
+        </div>
+      </div>
+      @endif
+
+      <div class="rp-divider"></div>
+
+      {{-- Table header --}}
+      <table class="rp-table" style="width:100%;">
+        <thead>
+          <tr>
+            <th style="padding-left:24px; width:35%;">Student</th>
+            <th>Roll No</th>
+            <th>Class</th>
+            <th>Avg %</th>
+            <th style="padding-right:24px;">Remedial Status</th>
+          </tr>
+        </thead>
+      </table>
+
+      {{-- Student rows --}}
+      @forelse($slowLearners as $student)
+      <div class="rp-student-row">
+        <div class="rp-avatar">{{ strtoupper(substr($student->name, 0, 2)) }}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="rp-stu-name">{{ $student->name }}</div>
+          <div class="rp-stu-meta">{{ $student->email }}</div>
+        </div>
+        <span class="rp-badge rp-badge-slate" style="flex-shrink:0;">{{ $student->roll_no }}</span>
+        <span style="font-size:13px; color:#475569; white-space:nowrap; flex-shrink:0;">
+          Class {{ $student->class }}{{ $student->section ? '-'.$student->section : '' }}
+        </span>
+        <div class="rp-stu-pct">{{ $student->average_percentage }}%</div>
+        <div class="rp-stu-status">
+          @if($student->remedialActions->count() > 0)
+            <span class="rp-badge rp-badge-amber">
+              {{ $student->remedialActions->count() }} active task{{ $student->remedialActions->count() > 1 ? 's' : '' }}
+            </span>
+          @else
+            <span class="rp-badge rp-badge-red">No remedials</span>
+          @endif
+        </div>
+      </div>
+      @empty
+      <div class="rp-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="rp-empty-title">All students are on track</div>
+        <div class="rp-empty-desc">No slow learners identified this session. Keep it up!</div>
+      </div>
+      @endforelse
+
+      @if(count($slowLearners) > 0)
+      <div class="rp-view-all">
+        <button onclick="window.location.href='#'">
+          View full slow-learner report
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      @endif
+    </div>
+
+  </div>{{-- /rp-wrap --}}
 
   @push('scripts')
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Export CSV functionality
+    /* ── CSV Export ── */
     function exportTableToCSV(filename) {
-      let csv = [];
-      let rows = document.querySelectorAll("#reportTable tr");
-      
-      for (let i = 0; i < rows.length; i++) {
-        let row = [], cols = rows[i].querySelectorAll("td, th");
-        for (let j = 0; j < cols.length; j++) row.push(cols[j].innerText.replace(/,/g, '').trim());
-        csv.push(row.join(","));
-      }
-
-      let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-      let downloadLink = document.createElement("a");
-      downloadLink.download = filename;
-      downloadLink.href = window.URL.createObjectURL(csvFile);
-      downloadLink.style.display = "none";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      const rows = document.querySelectorAll('#reportTable tr');
+      const csv  = Array.from(rows).map(row =>
+        Array.from(row.querySelectorAll('td, th'))
+          .map(cell => '"' + cell.innerText.replace(/"/g, '""').trim() + '"')
+          .join(',')
+      );
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const a    = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(blob),
+        download: filename,
+        style: 'display:none'
+      });
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
-    // Chart.js Visualization - Premium UI
-    window.addEventListener('DOMContentLoaded', function() {
-      var ctx = document.getElementById('classBreakdownChart');
-      if(ctx) {
-        var rawData = {!! json_encode($classBreakdown) !!};
-        
-        if (rawData.length === 0) {
-            document.getElementById('classBreakdownChart').style.display = 'none';
-            ctx.parentElement.innerHTML = '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; font-weight:500;">No analytical data available yet. Please add marks to view class performance.</div>';
-            return;
-        }
+    /* ── Donut Chart ── */
+    window.addEventListener('DOMContentLoaded', function () {
+      var donutCanvas = document.getElementById('donutChart');
+      if (!donutCanvas) return;
 
-        var labels = rawData.map(d => 'Class ' + d.class);
-        var goodData = rawData.map(d => d.good);
-        var slowData = rawData.map(d => d.slow);
+      var rawData = {!! json_encode($classBreakdown) !!};
+      if (!rawData.length) return;
 
-        Chart.defaults.font.family = "'Inter', 'Segoe UI', Roboto, sans-serif";
-        Chart.defaults.color = '#64748b';
+      var goodAll = rawData.reduce(function(s, d){ return s + d.good; }, 0);
+      var slowAll = rawData.reduce(function(s, d){ return s + d.slow; }, 0);
 
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'Performing Well',
-                data: goodData,
-                backgroundColor: '#10b981', // emerald-500
-                borderRadius: {topLeft: 6, topRight: 6, bottomLeft: 6, bottomRight: 6},
-                borderSkipped: false,
-                barPercentage: 0.6,
-              },
-              {
-                label: 'Slow Learners',
-                data: slowData,
-                backgroundColor: '#ef4444', // red-500
-                borderRadius: {topLeft: 6, topRight: 6, bottomLeft: 6, bottomRight: 6},
-                borderSkipped: false,
-                barPercentage: 0.6,
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              mode: 'index',
-              intersect: false,
-            },
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  usePointStyle: true,
-                  padding: 20,
-                  font: { weight: '600' }
-                }
-              },
-              tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                titleFont: { size: 13, weight: '700' },
-                bodyFont: { size: 13 },
-                padding: 12,
-                cornerRadius: 8,
-                displayColors: true,
-                boxPadding: 4
-              }
-            },
-            scales: {
-              x: { 
-                stacked: true, 
-                grid: { display: false, drawBorder: false }
-              },
-              y: { 
-                stacked: true, 
-                beginAtZero: true, 
-                grid: { 
-                  color: '#f1f5f9',
-                  drawBorder: false,
-                  borderDash: [4, 4] 
-                },
-                border: { display: false }
-              }
+      Chart.defaults.font.family = "'Inter', 'Segoe UI', system-ui, sans-serif";
+
+      new Chart(donutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Performing well', 'Slow learners'],
+          datasets: [{
+            data: [goodAll, slowAll],
+            backgroundColor: ['#10b981', '#fca5a5'],
+            borderColor:     ['#10b981', '#fca5a5'],
+            borderWidth: 0,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          responsive: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { size: 11, weight: '700' },
+              bodyFont: { size: 11 },
+              padding: 8,
+              cornerRadius: 6,
             }
           }
-        });
-      }
+        }
+      });
     });
   </script>
   @endpush

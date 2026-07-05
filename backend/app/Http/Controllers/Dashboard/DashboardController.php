@@ -47,6 +47,8 @@ class DashboardController extends Controller
 
     public function index()
     {
+        \Illuminate\Support\Facades\Log::info('GET /dashboard ID: ' . session()->getId() . ' | Auth Check: ' . (auth()->check() ? 'true' : 'false') . ' | User: ' . auth()->id());
+
         $user = auth()->user();
 
         if ($user->isAdmin()) {

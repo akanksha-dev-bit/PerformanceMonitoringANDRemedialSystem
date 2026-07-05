@@ -51,6 +51,26 @@ use App\Http\Controllers\User\TeacherController;
 // Redirect root to dashboard (or login if unauthenticated)
 Route::get('/', fn() => redirect()->route('dashboard'));
 
+Route::get('/debug-user', function() {
+    $user = \App\Models\User::where('email', 'abijithc140@gmail.com')->first();
+    return [
+        'exists' => !!$user,
+        'hash_starts_with' => $user ? substr($user->password, 0, 7) : null,
+        'check_admin123' => $user ? \Illuminate\Support\Facades\Hash::check('Admin@123', $user->password) : false,
+    ];
+});
+
+// Route to serve the Lottie animation file from resources
+Route::get('/animations/Teacher.lottie', function () {
+    $path = resource_path('animations/Teacher.lottie');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path, [
+        'Content-Type' => 'application/octet-stream',
+    ]);
+})->name('animations.teacher');
+
 // Auth routes (provided by Breeze)
 require __DIR__ . '/auth.php';
 
@@ -107,10 +127,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Reports
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
+        // Teacher Attendance Routes
+        Route::get('/attendance', [\App\Http\Controllers\Teacher\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/mark/{timetable}', [\App\Http\Controllers\Teacher\AttendanceController::class, 'mark'])->name('attendance.mark');
+        Route::post('/attendance/store/{timetable}', [\App\Http\Controllers\Teacher\AttendanceController::class, 'store'])->name('attendance.store');
+
+        // Student Attendance Routes
+        Route::get('/my-attendance', [\App\Http\Controllers\Student\StudentAttendanceController::class, 'index'])->name('student.attendance');
+
         // Admin Only Routes
         Route::middleware([\App\Http\Middleware\RoleMiddleware::class.':admin'])->group(function () {
             Route::resource('subjects', \App\Http\Controllers\Academic\SubjectController::class)->except(['show']);
             Route::resource('teachers', TeacherController::class);
+            Route::resource('classes', \App\Http\Controllers\Admin\AcademicClassController::class)->except(['show', 'create', 'edit']);
+            Route::resource('classrooms', \App\Http\Controllers\Admin\ClassroomController::class)->except(['show', 'create', 'edit']);
+            Route::resource('teacher-allocations', \App\Http\Controllers\Admin\TeacherAllocationController::class)->only(['index', 'store', 'destroy']);
+            Route::resource('timetables', \App\Http\Controllers\Admin\TimetableController::class)->only(['index', 'store', 'destroy']);
+            Route::get('/analytics/attendance', [\App\Http\Controllers\Admin\AdminAttendanceAnalyticsController::class, 'index'])->name('admin.attendance-analytics');
         });
 
         // Quiz Management (Teachers + Admin)

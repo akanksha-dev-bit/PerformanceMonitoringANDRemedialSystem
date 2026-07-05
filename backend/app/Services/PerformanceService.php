@@ -102,7 +102,7 @@ class PerformanceService
     {
         // Group by academic_year and calculate average
         $data = \App\Models\Mark::selectRaw(
-            'academic_year, ROUND(SUM(marks_obtained) / SUM(max_marks) * 100, 2) as avg_pct'
+            'academic_year, ROUND(SUM(marks_obtained) * 100.0 / SUM(max_marks), 2) as avg_pct'
         )
             ->groupBy('academic_year')
             ->orderBy('academic_year')

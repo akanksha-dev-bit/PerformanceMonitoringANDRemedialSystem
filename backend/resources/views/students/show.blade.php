@@ -165,37 +165,81 @@
     {{-- Right: Content --}}
     <div style="display:flex; flex-direction:column; gap:32px;">
       
-      {{-- Overall Performance --}}
-      <div class="perf-card">
-        @if($student->has_marks)
-            @php 
-              $avg = $student->average_percentage; 
-              $color = $student->performance_color; 
-              $deg = ($avg / 100) * 360;
-            @endphp
-            <div class="perf-score-wrap" style="--score-color: {{ $color }}; --score-deg: {{ $deg }}deg;">
-              <div class="perf-score-inner">
-                <span class="val">{{ $avg }}%</span>
-                <span class="lbl">Overall</span>
-              </div>
-            </div>
-            <div class="perf-details">
-              <h3 style="font-size:18px; font-weight:700; margin-bottom:8px; color:#111827;">Academic Performance</h3>
-              <p style="font-size:14px; color:var(--text-muted); line-height:1.5;">
-                {{ $student->name }} is currently showing <strong>{{ strtolower($student->performance_label) }}</strong> results. 
-                Based on {{ $student->marks->count() }} total examination records.
-              </p>
-            </div>
-        @else
-            <div style="width:100%; text-align:center; padding:20px;">
-                <div style="width:64px; height:64px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:var(--text-muted);">
-                  <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      {{-- Academic & Attendance Stats Grid --}}
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+        
+        {{-- Academic Performance Card --}}
+        <div class="perf-card" style="margin: 0;">
+          @if($student->has_marks)
+              @php 
+                $avg = $student->average_percentage; 
+                $color = $student->performance_color; 
+                $deg = ($avg / 100) * 360;
+              @endphp
+              <div class="perf-score-wrap" style="--score-color: {{ $color }}; --score-deg: {{ $deg }}deg;">
+                <div class="perf-score-inner">
+                  <span class="val">{{ $avg }}%</span>
+                  <span class="lbl">Overall</span>
                 </div>
-                <h3 style="font-size:16px; font-weight:600; color:#111827; margin-bottom:4px;">No Performance Data</h3>
-                <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">Add the first marks entry to generate performance insights.</p>
-                <a href="{{ route('marks.create', ['student_id' => $student->id]) }}" class="btn btn-primary">+ Add First Mark</a>
+              </div>
+              <div class="perf-details">
+                <h3 style="font-size:18px; font-weight:700; margin-bottom:8px; color:#111827;">Academic Performance</h3>
+                <p style="font-size:14px; color:var(--text-muted); line-height:1.5;">
+                  {{ $student->name }} is currently showing <strong>{{ strtolower($student->performance_label) }}</strong> results. 
+                  Based on {{ $student->marks->count() }} total examination records.
+                </p>
+              </div>
+          @else
+              <div style="width:100%; text-align:center; padding:20px;">
+                  <div style="width:64px; height:64px; background:#f1f5f9; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:var(--text-muted);">
+                    <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  </div>
+                  <h3 style="font-size:16px; font-weight:600; color:#111827; margin-bottom:4px;">No Performance Data</h3>
+                  <p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">Add the first marks entry to generate performance insights.</p>
+                  <a href="{{ route('marks.create', ['student_id' => $student->id]) }}" class="btn btn-primary">+ Add First Mark</a>
+              </div>
+          @endif
+        </div>
+
+        {{-- Attendance Summary Card --}}
+        <div class="perf-card" style="margin: 0;">
+          @php
+            $totalSessions = $student->attendanceRecords->count();
+            $presentSessions = $student->attendanceRecords->where('status', 'present')->count();
+            $absentSessions = $student->attendanceRecords->where('status', 'absent')->count();
+            $attendancePercentage = $student->overall_attendance;
+            $attendanceColor = $attendancePercentage >= 75 ? '#00C48C' : '#FF5252';
+            $attendanceDeg = ($attendancePercentage / 100) * 360;
+          @endphp
+          <div class="perf-score-wrap" style="--score-color: {{ $attendanceColor }}; --score-deg: {{ $attendanceDeg }}deg;">
+            <div class="perf-score-inner">
+              <span class="val">{{ $attendancePercentage }}%</span>
+              <span class="lbl">Attendance</span>
             </div>
-        @endif
+          </div>
+          <div class="perf-details">
+            <h3 style="font-size:18px; font-weight:700; margin-bottom:8px; color:#111827;">Attendance Rate</h3>
+            @if($totalSessions > 0)
+              <p style="font-size:14px; color:var(--text-muted); line-height:1.5;">
+                {{ $student->name }} has attended <strong>{{ $presentSessions }}</strong> out of <strong>{{ $totalSessions }}</strong> total class sessions.
+                @if($attendancePercentage < 75)
+                  <span style="display:block; margin-top:8px; color:#FF5252; font-weight:600; font-size:13px;">
+                    ⚠️ Warning: Attendance is below institutional 75% threshold!
+                  </span>
+                @else
+                  <span style="display:block; margin-top:8px; color:#00C48C; font-weight:600; font-size:13px;">
+                    ✓ Satisfactory attendance record.
+                  </span>
+                @endif
+              </p>
+            @else
+              <p style="font-size:14px; color:var(--text-muted); line-height:1.5;">
+                No attendance sessions recorded for this student yet.
+              </p>
+            @endif
+          </div>
+        </div>
+
       </div>
 
       {{-- Subject marks table --}}
@@ -238,6 +282,80 @@
               </tr>
               @empty
               <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);">No subjects evaluated yet.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {{-- Subject-wise Attendance Card --}}
+      @php
+        $subjectAttendance = [];
+        if ($totalSessions > 0) {
+            $groupedRecords = $student->attendanceRecords->groupBy(function($record) {
+                return $record->session->subject->id ?? 0;
+            });
+
+            foreach ($groupedRecords as $subId => $records) {
+                $subName = $records->first()->session->subject->name ?? 'Unknown Subject';
+                $totalSub = $records->count();
+                $presentSub = $records->where('status', 'present')->count();
+                $pctSub = round(($presentSub / $totalSub) * 100, 1);
+                $subjectAttendance[] = [
+                    'id' => $subId,
+                    'name' => $subName,
+                    'total' => $totalSub,
+                    'present' => $presentSub,
+                    'absent' => $totalSub - $presentSub,
+                    'pct' => $pctSub,
+                ];
+            }
+        }
+      @endphp
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding: 24px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <h3 class="card-title" style="margin:0;">Subject-wise Attendance</h3>
+        </div>
+        <div class="table-wrapper" style="border:none; border-radius:0;">
+          <table class="premium-table">
+            <thead>
+              <tr><th>Subject</th><th>Classes Attended</th><th>Attendance Rate</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              @forelse($subjectAttendance as $subAtt)
+              <tr>
+                <td>
+                  <div style="display:flex; align-items:center;">
+                    <div class="subject-icon" style="background: rgba(108, 92, 231, 0.08); color: #6C5CE7;">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                    <div>
+                      <div style="font-weight:600; color:#111827;">{{ $subAtt['name'] }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-weight:600; color:#475569;">{{ $subAtt['present'] }} / {{ $subAtt['total'] }}</span>
+                  <span style="font-size:12px; color:var(--text-muted); margin-left:4px;">sessions</span>
+                </td>
+                <td>
+                  <div style="display:flex; flex-direction:column; gap:4px; width: 120px;">
+                    <span style="font-weight:700; color:#111827;">{{ $subAtt['pct'] }}%</span>
+                    <div style="height: 4px; background: #e2e8f0; border-radius: 100px; overflow:hidden;">
+                      <div style="height: 100%; background: {{ $subAtt['pct'] >= 75 ? '#00C48C' : '#FF5252' }}; width: {{ $subAtt['pct'] }}%;"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if($subAtt['pct'] >= 75)
+                    <span class="badge badge-success">Good</span>
+                  @else
+                    <span class="badge badge-error">Low</span>
+                  @endif
+                </td>
+              </tr>
+              @empty
+              <tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);">No attendance records found for subjects.</td></tr>
               @endforelse
             </tbody>
           </table>

@@ -66,9 +66,15 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
+        \Illuminate\Support\Facades\Log::info('POST /login [Before Authenticate] ID: ' . $request->session()->getId() . ' | Auth Check: ' . (Auth::check() ? 'true' : 'false') . ' | User: ' . Auth::id());
+
         $request->authenticate();
 
+        \Illuminate\Support\Facades\Log::info('POST /login [After Authenticate] ID: ' . $request->session()->getId() . ' | Auth Check: ' . (Auth::check() ? 'true' : 'false') . ' | User: ' . Auth::id());
+
         $request->session()->regenerate();
+
+        \Illuminate\Support\Facades\Log::info('POST /login [After Regenerate] ID: ' . $request->session()->getId() . ' | Auth Check: ' . (Auth::check() ? 'true' : 'false') . ' | User: ' . Auth::id());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

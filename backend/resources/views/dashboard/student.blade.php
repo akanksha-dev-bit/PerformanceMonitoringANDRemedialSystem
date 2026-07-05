@@ -744,6 +744,34 @@
       </div>
     </div>
 
+    {{-- ── Today's Classes ── --}}
+    <div class="sd-card">
+      <div class="sd-card-title">📅 Today's Classes & Schedule</div>
+      @if($todayClasses->count() > 0)
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          @foreach($todayClasses as $slot)
+            <div style="padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <span style="background: rgba(108, 92, 231, 0.08); color: #6C5CE7; font-weight:700; font-size:10px; padding: 2px 6px; border-radius: 100px;">
+                  Period {{ $slot->period_number }}
+                </span>
+                <div style="font-weight:700; color:#0f172a; font-size:14px; margin-top:8px;">{{ $slot->subject->name }}</div>
+                <div style="font-size:12px; color:#64748b; margin-top:2px;">Teacher: {{ $slot->teacher->name }}</div>
+              </div>
+              <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-top:12px; border-top:1px solid #e2e8f0; padding-top:6px; display:flex; align-items:center; gap:4px;">
+                🕒 {{ \Carbon\Carbon::parse($slot->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($slot->end_time)->format('h:i A') }}
+              </div>
+            </div>
+          @endforeach
+        </div>
+      @else
+        <div class="sd-empty" style="padding: 24px;">
+          <div class="sd-empty-icon" style="font-size:32px;">🌴</div>
+          <div style="font-size:14px; font-weight:650; color:#64748b;">No classes scheduled for today. Enjoy your day!</div>
+        </div>
+      @endif
+    </div>
+
     {{-- ── Progress Chart + Rank ── --}}
     <div class="sd-row">
       <div class="sd-card">

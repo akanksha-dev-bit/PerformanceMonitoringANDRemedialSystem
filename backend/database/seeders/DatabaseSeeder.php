@@ -24,6 +24,13 @@ class DatabaseSeeder extends Seeder
     {
         // Disable foreign keys to cleanly truncate existing tables
         Schema::disableForeignKeyConstraints();
+        \App\Models\AttendanceActivityLog::truncate();
+        \App\Models\AttendanceRecord::truncate();
+        \App\Models\AttendanceSession::truncate();
+        \App\Models\Timetable::truncate();
+        \App\Models\TeacherSubjectAssignment::truncate();
+        \App\Models\Classroom::truncate();
+        \App\Models\AcademicClass::truncate();
         Mark::truncate();
         RemedialAction::truncate();
         StudentQuizAssignment::truncate();
@@ -42,6 +49,24 @@ class DatabaseSeeder extends Seeder
         $school = School::create([
             'name' => 'Oakwood Academy',
             'school_code' => 'OAK123',
+        ]);
+
+        // 1.5 Create Academic Classes & Classrooms
+        $class10 = \App\Models\AcademicClass::create([
+            'school_id' => $school->id,
+            'name' => 'Class 10',
+        ]);
+
+        $classroomA = \App\Models\Classroom::create([
+            'school_id' => $school->id,
+            'academic_class_id' => $class10->id,
+            'name' => 'A',
+        ]);
+
+        $classroomB = \App\Models\Classroom::create([
+            'school_id' => $school->id,
+            'academic_class_id' => $class10->id,
+            'name' => 'B',
         ]);
 
         // 2. Create School Admin User
@@ -105,6 +130,65 @@ class DatabaseSeeder extends Seeder
             'school_id' => $school->id,
             'subject_id' => $math->id,
         ]);
+
+        // Allocations
+        $allocMathA = \App\Models\TeacherSubjectAssignment::create([
+            'school_id' => $school->id,
+            'teacher_id' => $teacherUser->id,
+            'subject_id' => $math->id,
+            'classroom_id' => $classroomA->id,
+        ]);
+
+        $allocMathB = \App\Models\TeacherSubjectAssignment::create([
+            'school_id' => $school->id,
+            'teacher_id' => $teacherUser->id,
+            'subject_id' => $math->id,
+            'classroom_id' => $classroomB->id,
+        ]);
+
+        $allocScienceA = \App\Models\TeacherSubjectAssignment::create([
+            'school_id' => $school->id,
+            'teacher_id' => $teacherUser->id,
+            'subject_id' => $science->id,
+            'classroom_id' => $classroomA->id,
+        ]);
+
+        // Timetable
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        foreach ($days as $day) {
+            \App\Models\Timetable::create([
+                'school_id' => $school->id,
+                'classroom_id' => $classroomA->id,
+                'subject_id' => $math->id,
+                'teacher_id' => $teacherUser->id,
+                'day_of_week' => $day,
+                'period_number' => 1,
+                'start_time' => '08:30:00',
+                'end_time' => '09:30:00',
+            ]);
+
+            \App\Models\Timetable::create([
+                'school_id' => $school->id,
+                'classroom_id' => $classroomB->id,
+                'subject_id' => $math->id,
+                'teacher_id' => $teacherUser->id,
+                'day_of_week' => $day,
+                'period_number' => 2,
+                'start_time' => '09:30:00',
+                'end_time' => '10:30:00',
+            ]);
+
+            \App\Models\Timetable::create([
+                'school_id' => $school->id,
+                'classroom_id' => $classroomA->id,
+                'subject_id' => $science->id,
+                'teacher_id' => $teacherUser->id,
+                'day_of_week' => $day,
+                'period_number' => 3,
+                'start_time' => '10:30:00',
+                'end_time' => '11:30:00',
+            ]);
+        }
 
         // 6. Create Teacher Assignments for Clara
         TeacherAssignment::create([
@@ -220,6 +304,7 @@ class DatabaseSeeder extends Seeder
                 'roll_no' => $sd['roll_no'],
                 'class' => $sd['class'],
                 'section' => $sd['section'],
+                'classroom_id' => $sd['section'] === 'A' ? $classroomA->id : $classroomB->id,
                 'gender' => rand(0, 1) ? 'male' : 'female',
                 'is_active' => true,
             ]);
@@ -235,6 +320,62 @@ class DatabaseSeeder extends Seeder
                     'school_id' => $school->id,
                 ]);
             }
+        }
+
+        // Seed historical attendance sessions (15 days)
+        $date = Carbon::now()->subDays(15);
+        $timetablesA = \App\Models\Timetable::where('classroom_id', $classroomA->id)->get();
+        while ($date->lte(Carbon::now())) {
+            if ($date->dayOfWeek !== Carbon::SUNDAY) {
+                $dayOfWeek = $date->format('l');
+                $slotsForDay = $timetablesA->where('day_of_week', $dayOfWeek);
+                foreach ($slotsForDay as $slot) {
+                    $session = \App\Models\AttendanceSession::create([
+                        'school_id' => $school->id,
+                        'timetable_id' => $slot->id,
+                        'teacher_id' => $teacherUser->id,
+                        'date' => $date->format('Y-m-d'),
+                        'period_number' => $slot->period_number,
+                        'classroom_id' => $classroomA->id,
+                        'subject_id' => $slot->subject_id,
+                        'created_by' => $teacherUser->id,
+                        'headcount' => 3,
+                    ]);
+
+                    $studentsA = Student::where('classroom_id', $classroomA->id)->get();
+                    $presentCount = 0;
+                    foreach ($studentsA as $stud) {
+                        $status = 'present';
+                        if ($stud->name === 'Meena Kumari' && rand(1, 10) > 4) {
+                            $status = 'absent';
+                        } elseif ($stud->name === 'Sonia Gupta' && rand(1, 10) > 8) {
+                            $status = 'absent';
+                        }
+                        
+                        if ($status === 'present') {
+                            $presentCount++;
+                        }
+
+                        \App\Models\AttendanceRecord::create([
+                            'school_id' => $school->id,
+                            'attendance_session_id' => $session->id,
+                            'student_id' => $stud->id,
+                            'status' => $status,
+                        ]);
+                    }
+                    
+                    $session->update(['headcount' => $presentCount]);
+
+                    \App\Models\AttendanceActivityLog::create([
+                        'school_id' => $school->id,
+                        'attendance_session_id' => $session->id,
+                        'user_id' => $teacherUser->id,
+                        'action' => 'marked',
+                        'details' => json_encode(['headcount' => $presentCount]),
+                    ]);
+                }
+            }
+            $date->addDay();
         }
 
         // 8. Create Remedial Actions for slow learners
