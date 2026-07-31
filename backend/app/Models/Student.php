@@ -72,6 +72,12 @@ class Student extends Model
 
     public function getHasMarksAttribute(): bool
     {
+        if ($this->relationLoaded('marks')) {
+            return $this->marks->isNotEmpty();
+        }
+        if (isset($this->attributes['marks_count'])) {
+            return ((int) $this->attributes['marks_count']) > 0;
+        }
         return $this->marks()->exists();
     }
 
@@ -93,8 +99,9 @@ class Student extends Model
         $avg = $this->average_percentage;
         if ($avg < 40) return true;
 
-        $failedSubjects = $this->marks->filter(
-            fn($m) => ($m->marks_obtained / $m->max_marks * 100) < 40
+        $marks = $this->marks;
+        $failedSubjects = $marks->filter(
+            fn($m) => $m->max_marks > 0 && (($m->marks_obtained / $m->max_marks) * 100) < 40
         )->count();
 
         return $failedSubjects >= 2;
@@ -130,7 +137,7 @@ class Student extends Model
             'good'    => '#00C48C',
             'at_risk' => '#F59E0B',
             'slow'    => '#FF5252',
-            default   => '#9CA3AF', // Gray for no_data
+            default   => '#9CA3AF',
         };
     }
 
@@ -184,6 +191,22 @@ class Student extends Model
 
     public function getOverallAttendanceAttribute()
     {
+        if ($this->relationLoaded('attendanceRecords')) {
+            $total = $this->attendanceRecords->count();
+            if ($total === 0) return 100.0;
+            $present = $this->attendanceRecords->where('status', 'present')->count();
+            return round(($present / $total) * 100, 2);
+        }
+
+        if (isset($this->attributes['attendance_records_count'])) {
+            $total = (int) $this->attributes['attendance_records_count'];
+            if ($total === 0) return 100.0;
+            $present = isset($this->attributes['present_attendance_records_count'])
+                ? (int) $this->attributes['present_attendance_records_count']
+                : $this->attendanceRecords()->where('status', 'present')->count();
+            return round(($present / $total) * 100, 2);
+        }
+
         $total = $this->attendanceRecords()->count();
         if ($total === 0) return 100.0;
         $present = $this->attendanceRecords()->where('status', 'present')->count();
@@ -192,6 +215,16 @@ class Student extends Model
 
     public function getSubjectAttendance($subjectId)
     {
+        if ($this->relationLoaded('attendanceRecords')) {
+            $records = $this->attendanceRecords->filter(function($r) use ($subjectId) {
+                return $r->session && $r->session->subject_id == $subjectId;
+            });
+            $total = $records->count();
+            if ($total === 0) return 100.0;
+            $present = $records->where('status', 'present')->count();
+            return round(($present / $total) * 100, 2);
+        }
+
         $total = $this->attendanceRecords()
             ->whereHas('session', function($q) use ($subjectId) {
                 $q->where('subject_id', $subjectId);
@@ -221,5 +254,3 @@ class Student extends Model
         return $this->overall_attendance >= 75 && $this->average_percentage < 40;
     }
 }
-
-

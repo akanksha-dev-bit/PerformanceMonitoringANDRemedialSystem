@@ -51,16 +51,52 @@ class StudentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Student::withCount('marks')->latest();
+        $schoolId = auth()->user()->school_id;
+        $query = Student::with(['user', 'marks'])
+            ->where('students.school_id', $schoolId)
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->select('students.*')
+            ->withCount('marks');
+
         if ($request->filled('search')) {
             $q = $request->search;
-            $query->where(fn($qb) => $qb->where('name', 'like', "%$q%")
-                ->orWhere('roll_no', 'like', "%$q%")
-                ->orWhere('class', 'like', "%$q%"));
+            $query->where(function($qb) use ($q) {
+                $qb->where('users.name', 'like', "%$q%")
+                   ->orWhere('users.email', 'like', "%$q%")
+                   ->orWhere('students.roll_no', 'like', "%$q%")
+                   ->orWhere('students.class', 'like', "%$q%");
+            });
         }
-        if ($request->filled('class')) { $query->where('class', $request->class); }
+
+        if ($request->filled('class')) { 
+            $query->where('students.class', $request->class); 
+        }
+
+        // Default order by user name
+        $query->orderBy('users.name', 'asc');
+
         $students = $query->paginate(15)->withQueryString();
-        $classes  = Student::distinct()->pluck('class');
+
+        if ($request->expectsJson()) {
+            $students->getCollection()->transform(function($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'email' => $student->email,
+                    'roll_no' => $student->roll_no,
+                    'class' => $student->class,
+                    'section' => $student->section,
+                    'gender' => $student->gender,
+                    'is_active' => $student->is_active,
+                    'marks_count' => $student->marks_count,
+                    'average_percentage' => $student->average_percentage,
+                    'is_slow_learner' => $student->is_slow_learner,
+                ];
+            });
+            return response()->json($students);
+        }
+
+        $classes  = Student::distinct()->where('school_id', $schoolId)->pluck('class');
         return view('students.index', compact('students', 'classes'));
     }
 
@@ -69,80 +105,258 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255', 'email' => 'nullable|email|unique:users,email',
-            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()], 'roll_no' => 'required|string|unique:students,roll_no',
-            'class' => 'required|string|max:50', 'section' => 'nullable|string|max:10',
-            'dob' => 'nullable|date', 'gender' => 'nullable|in:male,female,other',
-            'phone' => 'nullable|string|max:20', 'guardian_name' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
+            'roll_no' => 'required|string|unique:students,roll_no',
+            'class' => 'required|string|max:50',
+            'section' => 'nullable|string|max:10',
+            'dob' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'phone' => 'nullable|string|max:20',
+            'guardian_name' => 'nullable|string|max:255',
+            'is_active' => 'nullable|boolean',
         ]);
-        $userId = null;
-        if (!empty($validated['email'])) {
-            $user = \App\Models\User::create([
-                'name' => $validated['name'], 'email' => $validated['email'], 'email_verified_at' => now(),
-                'password' => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
-                'role' => 'student', 'school_id' => auth()->user()->school_id,
-                'profile_completed' => true, 'is_active' => true,
-            ]);
-            $userId = $user->id;
+
+        $email = $validated['email'];
+        if (empty($email)) {
+            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . auth()->user()->school_id . '@example.com';
         }
-        Student::create([
-            'user_id' => $userId, 'school_id' => auth()->user()->school_id,
-            'roll_no' => $validated['roll_no'], 'class' => $validated['class'],
-            'section' => $validated['section'], 'dob' => $validated['dob'],
-            'gender' => $validated['gender'], 'phone' => $validated['phone'],
-            'guardian_name' => $validated['guardian_name'], 'is_active' => true,
+
+        $user = \App\Models\User::create([
+            'name' => $validated['name'],
+            'email' => $email,
+            'email_verified_at' => now(),
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
+            'role' => 'student',
+            'school_id' => auth()->user()->school_id,
+            'profile_completed' => true,
+            'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ]);
+
+        $student = Student::create([
+            'user_id' => $user->id,
+            'school_id' => auth()->user()->school_id,
+            'roll_no' => $validated['roll_no'],
+            'class' => $validated['class'],
+            'section' => $validated['section'],
+            'dob' => $validated['dob'],
+            'gender' => $validated['gender'],
+            'phone' => $validated['phone'],
+            'guardian_name' => $validated['guardian_name'],
+            'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student added successfully!',
+                'student' => $student
+            ], 201);
+        }
+
         return redirect()->route('students.index')->with('success', 'Student added successfully!');
     }
 
     public function show(Student $student)
     {
         $student->load(['marks.subject', 'remedialActions', 'attendanceRecords.session.subject']);
+        
+        if (request()->expectsJson()) {
+            return response()->json([
+                'id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->email,
+                'roll_no' => $student->roll_no,
+                'class' => $student->class,
+                'section' => $student->section,
+                'dob' => $student->dob ? $student->dob->format('Y-m-d') : null,
+                'gender' => $student->gender,
+                'phone' => $student->phone,
+                'guardian_name' => $student->guardian_name,
+                'is_active' => $student->is_active,
+                'xp_points' => $student->xp_points,
+                'study_streak' => $student->study_streak,
+                'has_marks' => $student->has_marks,
+                'average_percentage' => $student->average_percentage,
+                'is_slow_learner' => $student->is_slow_learner,
+                'performance_label' => $student->performance_label,
+                'performance_status' => $student->performance_status,
+                'performance_color' => $student->performance_color,
+                'overall_attendance' => $student->overall_attendance,
+                'marks' => $student->marks->map(function($mark) {
+                    return [
+                        'id' => $mark->id,
+                        'exam_type' => $mark->exam_type,
+                        'marks_obtained' => $mark->marks_obtained,
+                        'max_marks' => $mark->max_marks,
+                        'percentage' => $mark->percentage,
+                        'is_pass' => $mark->is_pass,
+                        'subject' => $mark->subject ? [
+                            'id' => $mark->subject->id,
+                            'name' => $mark->subject->name,
+                            'code' => $mark->subject->code,
+                        ] : null,
+                    ];
+                }),
+                'remedial_actions' => $student->remedialActions->map(function($action) {
+                    return [
+                        'id' => $action->id,
+                        'title' => $action->title,
+                        'action_type' => $action->action_type,
+                        'scheduled_date' => $action->scheduled_date ? $action->scheduled_date->format('Y-m-d') : null,
+                        'status' => $action->status,
+                        'status_badge_color' => $action->status_badge_color,
+                    ];
+                }),
+                'attendance_records' => $student->attendanceRecords->map(function($record) {
+                    return [
+                        'id' => $record->id,
+                        'status' => $record->status,
+                        'session' => $record->session ? [
+                            'id' => $record->session->id,
+                            'subject' => $record->session->subject ? [
+                                'id' => $record->session->subject->id,
+                                'name' => $record->session->subject->name,
+                            ] : null,
+                        ] : null,
+                    ];
+                }),
+            ]);
+        }
+
         return view('students.show', compact('student'));
     }
 
-    public function edit(Student $student) { return view('students.edit', compact('student')); }
+    public function edit(Student $student)
+    {
+        if (request()->expectsJson()) {
+            $student->load('user');
+            return response()->json([
+                'id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->user ? ($student->user->email ?? '') : '',
+                'roll_no' => $student->roll_no,
+                'class' => $student->class,
+                'section' => $student->section,
+                'dob' => $student->dob ? $student->dob->format('Y-m-d') : null,
+                'gender' => $student->gender,
+                'phone' => $student->phone,
+                'guardian_name' => $student->guardian_name,
+                'is_active' => $student->is_active,
+            ]);
+        }
+        return view('students.edit', compact('student'));
+    }
 
     public function update(Request $request, Student $student)
     {
+        if ($request->expectsJson() && $request->has('is_active') && count($request->all()) <= 2) {
+            $validated = $request->validate([
+                'is_active' => 'required|boolean',
+            ]);
+            $student->update([
+                'is_active' => $validated['is_active']
+            ]);
+            if ($student->user) {
+                $student->user->update([
+                    'is_active' => $validated['is_active']
+                ]);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully!',
+                'student' => $student
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . ($student->user_id ?? 'NULL'),
             'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
             'roll_no' => 'required|string|unique:students,roll_no,' . $student->id,
-            'class' => 'required|string|max:50', 'section' => 'nullable|string|max:10',
-            'dob' => 'nullable|date', 'gender' => 'nullable|in:male,female,other',
-            'phone' => 'nullable|string|max:20', 'guardian_name' => 'nullable|string|max:255',
-            'status' => 'in:active,inactive',
+            'class' => 'required|string|max:50',
+            'section' => 'nullable|string|max:10',
+            'dob' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'phone' => 'nullable|string|max:20',
+            'guardian_name' => 'nullable|string|max:255',
+            'status' => 'nullable|in:active,inactive',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        $isActive = true;
+        if ($request->has('is_active')) {
+            $isActive = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN);
+        } elseif ($request->has('status')) {
+            $isActive = $validated['status'] === 'active';
+        }
+
+        $email = $validated['email'];
+        if (empty($email)) {
+            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . auth()->user()->school_id . '@example.com';
+        }
+
         if ($student->user_id) {
-            $userData = ['name' => $validated['name'], 'email' => $validated['email']];
+            $userData = [
+                'name' => $validated['name'],
+                'email' => $email,
+                'is_active' => $isActive,
+            ];
             if (!empty($validated['password'])) {
                 $userData['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
             }
             $student->user->update($userData);
-        } elseif (!empty($validated['email'])) {
+        } else {
             $user = \App\Models\User::create([
-                'name' => $validated['name'], 'email' => $validated['email'],
+                'name' => $validated['name'],
+                'email' => $email,
                 'password' => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
-                'role' => 'student', 'school_id' => $student->school_id,
-                'profile_completed' => true, 'is_active' => true,
+                'role' => 'student',
+                'school_id' => $student->school_id,
+                'profile_completed' => true,
+                'is_active' => $isActive,
             ]);
             $student->user_id = $user->id;
         }
+
         $student->update([
-            'roll_no' => $validated['roll_no'], 'class' => $validated['class'],
-            'section' => $validated['section'], 'dob' => $validated['dob'],
-            'gender' => $validated['gender'], 'phone' => $validated['phone'],
+            'roll_no' => $validated['roll_no'],
+            'class' => $validated['class'],
+            'section' => $validated['section'],
+            'dob' => $validated['dob'],
+            'gender' => $validated['gender'],
+            'phone' => $validated['phone'],
             'guardian_name' => $validated['guardian_name'],
-            'is_active' => ($validated['status'] ?? 'active') === 'active',
+            'is_active' => $isActive,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student updated successfully!',
+                'student' => $student
+            ]);
+        }
+
         return redirect()->route('students.show', $student)->with('success', 'Student updated successfully!');
     }
 
     public function destroy(Student $student)
     {
-        $student->delete();
+        if ($student->user) {
+            $student->user->delete();
+        } else {
+            $student->delete();
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Student removed.'
+            ]);
+        }
+
         return redirect()->route('students.index')->with('success', 'Student removed.');
     }
 }

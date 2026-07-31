@@ -83,6 +83,18 @@ Route::middleware('guest')->group(function () {
 // Protected routes — require authentication and email verification
 Route::middleware(['auth', 'verified'])->group(function () {
     
+    // React SPA: current user endpoint
+    Route::get('/api/user', fn() => response()->json([
+        'id'     => auth()->id(),
+        'name'   => auth()->user()->name,
+        'email'  => auth()->user()->email,
+        'role'   => auth()->user()->role,
+        'school' => auth()->user()->school ? [
+            'id'   => auth()->user()->school->id,
+            'name' => auth()->user()->school->name,
+        ] : null,
+    ]));
+    
     // Complete Profile (for Students)
     Route::get('/complete-profile', [StudentProfileController::class, 'create'])->name('complete-profile');
     Route::post('/complete-profile', [StudentProfileController::class, 'store'])->name('complete-profile.store');
@@ -104,9 +116,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Students
         Route::resource('students', StudentController::class);
+        Route::get('lookups/classes', [\App\Http\Controllers\Academic\LookupController::class, 'classes']);
+        Route::get('lookups/teachers', [\App\Http\Controllers\Academic\LookupController::class, 'teachers']);
+        Route::get('lookups/subjects', [\App\Http\Controllers\Academic\LookupController::class, 'subjects']);
 
         // Marks
-        Route::resource('marks', MarkController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('marks', MarkController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
         // Performance
         Route::prefix('performance')->name('performance.')->group(function () {

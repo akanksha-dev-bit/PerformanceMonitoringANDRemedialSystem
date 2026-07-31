@@ -50,12 +50,32 @@ use Illuminate\Validation\Rules;
 
 class TeacherController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $admin = auth()->user();
-        $teachers = Teacher::with(['user', 'subject'])
-            ->where('school_id', $admin->school_id)
-            ->paginate(15);
+        $query = Teacher::with(['user', 'subject'])
+            ->where('teachers.school_id', $admin->school_id)
+            ->join('users', 'teachers.user_id', '=', 'users.id')
+            ->select('teachers.*')
+            ->orderBy('users.name', 'asc');
+
+        if ($request->has('search') && $request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%")
+                  ->orWhereHas('subject', function ($qs) use ($search) {
+                      $qs->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $teachers = $query->paginate(15);
+
+        if ($request->expectsJson()) {
+            return response()->json($teachers);
+        }
+
         return view('teachers.index', compact('teachers'));
     }
 
@@ -73,20 +93,53 @@ class TeacherController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', \Illuminate\Validation\Rules\Password::defaults()],
             'subject_id' => ['nullable', 'exists:subjects,id'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
+
         $admin = auth()->user();
+
+        if ($request->expectsJson()) {
+            $isActive = $request->boolean('is_active', true);
+        } else {
+            $isActive = $request->has('is_active');
+        }
+
         $user = User::create([
-            'name' => $request->name, 'email' => $request->email, 'email_verified_at' => now(),
-            'password' => Hash::make($request->password), 'role' => 'teacher',
-            'school_id' => $admin->school_id, 'profile_completed' => true, 'is_active' => true,
+            'name' => $request->name,
+            'email' => $request->email,
+            'email_verified_at' => now(),
+            'password' => Hash::make($request->password),
+            'role' => 'teacher',
+            'school_id' => $admin->school_id,
+            'profile_completed' => true,
+            'is_active' => $isActive,
         ]);
-        Teacher::create(['user_id' => $user->id, 'school_id' => $admin->school_id, 'subject_id' => $request->subject_id]);
+
+        $teacher = Teacher::create([
+            'user_id' => $user->id,
+            'school_id' => $admin->school_id,
+            'subject_id' => $request->subject_id
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Teacher created successfully.',
+                'data' => $teacher->load(['user', 'subject'])
+            ], 201);
+        }
+
         return redirect()->route('teachers.index')->with('success', 'Teacher added successfully.');
     }
 
-    public function edit(Teacher $teacher)
+    public function edit(Teacher $teacher, Request $request)
     {
         if ($teacher->school_id !== auth()->user()->school_id) { abort(403); }
+
+        if ($request->expectsJson()) {
+            return response()->json($teacher->load(['user', 'subject']));
+        }
+
         $subjects = Subject::orderBy('name')->get();
         return view('teachers.edit', compact('teacher', 'subjects'));
     }
@@ -94,22 +147,68 @@ class TeacherController extends Controller
     public function update(Request $request, Teacher $teacher)
     {
         if ($teacher->school_id !== auth()->user()->school_id) { abort(403); }
-        $request->validate([
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,' . $teacher->user_id],
             'password' => ['nullable', \Illuminate\Validation\Rules\Password::defaults()],
             'subject_id' => ['nullable', 'exists:subjects,id'],
-        ]);
-        $teacher->user->update(['name' => $request->name, 'email' => $request->email]);
-        if ($request->filled('password')) { $teacher->user->update(['password' => Hash::make($request->password)]); }
-        $teacher->update(['subject_id' => $request->subject_id]);
+            'is_active' => ['nullable', 'boolean'],
+        ];
+
+        // Partial update support for status toggle switch
+        if ($request->expectsJson() && $request->has('is_active') && !$request->has('name')) {
+            $rules = [
+                'is_active' => ['required', 'boolean'],
+            ];
+        }
+
+        $validated = $request->validate($rules);
+
+        if (!$request->has('name') && $request->expectsJson()) {
+            // Status toggle only
+            $teacher->user->update(['is_active' => $request->boolean('is_active')]);
+        } else {
+            // Full update
+            $isActive = $request->expectsJson() ? $request->boolean('is_active', true) : $request->has('is_active');
+
+            $teacher->user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+                'is_active' => $isActive,
+            ]);
+
+            if ($request->filled('password')) {
+                $teacher->user->update(['password' => Hash::make($request->password)]);
+            }
+
+            $teacher->update(['subject_id' => $request->subject_id]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Teacher updated successfully.',
+                'data' => $teacher->load(['user', 'subject'])
+            ]);
+        }
+
         return redirect()->route('teachers.index')->with('success', 'Teacher updated successfully.');
     }
 
-    public function destroy(Teacher $teacher)
+    public function destroy(Teacher $teacher, Request $request)
     {
         if ($teacher->school_id !== auth()->user()->school_id) { abort(403); }
+        
         $teacher->user->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Teacher deleted successfully.'
+            ]);
+        }
+
         return redirect()->route('teachers.index')->with('success', 'Teacher deleted successfully.');
     }
 }

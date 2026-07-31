@@ -12,10 +12,13 @@ use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         if (!$user->isTeacher()) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => 'Only teachers can access attendance.'], 403);
+            }
             abort(403, 'Only teachers can access attendance.');
         }
 
@@ -36,16 +39,28 @@ class AttendanceController extends Controller
             ->pluck('period_number')
             ->toArray();
 
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json([
+                'todaySlots' => $todaySlots,
+                'completedSessionKeys' => $completedSessionKeys,
+                'today' => $today,
+            ]);
+        }
+
         return view('teacher.attendance.index', compact('todaySlots', 'completedSessionKeys', 'today'));
     }
 
-    public function mark(Timetable $timetable)
+    public function mark(Request $request, Timetable $timetable)
     {
         $user = auth()->user();
         if (!$user->isTeacher() || $timetable->teacher_id !== $user->id) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized action.'], 403);
+            }
             abort(403);
         }
 
+        $timetable->load(['classroom.academicClass', 'subject']);
         $classroom = $timetable->classroom;
         $students = Student::where('classroom_id', $classroom->id)
             ->where('school_id', $user->school_id)
@@ -66,6 +81,15 @@ class AttendanceController extends Controller
             $savedRecords = $session->records->pluck('status', 'student_id')->toArray();
         }
 
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json([
+                'timetable' => $timetable,
+                'students' => $students,
+                'session' => $session,
+                'savedRecords' => $savedRecords,
+            ]);
+        }
+
         return view('teacher.attendance.mark', compact('timetable', 'students', 'session', 'savedRecords'));
     }
 
@@ -73,6 +97,9 @@ class AttendanceController extends Controller
     {
         $user = auth()->user();
         if (!$user->isTeacher() || $timetable->teacher_id !== $user->id) {
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized action.'], 403);
+            }
             abort(403);
         }
 
@@ -91,9 +118,18 @@ class AttendanceController extends Controller
 
         // Strict headcount check
         if ($presentCount !== $headcount) {
+            $errorMsg = "Attendance mismatch detected. Present Count: {$presentCount}, Physical Headcount entered: {$headcount}. Please recheck before final submission.";
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json([
+                    'message' => $errorMsg,
+                    'errors' => [
+                        'headcount' => [$errorMsg]
+                    ]
+                ], 422);
+            }
             return redirect()->back()
                 ->withInput()
-                ->with('error', "Attendance mismatch detected. Present Count: {$presentCount}, Physical Headcount entered: {$headcount}. Please recheck before final submission.");
+                ->with('error', $errorMsg);
         }
 
         // Get or Create Session
@@ -150,7 +186,15 @@ class AttendanceController extends Controller
             ]
         ]);
 
+        $successMsg = 'Attendance marked successfully and synced to academic audit records!';
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json([
+                'message' => $successMsg,
+                'session' => $session
+            ]);
+        }
+
         return redirect()->route('attendance.index')
-            ->with('success', 'Attendance marked successfully and synced to academic audit records!');
+            ->with('success', $successMsg);
     }
 }
