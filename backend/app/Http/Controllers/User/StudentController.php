@@ -63,13 +63,12 @@ class StudentController extends Controller
             $query->where(function($qb) use ($q) {
                 $qb->where('users.name', 'like', "%$q%")
                    ->orWhere('users.email', 'like', "%$q%")
-                   ->orWhere('students.roll_no', 'like', "%$q%")
-                   ->orWhere('students.class', 'like', "%$q%");
+                   ->orWhere('students.roll_no', 'like', "%$q%");
             });
         }
 
-        if ($request->filled('class')) { 
-            $query->where('students.class', $request->class); 
+        if ($request->filled('classroom_id')) {
+            $query->where('students.classroom_id', $request->classroom_id);
         }
 
         // Default order by user name
@@ -80,23 +79,24 @@ class StudentController extends Controller
         if ($request->expectsJson()) {
             $students->getCollection()->transform(function($student) {
                 return [
-                    'id' => $student->id,
-                    'name' => $student->name,
-                    'email' => $student->email,
-                    'roll_no' => $student->roll_no,
-                    'class' => $student->class,
-                    'section' => $student->section,
-                    'gender' => $student->gender,
-                    'is_active' => $student->is_active,
-                    'marks_count' => $student->marks_count,
-                    'average_percentage' => $student->average_percentage,
-                    'is_slow_learner' => $student->is_slow_learner,
+                    'id'                 => $student->id,
+                    'name'              => $student->name,
+                    'email'             => $student->email,
+                    'roll_no'           => $student->roll_no,
+                    'classroom_id'      => $student->classroom_id,
+                    'section_name'      => $student->classroom?->display_name,
+                    'gender'            => $student->gender,
+                    'is_active'         => $student->is_active,
+                    'marks_count'       => $student->marks_count,
+                    'average_percentage'=> $student->average_percentage,
+                    'is_slow_learner'   => $student->is_slow_learner,
                 ];
             });
             return response()->json($students);
         }
 
-        $classes  = Student::distinct()->where('school_id', $schoolId)->pluck('class');
+        $classes = \App\Models\Classroom::where('school_id', $schoolId)
+            ->with('academicClass')->get();
         return view('students.index', compact('students', 'classes'));
     }
 
@@ -104,54 +104,61 @@ class StudentController extends Controller
 
     public function store(Request $request)
     {
+        $schoolId = auth()->user()->school_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:users,email',
-            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
-            'roll_no' => 'required|string|unique:students,roll_no',
-            'class' => 'required|string|max:50',
-            'section' => 'nullable|string|max:10',
-            'dob' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other',
-            'phone' => 'nullable|string|max:20',
+            'name'          => 'required|string|max:255',
+            'email'         => 'nullable|email|unique:users,email',
+            'password'      => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
+            'roll_no'       => 'required|string|unique:students,roll_no,NULL,id,school_id,' . $schoolId,
+            'classroom_id'  => 'nullable|exists:classrooms,id',
+            'dob'           => 'nullable|date',
+            'gender'        => 'nullable|in:male,female,other',
+            'phone'         => 'nullable|string|max:20',
             'guardian_name' => 'nullable|string|max:255',
-            'is_active' => 'nullable|boolean',
+            'is_active'     => 'nullable|boolean',
         ]);
+
+        // Verify the classroom belongs to this school
+        if (!empty($validated['classroom_id'])) {
+            \App\Models\Classroom::where('id', $validated['classroom_id'])
+                ->where('school_id', $schoolId)
+                ->firstOrFail();
+        }
 
         $email = $validated['email'];
         if (empty($email)) {
-            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . auth()->user()->school_id . '@example.com';
+            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . $schoolId . '@example.com';
         }
 
         $user = \App\Models\User::create([
-            'name' => $validated['name'],
-            'email' => $email,
-            'email_verified_at' => now(),
-            'password' => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
-            'role' => 'student',
-            'school_id' => auth()->user()->school_id,
-            'profile_completed' => true,
-            'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'name'               => $validated['name'],
+            'email'              => $email,
+            'email_verified_at'  => now(),
+            'password'           => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
+            'role'               => 'student',
+            'school_id'          => $schoolId,
+            'profile_completed'  => true,
+            'is_active'          => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ]);
 
         $student = Student::create([
-            'user_id' => $user->id,
-            'school_id' => auth()->user()->school_id,
-            'roll_no' => $validated['roll_no'],
-            'class' => $validated['class'],
-            'section' => $validated['section'],
-            'dob' => $validated['dob'],
-            'gender' => $validated['gender'],
-            'phone' => $validated['phone'],
-            'guardian_name' => $validated['guardian_name'],
-            'is_active' => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'user_id'      => $user->id,
+            'school_id'    => $schoolId,
+            'classroom_id' => $validated['classroom_id'] ?? null,
+            'roll_no'      => $validated['roll_no'],
+            'dob'          => $validated['dob'],
+            'gender'       => $validated['gender'],
+            'phone'        => $validated['phone'],
+            'guardian_name'=> $validated['guardian_name'],
+            'is_active'    => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
         ]);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Student added successfully!',
-                'student' => $student
+                'student' => $student,
             ], 201);
         }
 
@@ -160,30 +167,30 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
-        $student->load(['marks.subject', 'remedialActions', 'attendanceRecords.session.subject']);
+        $student->load(['marks.subject', 'remedialActions', 'attendanceRecords.session.subject', 'classroom.academicClass']);
         
         if (request()->expectsJson()) {
             return response()->json([
-                'id' => $student->id,
-                'name' => $student->name,
-                'email' => $student->email,
-                'roll_no' => $student->roll_no,
-                'class' => $student->class,
-                'section' => $student->section,
-                'dob' => $student->dob ? $student->dob->format('Y-m-d') : null,
-                'gender' => $student->gender,
-                'phone' => $student->phone,
-                'guardian_name' => $student->guardian_name,
-                'is_active' => $student->is_active,
-                'xp_points' => $student->xp_points,
-                'study_streak' => $student->study_streak,
-                'has_marks' => $student->has_marks,
-                'average_percentage' => $student->average_percentage,
-                'is_slow_learner' => $student->is_slow_learner,
+                'id'                 => $student->id,
+                'name'              => $student->name,
+                'email'             => $student->email,
+                'roll_no'           => $student->roll_no,
+                'classroom_id'      => $student->classroom_id,
+                'section_name'      => $student->classroom?->display_name,
+                'dob'               => $student->dob ? $student->dob->format('Y-m-d') : null,
+                'gender'            => $student->gender,
+                'phone'             => $student->phone,
+                'guardian_name'     => $student->guardian_name,
+                'is_active'         => $student->is_active,
+                'xp_points'         => $student->xp_points,
+                'study_streak'      => $student->study_streak,
+                'has_marks'         => $student->has_marks,
+                'average_percentage'=> $student->average_percentage,
+                'is_slow_learner'   => $student->is_slow_learner,
                 'performance_label' => $student->performance_label,
-                'performance_status' => $student->performance_status,
+                'performance_status'=> $student->performance_status,
                 'performance_color' => $student->performance_color,
-                'overall_attendance' => $student->overall_attendance,
+                'overall_attendance'=> $student->overall_attendance,
                 'marks' => $student->marks->map(function($mark) {
                     return [
                         'id' => $mark->id,
@@ -231,19 +238,19 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         if (request()->expectsJson()) {
-            $student->load('user');
+            $student->load(['user', 'classroom.academicClass']);
             return response()->json([
-                'id' => $student->id,
-                'name' => $student->name,
-                'email' => $student->user ? ($student->user->email ?? '') : '',
-                'roll_no' => $student->roll_no,
-                'class' => $student->class,
-                'section' => $student->section,
-                'dob' => $student->dob ? $student->dob->format('Y-m-d') : null,
-                'gender' => $student->gender,
-                'phone' => $student->phone,
-                'guardian_name' => $student->guardian_name,
-                'is_active' => $student->is_active,
+                'id'             => $student->id,
+                'name'           => $student->name,
+                'email'          => $student->user ? ($student->user->email ?? '') : '',
+                'roll_no'        => $student->roll_no,
+                'classroom_id'   => $student->classroom_id,
+                'section_name'   => $student->classroom?->display_name,
+                'dob'            => $student->dob ? $student->dob->format('Y-m-d') : null,
+                'gender'         => $student->gender,
+                'phone'          => $student->phone,
+                'guardian_name'  => $student->guardian_name,
+                'is_active'      => $student->is_active,
             ]);
         }
         return view('students.edit', compact('student'));
@@ -251,39 +258,41 @@ class StudentController extends Controller
 
     public function update(Request $request, Student $student)
     {
+        $schoolId = auth()->user()->school_id;
+
         if ($request->expectsJson() && $request->has('is_active') && count($request->all()) <= 2) {
-            $validated = $request->validate([
-                'is_active' => 'required|boolean',
-            ]);
-            $student->update([
-                'is_active' => $validated['is_active']
-            ]);
+            $validated = $request->validate(['is_active' => 'required|boolean']);
+            $student->update(['is_active' => $validated['is_active']]);
             if ($student->user) {
-                $student->user->update([
-                    'is_active' => $validated['is_active']
-                ]);
+                $student->user->update(['is_active' => $validated['is_active']]);
             }
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully!',
-                'student' => $student
+                'student' => $student,
             ]);
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . ($student->user_id ?? 'NULL'),
-            'password' => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
-            'roll_no' => 'required|string|unique:students,roll_no,' . $student->id,
-            'class' => 'required|string|max:50',
-            'section' => 'nullable|string|max:10',
-            'dob' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other',
-            'phone' => 'nullable|string|max:20',
+            'name'          => 'required|string|max:255',
+            'email'         => 'nullable|email|unique:users,email,' . ($student->user_id ?? 'NULL'),
+            'password'      => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
+            'roll_no'       => 'required|string|unique:students,roll_no,' . $student->id . ',id,school_id,' . $schoolId,
+            'classroom_id'  => 'nullable|exists:classrooms,id',
+            'dob'           => 'nullable|date',
+            'gender'        => 'nullable|in:male,female,other',
+            'phone'         => 'nullable|string|max:20',
             'guardian_name' => 'nullable|string|max:255',
-            'status' => 'nullable|in:active,inactive',
-            'is_active' => 'nullable|boolean',
+            'status'        => 'nullable|in:active,inactive',
+            'is_active'     => 'nullable|boolean',
         ]);
+
+        // Verify the classroom belongs to this school
+        if (!empty($validated['classroom_id'])) {
+            \App\Models\Classroom::where('id', $validated['classroom_id'])
+                ->where('school_id', $schoolId)
+                ->firstOrFail();
+        }
 
         $isActive = true;
         if ($request->has('is_active')) {
@@ -294,13 +303,13 @@ class StudentController extends Controller
 
         $email = $validated['email'];
         if (empty($email)) {
-            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . auth()->user()->school_id . '@example.com';
+            $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . $schoolId . '@example.com';
         }
 
         if ($student->user_id) {
             $userData = [
-                'name' => $validated['name'],
-                'email' => $email,
+                'name'      => $validated['name'],
+                'email'     => $email,
                 'is_active' => $isActive,
             ];
             if (!empty($validated['password'])) {
@@ -309,33 +318,32 @@ class StudentController extends Controller
             $student->user->update($userData);
         } else {
             $user = \App\Models\User::create([
-                'name' => $validated['name'],
-                'email' => $email,
-                'password' => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
-                'role' => 'student',
-                'school_id' => $student->school_id,
+                'name'              => $validated['name'],
+                'email'             => $email,
+                'password'          => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
+                'role'              => 'student',
+                'school_id'         => $student->school_id,
                 'profile_completed' => true,
-                'is_active' => $isActive,
+                'is_active'         => $isActive,
             ]);
             $student->user_id = $user->id;
         }
 
         $student->update([
-            'roll_no' => $validated['roll_no'],
-            'class' => $validated['class'],
-            'section' => $validated['section'],
-            'dob' => $validated['dob'],
-            'gender' => $validated['gender'],
-            'phone' => $validated['phone'],
-            'guardian_name' => $validated['guardian_name'],
-            'is_active' => $isActive,
+            'roll_no'      => $validated['roll_no'],
+            'classroom_id' => $validated['classroom_id'] ?? $student->classroom_id,
+            'dob'          => $validated['dob'],
+            'gender'       => $validated['gender'],
+            'phone'        => $validated['phone'],
+            'guardian_name'=> $validated['guardian_name'],
+            'is_active'    => $isActive,
         ]);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Student updated successfully!',
-                'student' => $student
+                'student' => $student,
             ]);
         }
 

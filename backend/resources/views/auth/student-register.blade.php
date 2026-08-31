@@ -6,7 +6,7 @@
     <header class="auth-header-nav">
       <div class="brand">
         <div class="brand-name"><img src="{{ asset('logo.png') }}" alt="Logo" style="width: 150px; height: 50px;"></div>
-        <div class="brand-contact">Sales@pmrs.edu &nbsp;&nbsp;&rarr;</div>
+        <div class="brand-contact">pmrsteam.official@gmail.com &nbsp;&nbsp;&rarr;</div>
       </div>
       <div class="nav-links">
         <a href="{{ route('login') }}" class="btn-demo" style="font-size: 15px; padding: 12px 28px;">Sign in</a>

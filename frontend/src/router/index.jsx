@@ -1,6 +1,6 @@
-/**
+﻿/**
  * ============================================================================
- * router/index.jsx — Application Router
+ * router/index.jsx - Application Router
  * ============================================================================
  * Defines the complete route tree for the PMRS SPA.
  *
@@ -13,11 +13,11 @@
  *   - Replace the placeholder <DashboardPage> stubs with real pages
  *
  * Route Structure:
- *   /                         → Landing Page (existing, untouched)
- *   /dashboard/*              → Protected (AppLayout)
- *   /students/*               → Protected (AppLayout)
+ *   /                         â†’ Landing Page (existing, untouched)
+ *   /dashboard/*              â†’ Protected (AppLayout)
+ *   /students/*               â†’ Protected (AppLayout)
  *   ... (all app routes)
- *   *                         → 404 NotFoundPage
+ *   *                         â†’ 404 NotFoundPage
  * ============================================================================
  */
 
@@ -30,11 +30,13 @@ import ProtectedRoute from './ProtectedRoute';
 import Loader        from '@/components/ui/Loader';
 import { ROLES }     from '@/constants/roles';
 
-// ── Page Imports (lazy-loaded) ────────────────────────────────────────────────
+// â”€â”€ Page Imports (lazy-loaded) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Phase 1: only stub pages
+const AdminDashboardPage = lazy(() => import('@/pages/dashboard/AdminDashboardPage'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const NotFoundPage  = lazy(() => import('@/pages/NotFoundPage'));
 const LandingPage   = lazy(() => import('@/pages/LandingPage'));
+const PricingPage   = lazy(() => import('@/pages/PricingPage'));
 const SubjectsPage  = lazy(() => import('@/pages/Subjects/SubjectsPage'));
 const SubjectCreatePage = lazy(() => import('@/pages/Subjects/SubjectCreatePage'));
 const SubjectEditPage   = lazy(() => import('@/pages/Subjects/SubjectEditPage'));
@@ -52,7 +54,13 @@ const MarksPage      = lazy(() => import('@/pages/Marks/MarksPage'));
 const MarksEntryPage = lazy(() => import('@/pages/Marks/MarksEntryPage'));
 const MarksEditPage  = lazy(() => import('@/pages/Marks/MarksEditPage'));
 
-// ── Loading fallback (Lottie loader) ─────────────────────────────────────────
+// Academic structure pages (new)
+const ClassesPage        = lazy(() => import('@/pages/Academic/ClassesPage'));
+const SectionsPage       = lazy(() => import('@/pages/Academic/SectionsPage'));
+const AllocationsPage    = lazy(() => import('@/pages/Academic/AllocationsPage'));
+const TimetablePage      = lazy(() => import('@/pages/Academic/TimetablePage'));
+
+// â”€â”€ Loading fallback (Lottie loader) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PageLoader = () => <Loader visible />;
 
 function AppRouter() {
@@ -60,10 +68,11 @@ function AppRouter() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
 
-        {/* ── Public Landing Page ─────────────────────────────────────────── */}
+        {/* â”€â”€ Public Landing Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
 
-        {/* ── Protected App Routes ───────────────────────────────────────── */}
+        {/* â”€â”€ Protected App Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <Route
           element={
             <ProtectedRoute>
@@ -72,8 +81,8 @@ function AppRouter() {
           }
         >
           {/* Dashboard */}
-          <Route path="/dashboard"         element={<DashboardPage />} />
-          <Route path="/dashboard/admin"   element={<DashboardPage role="admin"   />} />
+          <Route path="/dashboard"         element={<AdminDashboardPage />} />
+          <Route path="/dashboard/admin"   element={<AdminDashboardPage />} />
           <Route path="/dashboard/teacher" element={<DashboardPage role="teacher" />} />
           <Route path="/dashboard/student" element={<DashboardPage role="student" />} />
 
@@ -90,10 +99,10 @@ function AppRouter() {
           <Route path="/subjects/create"     element={<SubjectCreatePage />} />
           <Route path="/subjects/:id/edit"   element={<SubjectEditPage />} />
 
-          <Route path="/classes"             element={<DashboardPage stub="Academic Classes" />} />
-          <Route path="/classrooms"          element={<DashboardPage stub="Classrooms" />} />
-          <Route path="/teacher-allocations" element={<DashboardPage stub="Teacher Allocations" />} />
-          <Route path="/timetables"          element={<DashboardPage stub="Timetable" />} />
+          <Route path="/classes"             element={<ClassesPage />} />
+          <Route path="/classrooms"          element={<SectionsPage />} />
+          <Route path="/teacher-allocations" element={<AllocationsPage />} />
+          <Route path="/timetables"          element={<TimetablePage />} />
 
           <Route path="/marks"               element={<MarksPage />} />
           <Route path="/marks/create"        element={<MarksEntryPage />} />
@@ -136,11 +145,11 @@ function AppRouter() {
           <Route path="/remedial-submissions/:id/review" element={<DashboardPage stub="Submission Review" />} />
         </Route>
 
-        {/* ── Root redirect ──────────────────────────────────────────────── */}
+        {/* â”€â”€ Root redirect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {/* The authenticated app starts at /dashboard */}
         <Route path="/dashboard" element={<Navigate to="/dashboard" replace />} />
 
-        {/* ── 404 ────────────────────────────────────────────────────────── */}
+        {/* â”€â”€ 404 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <Route path="*" element={<NotFoundPage />} />
 
       </Routes>
@@ -149,3 +158,4 @@ function AppRouter() {
 }
 
 export default AppRouter;
+

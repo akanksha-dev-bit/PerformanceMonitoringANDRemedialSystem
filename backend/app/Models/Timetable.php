@@ -6,12 +6,33 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Timetable — Schedules a teacher/subject/section combination into a period slot.
+ *
+ * Changes in this iteration:
+ *   - academic_year_id added (timetables are year-scoped)
+ *   - DB-level UNIQUE on (school_id, classroom_id, day_of_week, period_number, academic_year_id)
+ *     means the PHP boot() checks are now a redundant safety net rather than
+ *     the primary guard. They remain for human-readable error messages.
+ *
+ * Conflict checks in boot():
+ *   1. Teacher double-booking (same teacher, overlapping times, same day/year)
+ *   2. Classroom double-booking (same room, overlapping times, same day/year)
+ *   3. Period/time mismatch (period number must map to consistent times in a room)
+ *
+ * Relationships:
+ *   - classroom    → belongs to Classroom
+ *   - subject      → belongs to Subject
+ *   - teacher      → belongs to User
+ *   - academicYear → belongs to AcademicYear
+ */
 class Timetable extends Model
 {
     use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
         'school_id',
+        'academic_year_id',
         'classroom_id',
         'subject_id',
         'teacher_id',
@@ -20,6 +41,8 @@ class Timetable extends Model
         'start_time',
         'end_time',
     ];
+
+    // ── Relationships ─────────────────────────────────────────────────────────
 
     public function classroom()
     {
@@ -36,89 +59,86 @@ class Timetable extends Model
         return $this->belongsTo(User::class, 'teacher_id');
     }
 
-    /**
-     * Perform strict conflict validations before saving.
-     */
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
+    }
+
+    // ── Conflict Validation ───────────────────────────────────────────────────
+
     protected static function boot()
     {
         parent::boot();
 
         static::saving(function (Timetable $timetable) {
-            // Ensure school_id matches across the board
             if (empty($timetable->school_id) && auth()->check()) {
                 $timetable->school_id = auth()->user()->school_id;
             }
 
             $schoolId = $timetable->school_id;
-            $day = $timetable->day_of_week;
-            $start = $timetable->start_time;
-            $end = $timetable->end_time;
-            $period = $timetable->period_number;
+            $yearId   = $timetable->academic_year_id;
+            $day      = $timetable->day_of_week;
+            $start    = $timetable->start_time;
+            $end      = $timetable->end_time;
+            $period   = $timetable->period_number;
 
-            // 1. Teacher Double-Booking Check
-            // A teacher cannot teach two classes at the same time on the same day.
+            // 1. Teacher Double-Booking Check (time overlap, same day+year)
             $teacherConflict = Timetable::where('school_id', $schoolId)
                 ->where('teacher_id', $timetable->teacher_id)
                 ->where('day_of_week', $day)
-                ->where('id', '!=', $timetable->id) // ignore self on update
-                ->where(function ($query) use ($start, $end) {
-                    $query->where('start_time', '<', $end)
-                          ->where('end_time', '>', $start);
-                })
+                ->when($yearId, fn($q) => $q->where('academic_year_id', $yearId))
+                ->where('id', '!=', $timetable->id)
+                ->where(fn($q) => $q->where('start_time', '<', $end)
+                                    ->where('end_time', '>', $start))
                 ->first();
 
             if ($teacherConflict) {
                 $teacherName = User::find($timetable->teacher_id)?->name ?? 'Teacher';
                 throw ValidationException::withMessages([
-                    'teacher_id' => "Conflict: {$teacherName} is already scheduled in classroom " . 
-                                    ($teacherConflict->classroom?->display_name ?? 'another classroom') . 
-                                    " during this time ({$teacherConflict->start_time} - {$teacherConflict->end_time}) on {$day}."
+                    'teacher_id' => "Conflict: {$teacherName} is already scheduled in " .
+                        ($teacherConflict->classroom?->display_name ?? 'another section') .
+                        " during this time ({$teacherConflict->start_time}–{$teacherConflict->end_time}) on {$day}.",
                 ]);
             }
 
-            // 2. Classroom Double-Booking Check
-            // A classroom cannot host two subjects/teachers at the same time on the same day.
+            // 2. Classroom Double-Booking Check (time overlap, same day+year)
             $roomConflict = Timetable::where('school_id', $schoolId)
                 ->where('classroom_id', $timetable->classroom_id)
                 ->where('day_of_week', $day)
+                ->when($yearId, fn($q) => $q->where('academic_year_id', $yearId))
                 ->where('id', '!=', $timetable->id)
-                ->where(function ($query) use ($start, $end) {
-                    $query->where('start_time', '<', $end)
-                          ->where('end_time', '>', $start);
-                })
+                ->where(fn($q) => $q->where('start_time', '<', $end)
+                                    ->where('end_time', '>', $start))
                 ->first();
 
             if ($roomConflict) {
                 $subjectName = Subject::find($roomConflict->subject_id)?->name ?? 'another subject';
                 throw ValidationException::withMessages([
-                    'classroom_id' => "Conflict: Classroom is already booked for {$subjectName} during this time ({$roomConflict->start_time} - {$roomConflict->end_time}) on {$day}."
+                    'classroom_id' => "Conflict: Section already has {$subjectName} scheduled " .
+                        "during this time ({$roomConflict->start_time}–{$roomConflict->end_time}) on {$day}.",
                 ]);
             }
 
-            // 3. Overlapping Periods Check
-            // Check if period number matches but has conflicting times, or times match but period numbers differ.
+            // 3. Period/Time Consistency Check (period number must use same times in this room)
             $periodConflict = Timetable::where('school_id', $schoolId)
                 ->where('classroom_id', $timetable->classroom_id)
                 ->where('day_of_week', $day)
+                ->when($yearId, fn($q) => $q->where('academic_year_id', $yearId))
                 ->where('id', '!=', $timetable->id)
-                ->where(function ($query) use ($period, $start, $end) {
-                    $query->where(function($q) use ($period, $start, $end) {
-                        $q->where('period_number', $period)
-                          ->where(function($sub) use ($start, $end) {
-                              $sub->where('start_time', '!=', $start)
-                                  ->orWhere('end_time', '!=', $end);
-                          });
-                    })->orWhere(function($q) use ($period, $start, $end) {
-                        $q->where('period_number', '!=', $period)
-                          ->where('start_time', $start)
-                          ->where('end_time', $end);
-                    });
-                })
+                ->where(fn($q) => $q
+                    ->where(fn($sub) => $sub->where('period_number', $period)
+                        ->where(fn($t) => $t->where('start_time', '!=', $start)
+                                            ->orWhere('end_time', '!=', $end)))
+                    ->orWhere(fn($sub) => $sub->where('period_number', '!=', $period)
+                        ->where('start_time', $start)
+                        ->where('end_time', $end)))
                 ->first();
 
             if ($periodConflict) {
                 throw ValidationException::withMessages([
-                    'period_number' => "Conflict: Period configuration mismatch. Period {$periodConflict->period_number} is already defined as {$periodConflict->start_time} - {$periodConflict->end_time} on {$day}."
+                    'period_number' => "Conflict: Period configuration mismatch. " .
+                        "Period {$periodConflict->period_number} is already defined as " .
+                        "{$periodConflict->start_time}–{$periodConflict->end_time} on {$day}.",
                 ]);
             }
         });

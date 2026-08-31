@@ -375,7 +375,7 @@ export default function StudentDetailPage() {
           <h2 className="sh-title">{student.name}</h2>
           <div className="sh-subtitle">
             <span className="badge-pill badge-primary">
-              Class {student.class}{student.section ? `-${student.section}` : ''}
+              {student.section_name || student.classroom?.display_name || 'No Section'}
             </span>
             <span style={{ color: '#cbd5e1' }}>•</span>
             <span>Roll No: <strong style={{ color: '#0f172a' }}>{student.roll_no}</strong></span>

@@ -9,31 +9,8 @@
  *   Renders the Admin's main dashboard with a bird's-eye view of the
  *   entire school's academic performance. Aggregates data from marks,
  *   students, teachers, remedial actions, and slow learner detection
- *   into a single, information-dense overview page.
+ *   into a single overview payload or Blade view.
  *
- * DATA PROVIDED TO THE VIEW:
- *   - summary:          Slow learner statistics (total, percentage, trend)
- *   - slowLearners:     Top 5 students flagged as slow learners
- *   - trendData:        Performance trend over time (for charts)
- *   - activeRemedials:  Count of pending/in-progress remedial actions
- *   - subjectAvgs:      Average percentage per subject (for bar chart)
- *   - recentStudents:   Last 8 students added to the school
- *   - teacherCount:     Total teachers in the school
- *   - studentCount:     Total students in the school
- *   - schoolCode:       The school's invite code (e.g. PMRS-ABCD1234)
- *   - inviteLink:       Full URL for the student invite link
- *
- * ROUTES:
- *   GET /dashboard/admin → index() — Admin dashboard page
- *
- * SECURITY:
- *   - Aborts 403 if the user is not an admin.
- *   - All queries are scoped to the admin's school_id.
- *
- * RELATED FILES:
- *   - View:     resources/views/dashboard/admin.blade.php
- *   - Services: App\Services\PerformanceService, App\Services\SlowLearnerService
- *   - Routes:   routes/web.php → 'dashboard.admin'
  * ============================================================================
  */
 namespace App\Http\Controllers\Dashboard;
@@ -55,10 +32,15 @@ class AdminDashboardController extends Controller
         protected SlowLearnerService $slowLearnerService
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        if (!$user->isAdmin()) abort(403);
+        if (!$user->isAdmin()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized access.'], 403);
+            }
+            abort(403);
+        }
 
         $summary = $this->slowLearnerService->getSummary();
         $slowLearners = $this->slowLearnerService->detect()->take(5);
@@ -73,18 +55,53 @@ class AdminDashboardController extends Controller
             ->get()
             ->map(fn($m) => [
                 'subject' => $m->subject->name ?? 'Unknown',
-                'avg'     => $m->avg_pct,
+                'avg'     => (float) $m->avg_pct,
             ]);
 
         $recentStudents = Student::where('school_id', $user->school_id)
-            ->with('marks')->latest()->take(8)->get();
+            ->with(['user', 'marks'])->latest()->take(8)->get();
 
         $teacherCount = User::where('school_id', $user->school_id)->where('role', 'teacher')->count();
         $studentCount = User::where('school_id', $user->school_id)->where('role', 'student')->count();
 
-        // Admin might need school_code for Invite Links
         $schoolCode = $user->school->school_code ?? 'PMRS-ERROR';
         $inviteLink = url('/join/' . $schoolCode);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'user' => [
+                    'name' => $user->name,
+                    'school_name' => $user->school->name ?? 'School',
+                ],
+                'school' => [
+                    'name' => $user->school->name ?? 'School',
+                    'school_code' => $schoolCode,
+                    'invite_link' => $inviteLink,
+                ],
+                'stats' => [
+                    'students' => $studentCount,
+                    'teachers' => $teacherCount,
+                    'slow_learners' => $summary['slow_learners'] ?? 0,
+                    'not_evaluated' => $summary['not_evaluated'] ?? 0,
+                    'active_remedials' => $activeRemedials,
+                ],
+                'recent_students' => $recentStudents->map(fn($s) => [
+                    'id' => $s->id,
+                    'name' => $s->user->name ?? 'Student',
+                    'roll_no' => $s->roll_number ?? $s->roll_no ?? '-',
+                    'class' => $s->class ?? '-',
+                    'section' => $s->section ?? '-',
+                    'performance_label' => $s->performance_label ?? 'No Data',
+                ])->values(),
+                'alerts' => $slowLearners->map(fn($l) => [
+                    'id' => $l->id,
+                    'name' => $l->user->name ?? 'Unknown Student',
+                    'avg_pct' => round($l->average_percentage ?? 0, 1),
+                ])->values(),
+                'subject_rankings' => $subjectAvgs->sortByDesc('avg')->values(),
+                'trend_data' => $trendData ?? [],
+            ]);
+        }
 
         return view('dashboard.admin', compact(
             'summary', 'slowLearners', 'trendData', 'activeRemedials',

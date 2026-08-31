@@ -110,8 +110,7 @@ class StudentDashboardController extends Controller
         ])->take(4);
 
         // ── Student rank within the same class ──────────────────────────
-        $classmates = Student::where('class', $studentProfile->class)
-            ->where('section', $studentProfile->section)
+        $classmates = Student::where('classroom_id', $studentProfile->classroom_id)
             ->where('school_id', $studentProfile->school_id)
             ->with('marks')
             ->get();
@@ -237,8 +236,8 @@ class StudentDashboardController extends Controller
         $xpEarned = $studentProfile->xp_points;
         $streak   = $studentProfile->study_streak;
 
-        $classmates = \App\Models\Student::where('class', $studentProfile->class)
-            ->where('section', $studentProfile->section)
+        $classmates = \App\Models\Student::where('classroom_id', $studentProfile->classroom_id)
+            ->where('school_id', $studentProfile->school_id)
             ->with('marks')->get();
         $ranked = $classmates->sortByDesc(fn($s) => $s->average_percentage)->values();
         $rank   = $ranked->search(fn($s) => $s->id === $studentProfile->id);

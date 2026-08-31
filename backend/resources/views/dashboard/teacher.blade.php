@@ -675,7 +675,7 @@
                   </div>
                 </td>
                 <td>
-                  <span class="td-badge td-badge-slate">{{ $student->class }} {{ $student->section }}</span>
+                  <span class="td-badge td-badge-slate">{{ $student->classroom->academicClass->name ?? 'N/A' }} {{ $student->classroom->name ?? '' }}</span>
                 </td>
                 <td>
                   @php
@@ -733,11 +733,11 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </div>
                 <div>
-                  <div class="td-assign-class">Class {{ $assignment->class }}</div>
-                  <div class="td-assign-sub">Section {{ $assignment->section }}</div>
+                  <div class="td-assign-class">Class {{ $assignment->academicClass->name ?? 'Unknown' }}</div>
+                  <div class="td-assign-sub">Section {{ $assignment->name }}</div>
                 </div>
               </div>
-              <span class="td-badge td-badge-violet">Sec {{ $assignment->section }}</span>
+              <span class="td-badge td-badge-violet">Sec {{ $assignment->name }}</span>
             </div>
             @empty
             <div class="td-empty">

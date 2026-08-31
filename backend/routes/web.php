@@ -152,6 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Admin Only Routes
         Route::middleware([\App\Http\Middleware\RoleMiddleware::class.':admin'])->group(function () {
+            // ── Blade-based admin routes (legacy — Blade views) ────────────────
             Route::resource('subjects', \App\Http\Controllers\Academic\SubjectController::class)->except(['show']);
             Route::resource('teachers', TeacherController::class);
             Route::resource('classes', \App\Http\Controllers\Admin\AcademicClassController::class)->except(['show', 'create', 'edit']);
@@ -159,6 +160,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('teacher-allocations', \App\Http\Controllers\Admin\TeacherAllocationController::class)->only(['index', 'store', 'destroy']);
             Route::resource('timetables', \App\Http\Controllers\Admin\TimetableController::class)->only(['index', 'store', 'destroy']);
             Route::get('/analytics/attendance', [\App\Http\Controllers\Admin\AdminAttendanceAnalyticsController::class, 'index'])->name('admin.attendance-analytics');
+
+            // ── JSON API routes (consumed by React frontend) ──────────────────
+            Route::prefix('api')->name('api.')->group(function () {
+
+                // Academic Years
+                Route::get('academic-years', [\App\Http\Controllers\Api\AcademicYearController::class, 'index'])->name('academic-years.index');
+                Route::post('academic-years', [\App\Http\Controllers\Api\AcademicYearController::class, 'store'])->name('academic-years.store');
+                Route::get('academic-years/{academicYear}', [\App\Http\Controllers\Api\AcademicYearController::class, 'show'])->name('academic-years.show');
+                Route::put('academic-years/{academicYear}', [\App\Http\Controllers\Api\AcademicYearController::class, 'update'])->name('academic-years.update');
+                Route::delete('academic-years/{academicYear}', [\App\Http\Controllers\Api\AcademicYearController::class, 'destroy'])->name('academic-years.destroy');
+                Route::post('academic-years/{academicYear}/set-current', [\App\Http\Controllers\Api\AcademicYearController::class, 'setCurrent'])->name('academic-years.set-current');
+
+                // Academic Classes (grade levels)
+                Route::get('classes', [\App\Http\Controllers\Api\ClassController::class, 'index'])->name('classes.index');
+                Route::post('classes', [\App\Http\Controllers\Api\ClassController::class, 'store'])->name('classes.store');
+                Route::put('classes/{class}', [\App\Http\Controllers\Api\ClassController::class, 'update'])->name('classes.update');
+                Route::delete('classes/{class}', [\App\Http\Controllers\Api\ClassController::class, 'destroy'])->name('classes.destroy');
+
+                // Sections (classrooms)
+                Route::get('sections', [\App\Http\Controllers\Api\SectionController::class, 'index'])->name('sections.index');
+                Route::post('sections', [\App\Http\Controllers\Api\SectionController::class, 'store'])->name('sections.store');
+                Route::get('sections/{section}', [\App\Http\Controllers\Api\SectionController::class, 'show'])->name('sections.show');
+                Route::put('sections/{section}', [\App\Http\Controllers\Api\SectionController::class, 'update'])->name('sections.update');
+                Route::delete('sections/{section}', [\App\Http\Controllers\Api\SectionController::class, 'destroy'])->name('sections.destroy');
+
+                // Allocations (teacher-subject-section assignments)
+                Route::get('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'index'])->name('allocations.index');
+                Route::post('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'store'])->name('allocations.store');
+                Route::delete('allocations/{allocation}', [\App\Http\Controllers\Api\AllocationController::class, 'destroy'])->name('allocations.destroy');
+
+                // Timetable Slots
+                Route::get('timetable-slots', [\App\Http\Controllers\Api\TimetableSlotController::class, 'index'])->name('timetable-slots.index');
+                Route::post('timetable-slots', [\App\Http\Controllers\Api\TimetableSlotController::class, 'store'])->name('timetable-slots.store');
+                Route::delete('timetable-slots/{timetableSlot}', [\App\Http\Controllers\Api\TimetableSlotController::class, 'destroy'])->name('timetable-slots.destroy');
+            });
         });
 
         // Quiz Management (Teachers + Admin)

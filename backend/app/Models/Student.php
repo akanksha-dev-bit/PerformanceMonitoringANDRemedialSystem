@@ -10,7 +10,7 @@ class Student extends Model
     use HasFactory, \App\Traits\BelongsToSchool;
 
     protected $fillable = [
-        'user_id', 'school_id', 'classroom_id', 'roll_no', 'class', 'section',
+        'user_id', 'school_id', 'classroom_id', 'roll_no',
         'dob', 'gender', 'phone', 'guardian_name', 'is_active',
         'xp_points', 'study_streak', 'last_activity_date',
     ];

@@ -38,7 +38,8 @@ use Illuminate\Http\Request;
 
 use App\Models\Student;
 use App\Models\Mark;
-use App\Models\TeacherAssignment;
+use App\Models\TeacherSubjectAssignment;
+use App\Models\AcademicYear;
 
 class TeacherDashboardController extends Controller
 {
@@ -47,20 +48,32 @@ class TeacherDashboardController extends Controller
         $user = auth()->user();
         if (!$user->isTeacher()) abort(403);
 
-        $assignments = TeacherAssignment::where('teacher_id', $user->id)->get();
+        $currentYear = AcademicYear::currentFor($user->school_id);
+        
+        $assignments = collect();
+        if ($currentYear) {
+            $assignments = TeacherSubjectAssignment::with('classroom.academicClass')
+                ->where('teacher_id', $user->id)
+                ->where('academic_year_id', $currentYear->id)
+                ->get()
+                ->pluck('classroom')
+                ->unique('id')
+                ->filter()
+                ->values();
+        }
+
+        $classroomIds = $assignments->pluck('id')->toArray();
 
         $recentStudents = Student::where('school_id', $user->school_id)
-            ->where(function ($q) use ($assignments) {
-                foreach ($assignments as $a) {
-                    $q->orWhere(function ($sub) use ($a) {
-                        $sub->where('class', $a->class)
-                            ->where('section', $a->section);
-                    });
-                }
-            })->with('marks')->take(10)->get();
+            ->whereIn('classroom_id', $classroomIds)
+            ->with(['marks', 'classroom.academicClass'])
+            ->take(10)
+            ->get();
 
-        $assignedClassesCount = $assignments->unique('class')->count();
-        $assignedStudentsCount = $recentStudents->count();
+        $assignedClassesCount = $assignments->pluck('academic_class_id')->unique()->count();
+        $assignedStudentsCount = Student::where('school_id', $user->school_id)
+            ->whereIn('classroom_id', $classroomIds)
+            ->count();
 
         $todayClassesCount = \App\Models\Timetable::where('teacher_id', $user->id)
             ->where('day_of_week', now()->format('l'))

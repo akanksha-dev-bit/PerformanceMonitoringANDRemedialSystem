@@ -11,22 +11,35 @@ use Illuminate\Http\Request;
 class LookupController extends Controller
 {
     /**
-     * Get all classrooms for selection.
+     * Get all classrooms (sections) for selection in student enrollment forms.
+     *
+     * Returns sections scoped to the current school, enriched with the parent
+     * AcademicClass name and the year label so dropdowns show the full context.
+     *
+     * Optionally filter by ?year_id=N to show only sections for a given year.
      */
-    public function classes()
+    public function classes(Request $request)
     {
         $schoolId = auth()->user()->school_id;
-        $classrooms = Classroom::with('academicClass')
-            ->where('school_id', $schoolId)
-            ->get()
-            ->map(function($c) {
-                return [
-                    'id' => $c->id,
-                    'display_name' => $c->display_name,
-                    'class' => $c->academicClass ? $c->academicClass->name : '',
-                    'name' => $c->name,
-                ];
-            });
+
+        $query = Classroom::with('academicClass', 'academicYear')
+            ->where('school_id', $schoolId);
+
+        if ($request->filled('year_id')) {
+            $query->where('academic_year_id', $request->year_id);
+        }
+
+        $classrooms = $query->get()->map(function ($c) {
+            return [
+                'id'               => $c->id,
+                'display_name'     => $c->display_name,
+                'name'             => $c->name,
+                'class'            => $c->academicClass ? $c->academicClass->name : '',
+                'academic_year_id' => $c->academic_year_id,
+                'year_label'       => $c->academicYear ? $c->academicYear->label : null,
+            ];
+        });
+
         return response()->json($classrooms);
     }
 

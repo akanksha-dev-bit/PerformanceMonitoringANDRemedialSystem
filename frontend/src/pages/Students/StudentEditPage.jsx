@@ -11,15 +11,14 @@ const StudentEditPage = () => {
     email: '',
     password: '',
     roll_no: '',
-    class: '',
-    section: '',
+    classroom_id: '',
     dob: '',
     gender: '',
     phone: '',
     guardian_name: '',
     is_active: true,
   });
-  const [classesList, setClassesList] = useState([]);
+  const [sectionsList, setSectionsList] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -27,10 +26,10 @@ const StudentEditPage = () => {
   useEffect(() => {
     const loadDetails = async () => {
       try {
-        // Fetch class lookup
-        const classesRes = await studentService.lookupClasses();
-        if (Array.isArray(classesRes.data)) {
-          setClassesList(classesRes.data);
+        // Fetch sections lookup
+        const sectionsRes = await studentService.lookupClasses();
+        if (Array.isArray(sectionsRes.data)) {
+          setSectionsList(sectionsRes.data);
         }
 
         // Fetch student details
@@ -42,8 +41,7 @@ const StudentEditPage = () => {
           email: s.email || '',
           password: '', // blank unless updating
           roll_no: s.roll_no || '',
-          class: s.class || '',
-          section: s.section || '',
+          classroom_id: s.classroom_id || '',
           dob: s.dob || '',
           gender: s.gender || '',
           phone: s.phone || '',
@@ -221,7 +219,7 @@ const StudentEditPage = () => {
             errors={errors}
             loading={loading}
             submitLabel="Save Changes"
-            classesList={classesList}
+            sectionsList={sectionsList}
             isEdit={true}
           />
         )}

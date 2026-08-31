@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import PricingCards from "@/components/pricing/PricingCards";
 import {
   BarChart3,
   UserCheck,
@@ -85,7 +86,7 @@ const PILOT_PROGRESS = [
 const FOUNDERS = [
   {
     initials: "A",
-    name: "Abi",
+    name: "Abijith C G",
     role: "Founder",
     focus: "Backend & Infrastructure",
     bio: "Builds PMRS end-to-end — the multi-tenant architecture, data isolation between schools, and the systems that keep every school's data exactly where it belongs.",
@@ -121,22 +122,24 @@ function SEOManager() {
     setMetaTag('meta[property="og:title"]', 'property', 'og:title', 'PMRS — Student Performance Tracking & Early Remedial Plans');
     setMetaTag('meta[property="og:description"]', 'property', 'og:description', 'Comprehensive student performance tracking platform for CBSE schools with adaptive quizzes and automated remedial plans.');
     setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'website');
-    setMetaTag('meta[property="og:url"]', 'property', 'og:url', window.location.href);
-    setMetaTag('meta[property="og:image"]', 'property', 'og:image', `${BASE_URL}/assets/og-image.png`);
+    setMetaTag('meta[property="og:url"]', 'property', 'og:url', 'https://pmrs.live');
+    setMetaTag('meta[property="og:image"]', 'property', 'og:image', 'https://pmrs.live/logo.png');
     setMetaTag('meta[property="og:site_name"]', 'property', 'og:site_name', 'PMRS');
 
     setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
     setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', 'PMRS — Student Performance Tracking for CBSE Schools');
     setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', 'Track student attendance, detect slow learners early, and assign adaptive quizzes and remedial plans.');
-    setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', `${BASE_URL}/assets/og-image.png`);
+    setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', 'https://pmrs.live/logo.png');
 
-    let script = document.querySelector('script[type="application/ld+json"]');
-    if (!script) {
-      script = document.createElement("script");
-      script.setAttribute("type", "application/ld+json");
-      document.head.appendChild(script);
+    // JSON-LD: SoftwareApplication schema
+    let scriptApp = document.querySelector('script[data-schema="SoftwareApplication"]');
+    if (!scriptApp) {
+      scriptApp = document.createElement("script");
+      scriptApp.setAttribute("type", "application/ld+json");
+      scriptApp.setAttribute("data-schema", "SoftwareApplication");
+      document.head.appendChild(scriptApp);
     }
-    script.textContent = JSON.stringify({
+    scriptApp.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "PMRS - Performance Monitoring and Remedial System",
@@ -159,6 +162,42 @@ function SEOManager() {
         "Adaptive MCQ Quizzes and Gamified XP System",
         "Interactive KPI Dashboards and Analytics"
       ]
+    });
+
+    // JSON-LD: Organization schema with founders
+    let scriptOrg = document.querySelector('script[data-schema="Organization"]');
+    if (!scriptOrg) {
+      scriptOrg = document.createElement("script");
+      scriptOrg.setAttribute("type", "application/ld+json");
+      scriptOrg.setAttribute("data-schema", "Organization");
+      document.head.appendChild(scriptOrg);
+    }
+    scriptOrg.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "PMRS",
+      "url": "https://pmrs.live",
+      "description": "PMRS empowers CBSE school administrators and teachers with real-time student performance tracking, attendance intelligence, adaptive quizzes, and early remedial plans.",
+      "logo": "https://pmrs.live/logo.png",
+      "founder": [
+        {
+          "@type": "Person",
+          "name": "Abijith C G",
+          "jobTitle": "Founder",
+          "description": "Backend & Infrastructure"
+        },
+        {
+          "@type": "Person",
+          "name": "Akanksha",
+          "jobTitle": "Co-founder",
+          "description": "Client Relations & Coordination"
+        }
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "pmrsteam.official@gmail.com"
+      }
     });
   }, []);
 
@@ -501,13 +540,17 @@ export default function LandingPage() {
         <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-[1300px] px-4 md:px-6" aria-label="Main Navigation">
           <div className="flex items-center justify-between bg-white/70 backdrop-blur-2xl border border-black/5 rounded-full px-4 md:px-8 py-3 shadow-[0_8px_32px_0_rgba(21,34,56,0.06)]">
             <div className="flex items-center gap-2">
-              <a href="#" className="font-bold text-xl tracking-tight" style={{ color: NAVY }} aria-label="PMRS Homepage">PMRS</a>
+              <a href="#" className="flex items-center gap-2.5 font-bold text-xl tracking-tight" style={{ color: NAVY }} aria-label="PMRS Homepage">
+                <img src="/logo.png" alt="PMRS Logo" className="h-8 md:h-9 w-auto object-contain" />
+            
+              </a>
             </div>
             <div className="flex items-center gap-3 md:gap-6">
               <div className="hidden md:flex items-center gap-6 lg:gap-8">
                 {[
                   { label: "Features", href: "#features" },
                   { label: "How it works", href: "#how-it-works" },
+                  { label: "Pricing", href: "#pricing" },
                   { label: "Founders", href: "#founders" },
                   { label: "For schools", href: "#for-schools" },
                 ].map((item) => (
@@ -934,6 +977,26 @@ export default function LandingPage() {
           </div>
         </section>
 
+                <section id="pricing" className="py-24 md:py-32 px-6 bg-[#faf9f6]">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="flex flex-col items-center text-center mb-16">
+            <h2 className="font-medium tracking-tight text-[#1a1a1a] mb-4" style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4.5vw, 56px)" }}>
+              Plans designed for growing schools
+            </h2>
+            <p className="text-[#1a1a1a]/65 leading-relaxed max-w-lg text-[18px] font-medium">
+              Start with the capabilities you need today, and upgrade as your institution grows.
+            </p>
+          </motion.div>
+          
+          <PricingCards compact={true} />
+          
+          <div className="mt-16 text-center">
+            <a href="/pricing" className="inline-flex items-center gap-2 font-bold text-[16px] text-[#152238] hover:opacity-80 transition-opacity">
+              View Detailed Pricing
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+
         <section id="cta" className="relative w-full bg-[#0c0d10] py-32 md:py-48 overflow-hidden flex flex-col items-center text-center px-6 border-t border-white/[0.04]">
           <div className="absolute inset-0 z-0 pointer-events-none flex justify-center items-center overflow-hidden" style={{ perspective: "1200px" }} aria-hidden="true">
             <div
@@ -1068,7 +1131,8 @@ function SiteFooter() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="md:col-span-4 flex flex-col gap-5">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-2xl tracking-tight" style={{ color: NAVY }}>PMRS</span>
+               <img src="/logo.png" alt="PMRS Logo" className="h-8 md:h-9 w-auto object-contain" />
+           
             </div>
             <p className="text-[#1a1a1a]/60 text-[15px] font-medium leading-relaxed max-w-sm">
               Performance Monitoring & Remedial System — built for CBSE schools, one real classroom at a time.
@@ -1077,8 +1141,8 @@ function SiteFooter() {
 
           <div className="md:col-span-6 flex flex-wrap gap-x-16 gap-y-10 md:justify-center">
             {[
-              { title: "Product", links: [{ l: "Features", h: "#features" }, { l: "How it works", h: "#how-it-works" }, { l: "For schools", h: "#for-schools" }] },
-              { title: "Company", links: [{ l: "Founders", h: "#founders" }, { l: "Contact Us", h: "mailto:hello@devmax.example" }] },
+              { title: "Product", links: [{ l: "Features", h: "#features" }, { l: "How it works", h: "#how-it-works" }, { l: "Pricing", h: "/pricing" }, { l: "For schools", h: "#for-schools" }] },
+              { title: "Company", links: [{ l: "Founders", h: "#founders" }, { l: "Contact Us", h: "mailto:pmrsteam.official@gmail.com" }] },
               { title: "Legal", links: [{ l: "Privacy Policy", h: "#" }, { l: "Terms of Service", h: "#" }, { l: "Data Processing Agreement", h: "#" }] },
             ].map((col, ci) => (
               <motion.div
@@ -1108,7 +1172,7 @@ function SiteFooter() {
             {[
               { Icon: Linkedin, label: "Visit PMRS on LinkedIn", href: "https://linkedin.com" },
               { Icon: Instagram, label: "Visit PMRS on Instagram", href: "https://instagram.com" },
-              { Icon: Mail, label: "Contact PMRS via Email", href: "mailto:hello@devmax.example" },
+              { Icon: Mail, label: "Contact PMRS via Email", href: "mailto:pmrsteam.official@gmail.com" },
             ].map(({ Icon, label, href }) => (
               <motion.a
                 key={label}
@@ -1129,7 +1193,7 @@ function SiteFooter() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-black/10 pt-8 mt-4">
           <span className="text-[13px] font-medium text-[#19181a]/50 text-center sm:text-left">
-            © {new Date().getFullYear()} DevMax Educational Solutions. All rights reserved.
+            Â© {new Date().getFullYear()} DevMax Educational Solutions. All rights reserved.
           </span>
           <span className="text-[12px] text-[#19181a]/40 font-bold uppercase tracking-widest">Built by students, for schools</span>
         </div>
@@ -1149,3 +1213,4 @@ function SiteFooter() {
     </footer>
   );
 }
+

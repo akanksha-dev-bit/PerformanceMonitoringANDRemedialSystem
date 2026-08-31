@@ -10,30 +10,29 @@ const StudentCreatePage = () => {
     email: '',
     password: '',
     roll_no: '',
-    class: '',
-    section: '',
+    classroom_id: '',
     dob: '',
     gender: '',
     phone: '',
     guardian_name: '',
     is_active: true,
   });
-  const [classesList, setClassesList] = useState([]);
+  const [sectionsList, setSectionsList] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchSections = async () => {
       try {
         const response = await studentService.lookupClasses();
         if (Array.isArray(response.data)) {
-          setClassesList(response.data);
+          setSectionsList(response.data);
         }
       } catch (err) {
-        console.error('Error fetching class lookups:', err);
+        console.error('Error fetching section lookups:', err);
       }
     };
-    fetchClasses();
+    fetchSections();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -249,7 +248,7 @@ const StudentCreatePage = () => {
             errors={errors}
             loading={loading}
             submitLabel="Enroll Student"
-            classesList={classesList}
+            sectionsList={sectionsList}
             isEdit={false}
           />
         </div>
@@ -267,7 +266,7 @@ const StudentCreatePage = () => {
           <ul className="info-list">
             <li><strong>Email Login:</strong> The email provided will be used as the student's username to access the dashboard.</li>
             <li><strong>Default Password:</strong> If left blank, the default password <code>password123</code> is assigned automatically.</li>
-            <li><strong>Class & Section:</strong> Ensure these match your existing system exactly (e.g., "10" and "A").</li>
+            <li><strong>Section:</strong> Select the section from the dropdown — sections are year-scoped and managed under Academic → Sections.</li>
             <li><strong>Roll Numbers:</strong> Must be unique within the school to prevent data conflicts.</li>
           </ul>
           <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>

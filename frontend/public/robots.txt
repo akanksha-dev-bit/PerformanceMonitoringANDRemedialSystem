@@ -1,0 +1,28 @@
+﻿# robots.txt for https://pmrs.live
+# Allow all crawlers full access to public pages
+User-agent: *
+Allow: /
+Allow: /pricing
+Disallow: /dashboard
+Disallow: /students
+Disallow: /teachers
+Disallow: /subjects
+Disallow: /classes
+Disallow: /classrooms
+Disallow: /teacher-allocations
+Disallow: /timetables
+Disallow: /marks
+Disallow: /performance
+Disallow: /remedial
+Disallow: /attendance
+Disallow: /quizzes
+Disallow: /analytics
+Disallow: /reports
+Disallow: /profile
+Disallow: /my-progress
+Disallow: /my-tasks
+Disallow: /remedial-submissions
+
+# Point crawlers to the sitemap
+Sitemap: https://pmrs.live/sitemap.xml
+

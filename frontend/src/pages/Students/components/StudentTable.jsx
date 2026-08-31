@@ -160,7 +160,7 @@ const StudentTable = ({
                 </span>
               </td>
               <td style={{ fontWeight: 600 }}>
-                {student.class}{student.section ? `-${student.section}` : ''}
+                {student.section_name || '—'}
               </td>
               <td>
                 <span className="status-badge status-neutral" style={{ background: '#eef2ff', color: '#6366f1', borderColor: '#e0e7ff' }}>

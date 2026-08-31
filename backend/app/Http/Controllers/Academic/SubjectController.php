@@ -45,7 +45,10 @@ class SubjectController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Subject::orderBy('name');
+        // SECURITY: Scope to the authenticated user's school.
+        // Previously this was missing, allowing cross-school data leakage.
+        $schoolId = auth()->user()->school_id;
+        $query = Subject::where('school_id', $schoolId)->orderBy('name');
 
         if ($request->has('all') || $request->boolean('all')) {
             $subjects = $query->get();
@@ -76,6 +79,9 @@ class SubjectController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        // Inject the school_id from the authenticated user — never trust the request body for this.
+        $validated['school_id'] = auth()->user()->school_id;
+
         if ($request->expectsJson()) {
             $validated['is_active'] = $request->boolean('is_active');
         } else {
@@ -92,7 +98,7 @@ class SubjectController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Subject created successfully.',
-                'data' => $subject
+                'data'    => $subject,
             ], 201);
         }
 

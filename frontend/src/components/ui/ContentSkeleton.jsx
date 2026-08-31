@@ -11,7 +11,7 @@ import React from 'react';
 
 export default function ContentSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6 animate-pulse">
+    <div className="w-full px-6 py-8 space-y-6 animate-pulse">
       {/* Header Skeleton */}
       <div className="bg-white/80 border border-slate-200/80 rounded-2xl p-6 flex justify-between items-center shadow-sm">
         <div className="space-y-2">

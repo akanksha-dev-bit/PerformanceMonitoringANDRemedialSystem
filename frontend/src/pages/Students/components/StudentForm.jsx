@@ -9,7 +9,7 @@ const StudentForm = ({
   loading, 
   submitLabel = 'Enroll Student',
   isEdit = false,
-  classesList = []
+  sectionsList = []   // [{id, display_name, year_label}] from LookupController
 }) => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -103,45 +103,25 @@ const StudentForm = ({
 
           <div className="premium-row">
             <div className="premium-form-group">
-              <label className="premium-label" htmlFor="class">Class *</label>
-              <input 
-                type="text" 
-                id="class" 
-                name="class" 
-                value={formData.class || ''} 
+              <label className="premium-label" htmlFor="classroom_id">Section (Class)</label>
+              <select
+                id="classroom_id"
+                name="classroom_id"
+                value={formData.classroom_id || ''}
                 onChange={handleChange}
-                className="premium-input" 
-                required 
+                className="premium-input"
                 disabled={loading}
-                placeholder="e.g. 10, BSc-1, etc."
-                list="classes-datalist"
-              />
-              <datalist id="classes-datalist">
-                {[...new Set(classesList.map(c => c.class))].filter(Boolean).map(c => (
-                  <option key={c} value={c} />
+              >
+                <option value="">-- Unassigned --</option>
+                {sectionsList.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.display_name}{s.year_label ? ` (${s.year_label})` : ''}
+                  </option>
                 ))}
-              </datalist>
-              {errors?.class && (
+              </select>
+              {errors?.classroom_id && (
                 <div className="form-error" style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px' }}>
-                  {errors.class[0]}
-                </div>
-              )}
-            </div>
-            <div className="premium-form-group">
-              <label className="premium-label" htmlFor="section">Section</label>
-              <input 
-                type="text" 
-                id="section" 
-                name="section" 
-                value={formData.section || ''} 
-                onChange={handleChange}
-                className="premium-input" 
-                placeholder="A, B, C…"
-                disabled={loading}
-              />
-              {errors?.section && (
-                <div className="form-error" style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px' }}>
-                  {errors.section[0]}
+                  {errors.classroom_id[0]}
                 </div>
               )}
             </div>
@@ -341,40 +321,23 @@ const StudentForm = ({
         </div>
 
         <div>
-          <label className="premium-label" htmlFor="class">Class *</label>
-          <input 
-            type="text" 
-            id="class" 
-            name="class" 
-            value={formData.class || ''} 
+          <label className="premium-label" htmlFor="classroom_id">Section (Class)</label>
+          <select
+            id="classroom_id"
+            name="classroom_id"
+            value={formData.classroom_id || ''}
             onChange={handleChange}
-            className="premium-input" 
-            placeholder="e.g. 10, BSc-1, etc." 
-            required 
+            className="premium-input"
             disabled={loading}
-            list="classes-datalist"
-          />
-          <datalist id="classes-datalist">
-            {[...new Set(classesList.map(c => c.class))].filter(Boolean).map(c => (
-              <option key={c} value={c} />
+          >
+            <option value="">-- Unassigned --</option>
+            {sectionsList.map(s => (
+              <option key={s.id} value={s.id}>
+                {s.display_name}{s.year_label ? ` (${s.year_label})` : ''}
+              </option>
             ))}
-          </datalist>
-          {errors?.class && <div className="form-error">{errors.class[0]}</div>}
-        </div>
-
-        <div>
-          <label className="premium-label" htmlFor="section">Section</label>
-          <input 
-            type="text" 
-            id="section" 
-            name="section" 
-            value={formData.section || ''} 
-            onChange={handleChange}
-            className="premium-input" 
-            placeholder="A, B, C…" 
-            disabled={loading}
-          />
-          {errors?.section && <div className="form-error">{errors.section[0]}</div>}
+          </select>
+          {errors?.classroom_id && <div className="form-error">{errors.classroom_id[0]}</div>}
         </div>
 
         <div>
