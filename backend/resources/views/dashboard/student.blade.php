@@ -204,17 +204,19 @@
       /* Two column layout */
       .sd-row {
         display: grid;
-        grid-template-columns: 1fr 340px;
+        grid-template-columns: minmax(0, 1fr) 340px;
         gap: 24px;
       }
 
+      .sd-row > .sd-card { min-width: 0; }
+
       .sd-row.full {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
 
       @media(max-width:900px) {
         .sd-row {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
 
@@ -240,6 +242,16 @@
       .sd-card-title span {
         font-size: 18px;
       }
+
+      .sd-performance-card { border:1px solid #e8eaf4; border-radius:22px; box-shadow:0 9px 30px rgba(38,48,95,.06); overflow:hidden; }
+      .sd-performance-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:18px; }
+      .sd-performance-head .sd-card-title { margin:0 0 5px; font-size:17px; }
+      .sd-performance-subtitle { margin:0; color:#748199; font-size:12px; line-height:1.45; }
+      .sd-performance-link { flex:none; color:#6254dd; background:#f3f1ff; padding:8px 11px; border-radius:10px; font-size:11px; font-weight:750; text-decoration:none; }
+      .sd-performance-link:hover { background:#e8e4ff; }
+      .sd-performance-chart { position:relative; height:250px; }
+      .sd-performance-chart canvas { width:100% !important; height:100% !important; }
+      .sd-performance-empty { display:grid; place-items:center; min-height:220px; color:#718096; text-align:center; font-size:13px; }
 
       /* Subject bars */
       .sd-subject-item {
@@ -429,106 +441,50 @@
         line-height: 1.4;
       }
 
-      /* Premium Badges */
-      .sd-badges {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 24px;
-        padding: 10px 0;
-      }
-
-      .sd-badge-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        cursor: pointer;
-        position: relative;
-      }
-
-      .sd-badge-item:hover {
-        transform: translateY(-8px) scale(1.05);
-      }
-
-      .sd-badge-visual {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        z-index: 1;
-      }
-
-      .sd-badge-visual::before {
-        content: "";
-        position: absolute;
-        inset: -4px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #FFD700, #FFA500); /* Default Gold */
-        z-index: -1;
-        opacity: 0.8;
-        transition: opacity 0.3s;
-      }
-
-      .sd-badge-item:hover .sd-badge-visual::before {
-        opacity: 1;
-        animation: rotate 3s linear infinite;
-      }
-
-      @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
-
-      .sd-badge-inner {
-        width: 68px;
-        height: 68px;
-        border-radius: 50%;
-        background: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        border: 1px solid rgba(0,0,0,0.05);
-      }
-
-      .sd-badge-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: #1e293b;
-        text-align: center;
-        line-height: 1.2;
-      }
-
-      /* Specific Badge Themes */
-      .badge-gold .sd-badge-visual::before { background: linear-gradient(135deg, #FFD700, #FFA500); }
-      .badge-silver .sd-badge-visual::before { background: linear-gradient(135deg, #E2E2E2, #999999); }
-      .badge-bronze .sd-badge-visual::before { background: linear-gradient(135deg, #CD7F32, #8B4513); }
-      .badge-purple .sd-badge-visual::before { background: linear-gradient(135deg, #a78bfa, #6d28d9); }
-      .badge-blue .sd-badge-visual::before { background: linear-gradient(135deg, #60a5fa, #1d4ed8); }
-      .badge-fire .sd-badge-visual::before { background: linear-gradient(135deg, #fbbf24, #ef4444); }
-
-      .sd-badge-glow {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background: inherit;
-        filter: blur(15px);
-        opacity: 0;
-        transition: opacity 0.3s;
-        z-index: 0;
-        border-radius: 50%;
-      }
-
-      .sd-badge-item:hover .sd-badge-glow {
-        opacity: 0.4;
-      }
+      /* Achievement collection */
+      .sd-achv-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:22px; }
+      .sd-achv-head .sd-card-title { margin-bottom:5px; }
+      .sd-achv-subtitle { margin:0; color:#64748b; font-size:13px; line-height:1.5; }
+      .sd-achv-summary { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+      .sd-achv-summary span { white-space:nowrap; border:1px solid #e4e8f2; border-radius:999px; background:#f8faff; color:#334155; padding:7px 11px; font-size:12px; font-weight:700; }
+      .sd-achv-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; }
+      .sd-achv-card { --achv-accent:#64748b; --achv-dark:#334155; display:flex; flex-direction:column; align-items:center; min-width:0; min-height:218px; padding:19px 12px 16px; border:1px solid #e8eaf2; border-radius:18px; background:linear-gradient(155deg,#fff 0%,#fbfcff 76%,#f4f7fc 100%); color:#17233d; text-align:center; cursor:pointer; position:relative; overflow:hidden; box-shadow:0 7px 25px rgba(31,45,77,.045); transition:transform .24s ease, box-shadow .24s ease, border-color .24s ease; font:inherit; }
+      .sd-achv-card:hover { transform:translateY(-5px) rotateX(3deg); border-color:var(--achv-accent); box-shadow:0 15px 32px rgba(31,45,77,.13), 0 0 22px color-mix(in srgb, var(--achv-accent) 20%, transparent); }
+      .sd-achv-card:focus-visible, .sd-achv-close:focus-visible { outline:3px solid #6366f1; outline-offset:3px; }
+      .sd-achv-card[data-tier="common"] { --achv-accent:#38bdf8; --achv-dark:#2563a5; }
+      .sd-achv-card[data-tier="rare"] { --achv-accent:#45d4c3; --achv-dark:#077e87; }
+      .sd-achv-card[data-tier="epic"] { --achv-accent:#ab8afb; --achv-dark:#6943bb; }
+      .sd-achv-card[data-tier="legendary"] { --achv-accent:#ffc467; --achv-dark:#c26619; }
+      .sd-achv-card::before { content:""; position:absolute; width:120px; height:120px; top:-64px; right:-55px; border-radius:50%; background:var(--achv-accent); filter:blur(43px); opacity:.16; pointer-events:none; }
+      .sd-achv-visual { width:78px; height:88px; display:grid; place-items:center; position:relative; margin:1px 0 13px; filter:drop-shadow(0 9px 8px color-mix(in srgb, var(--achv-dark) 25%, transparent)); transition:transform .25s ease; }
+      .sd-achv-card:hover .sd-achv-visual { transform:rotate(-6deg) scale(1.08); }
+      .sd-achv-shield { display:grid; place-items:center; width:100%; height:100%; clip-path:polygon(50% 0,91% 18%,91% 65%,50% 100%,9% 65%,9% 18%); background:linear-gradient(132deg,#fff 1%,var(--achv-accent) 26%,var(--achv-dark) 72%,#fff 108%); position:relative; }
+      .sd-achv-shield::before { content:""; position:absolute; inset:5px; clip-path:inherit; background:linear-gradient(145deg,rgba(255,255,255,.85),rgba(255,255,255,.25) 35%,rgba(13,24,52,.16) 78%); }
+      .sd-achv-shield::after { content:""; position:absolute; width:22px; height:130px; left:-35px; top:-20px; background:rgba(255,255,255,.55); transform:rotate(30deg); filter:blur(7px); }
+      .sd-achv-card:hover .sd-achv-shield::after { animation:sd-achv-shimmer .8s ease forwards; }
+      @keyframes sd-achv-shimmer { to { left:110px; } }
+      .sd-achv-glyph { position:relative; z-index:1; font-size:32px; font-weight:900; line-height:1; color:#fff; text-shadow:0 2px 5px rgba(16,29,57,.35); }
+      .sd-achv-lock { position:absolute; right:-4px; bottom:0; z-index:2; width:26px; height:26px; display:grid; place-items:center; border-radius:8px; background:#fff; border:1px solid #d9dfe9; box-shadow:0 3px 8px rgba(32,43,68,.18); font-size:14px; }
+      .sd-achv-card.is-locked .sd-achv-visual { filter:grayscale(1) opacity(.59); }
+      .sd-achv-card.is-locked .sd-achv-lock { filter:none; }
+      .sd-achv-tier { color:var(--achv-dark); background:color-mix(in srgb, var(--achv-accent) 16%, white); border:1px solid color-mix(in srgb, var(--achv-accent) 30%, white); border-radius:999px; padding:3px 9px; text-transform:uppercase; letter-spacing:.09em; font-size:9px; font-weight:800; }
+      .sd-achv-name { display:block; margin-top:9px; font-size:13px; font-weight:800; line-height:1.3; }
+      .sd-achv-state { display:block; margin-top:5px; color:#66758d; font-size:11px; line-height:1.35; }
+      .sd-achv-progress { width:100%; max-width:155px; height:5px; margin-top:auto; background:#e9edf4; border-radius:99px; overflow:hidden; }
+      .sd-achv-progress span { display:block; height:100%; width:var(--progress); background:linear-gradient(90deg,var(--achv-dark),var(--achv-accent)); border-radius:inherit; }
+      .sd-achv-card.is-unlocked .sd-achv-progress { background:color-mix(in srgb, var(--achv-accent) 25%, white); }
+      .sd-achv-dialog { position:fixed; inset:0; margin:auto; width:min(440px,calc(100% - 32px)); max-height:calc(100dvh - 32px); overflow:auto; border:1px solid #e5e9f2; border-radius:22px; padding:27px; color:#1e293b; background:#fff; box-shadow:0 28px 80px rgba(14,27,54,.24); }
+      .sd-achv-dialog::backdrop { background:rgba(12,21,42,.55); backdrop-filter:blur(5px); }
+      .sd-achv-dialog-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+      .sd-achv-dialog h2 { margin:4px 0 10px; font-size:23px; line-height:1.2; }
+      .sd-achv-dialog p { margin:0 0 16px; color:#58677f; line-height:1.55; }
+      .sd-achv-close { border:0; background:#f1f4f9; color:#334155; width:32px; height:32px; border-radius:10px; cursor:pointer; font-size:21px; line-height:1; }
+      .sd-achv-detail { display:flex; justify-content:space-between; gap:14px; padding:10px 0; border-top:1px solid #edf0f5; font-size:13px; }
+      .sd-achv-detail span { color:#64748b; }
+      .sd-achv-detail strong { text-align:right; }
+      @media (max-width:900px) { .sd-achv-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+      @media (max-width:560px) { .sd-achv-head { flex-direction:column; } .sd-achv-summary { justify-content:flex-start; } .sd-achv-grid { gap:9px; } .sd-achv-card { min-height:202px; padding:15px 7px 13px; } .sd-achv-visual { transform:scale(.85); margin:-4px 0 3px; } }
+      @media (prefers-reduced-motion:reduce) { .sd-achv-card, .sd-achv-visual { transition:none; } .sd-achv-card:hover { transform:none; } .sd-achv-card:hover .sd-achv-shield::after { animation:none; } }
 
       /* Streak */
       .sd-streak {
@@ -774,15 +730,20 @@
 
     {{-- ── Progress Chart + Rank ── --}}
     <div class="sd-row">
-      <div class="sd-card">
-        <div class="sd-card-title"> Performance Chart</div>
-        @if($marks->count() > 0)
-          <canvas id="sdChart" style="max-height:260px;"></canvas>
-        @else
-          <div class="sd-empty">
-            <div class="sd-empty-icon">📉</div>
-            <div>No marks recorded yet.</div>
+      <div class="sd-card sd-performance-card">
+        <div class="sd-performance-head">
+          <div>
+            <h2 class="sd-card-title">Subject performance</h2>
+            <p class="sd-performance-subtitle">Your average score by subject · hover for grade details</p>
           </div>
+          <a class="sd-performance-link" href="{{ route('student.progress') }}">View progress ↗</a>
+        </div>
+        @if($marks->count() > 0)
+          <div class="sd-performance-chart">
+            <canvas id="sdChart" role="img" aria-label="Subject performance chart. Scores: {{ $subjectBreakdown->map(fn($s) => $s['name'].': '.$s['pct'].'%')->implode(', ') }}"></canvas>
+          </div>
+        @else
+          <div class="sd-performance-empty">Your chart will appear after your first exam result.</div>
         @endif
       </div>
       <div class="sd-card sd-rank-card">
@@ -989,79 +950,98 @@
     </div>
 
     {{-- ── Achievements ── --}}
-    @if(count($badges) > 0)
-      <div class="sd-card">
-        <div class="sd-card-title"> Achievements & Badges</div>
-        <div class="sd-badges">
-          @foreach($badges as $b)
-            <div class="sd-badge-item {{ $b['theme'] ?? 'badge-gold' }}" title="{{ $b['label'] }}">
-              <div class="sd-badge-visual">
-                <div class="sd-badge-glow"></div>
-                <div class="sd-badge-inner">
-                  {{ $b['icon'] }}
-                </div>
-              </div>
-              <div class="sd-badge-label">{{ $b['label'] }}</div>
-            </div>
-          @endforeach
+    <section class="sd-card" aria-labelledby="sd-achv-heading">
+      <div class="sd-achv-head">
+        <div>
+          <h2 class="sd-card-title" id="sd-achv-heading">Achievements & Badges</h2>
+          <p class="sd-achv-subtitle">Your milestones, challenges, and next wins.</p>
+        </div>
+        <div class="sd-achv-summary" aria-label="Achievement summary">
+          <span>{{ collect($badges)->where('unlocked', true)->count() }} / {{ count($badges) }} unlocked</span>
+          <span>{{ number_format((int) ($studentProfile->xp_points ?? 0)) }} total XP</span>
         </div>
       </div>
-    @endif
+      <div class="sd-achv-grid">
+        @foreach($badges as $b)
+          <button type="button" class="sd-achv-card {{ $b['unlocked'] ? 'is-unlocked' : 'is-locked' }}"
+            data-tier="{{ $b['tier'] }}" data-name="{{ $b['label'] }}"
+            data-description="{{ $b['description'] }}" data-status="{{ $b['unlocked'] ? 'Unlocked' : 'In progress' }}"
+            data-progress="{{ $b['progress'] }}" data-earned="{{ $b['earned_at'] ?? '' }}"
+            aria-label="{{ $b['label'] }}, {{ $b['unlocked'] ? 'unlocked' : 'locked' }}. View details">
+            <span class="sd-achv-visual" aria-hidden="true">
+              <span class="sd-achv-shield"><span class="sd-achv-glyph">{{ $b['glyph'] }}</span></span>
+              @unless($b['unlocked'])<span class="sd-achv-lock">🔒</span>@endunless
+            </span>
+            <span class="sd-achv-tier">{{ $b['tier'] }}</span>
+            <span class="sd-achv-name">{{ $b['label'] }}</span>
+            <span class="sd-achv-state">{{ $b['unlocked'] ? 'Unlocked' : $b['progress'] }}</span>
+            <span class="sd-achv-progress" role="progressbar" aria-label="{{ $b['label'] }} progress"
+              aria-valuemin="0" aria-valuemax="{{ $b['target'] }}" aria-valuenow="{{ $b['current'] }}"
+              style="--progress:{{ $b['progress_percent'] }}%"><span></span></span>
+          </button>
+        @endforeach
+      </div>
+    </section>
+
+    <dialog class="sd-achv-dialog" id="sd-achv-dialog" aria-labelledby="sd-achv-dialog-title">
+      <div class="sd-achv-dialog-top">
+        <span class="sd-achv-tier" id="sd-achv-dialog-tier"></span>
+        <button type="button" class="sd-achv-close" id="sd-achv-dialog-close" aria-label="Close badge details">&times;</button>
+      </div>
+      <h2 id="sd-achv-dialog-title"></h2>
+      <p id="sd-achv-dialog-description"></p>
+      <div class="sd-achv-detail"><span>Status</span><strong id="sd-achv-dialog-status"></strong></div>
+      <div class="sd-achv-detail"><span>Progress</span><strong id="sd-achv-dialog-progress"></strong></div>
+      <div class="sd-achv-detail"><span>Date earned</span><strong id="sd-achv-dialog-earned"></strong></div>
+      <div class="sd-achv-detail"><span>XP awarded</span><strong>Not tracked yet</strong></div>
+    </dialog>
 
   </div>
 
   @push('scripts')
     <script>
-      @if($marks->count() > 0)
-        (function () {
-          const ctx = document.getElementById('sdChart');
-          if (!ctx) return;
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: {!! json_encode($chartLabels) !!},
-              datasets: [{
-                label: 'Score (%)',
-                data: {!! json_encode($chartData) !!},
-                backgroundColor: {!! json_encode($chartColors->map(fn($c) => $c . '44')->values()) !!},
-                borderColor: {!! json_encode($chartColors) !!},
-                borderWidth: 2,
-                borderRadius: { topLeft: 12, topRight: 12, bottomLeft: 0, bottomRight: 0 },
-                borderSkipped: false,
-                hoverBackgroundColor: {!! json_encode($chartColors) !!},
-              }]
-            },
-            options: {
-              indexAxis: 'x',
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  backgroundColor: '#0f172a',
-                  padding: 12,
-                  titleFont: { size: 14, weight: 'bold' },
-                  callbacks: { label: (ctx) => `Score: ${ctx.raw}%` }
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                  grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                  ticks: { callback: v => v + '%', font: { size: 11 } }
-                },
-                x: {
-                  grid: { display: false, drawBorder: false },
-                  ticks: { font: { weight: '600', size: 12 }, color: '#1e293b' }
-                }
-              },
-              animation: { duration: 2000, easing: 'easeOutQuart' }
-            }
+      (() => {
+        const dialog = document.getElementById('sd-achv-dialog');
+        const close = document.getElementById('sd-achv-dialog-close');
+        if (!dialog || !close) return;
+
+        let trigger = null;
+        document.querySelectorAll('.sd-achv-card').forEach(card => {
+          card.addEventListener('click', () => {
+            trigger = card;
+            const fields = {
+              tier: card.dataset.tier,
+              title: card.dataset.name,
+              description: card.dataset.description,
+              status: card.dataset.status,
+              progress: card.dataset.progress,
+              earned: card.dataset.earned || (card.dataset.status === 'Unlocked' ? 'Not recorded' : 'Not earned yet'),
+            };
+            document.getElementById('sd-achv-dialog-tier').textContent = fields.tier;
+            document.getElementById('sd-achv-dialog-title').textContent = fields.title;
+            document.getElementById('sd-achv-dialog-description').textContent = fields.description;
+            document.getElementById('sd-achv-dialog-status').textContent = fields.status;
+            document.getElementById('sd-achv-dialog-progress').textContent = fields.progress;
+            document.getElementById('sd-achv-dialog-earned').textContent = fields.earned;
+            dialog.showModal();
+            close.focus();
           });
-        })();
-      @endif
+        });
+        close.addEventListener('click', () => dialog.close());
+        dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+        dialog.addEventListener('close', () => trigger?.focus());
+      })();
     </script>
+    <script src="{{ asset('js/student-performance-chart.js') }}"></script>
+    @if($marks->count() > 0)
+      <script>
+        window.createStudentPerformanceChart(
+          document.getElementById('sdChart'),
+          {{ Illuminate\Support\Js::from($chartLabels) }},
+          {{ Illuminate\Support\Js::from($chartData) }}
+        );
+      </script>
+    @endif
   @endpush
 
 </x-app-layout>

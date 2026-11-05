@@ -63,7 +63,7 @@ class StudentQuizAssignment extends Model
     public function getTodayAttemptAvailableAttribute()
     {
         if ($this->status !== 'active') return false;
-        if (now()->lt($this->start_date) || now()->gt($this->end_date)) return false;
+        if (today()->lt($this->start_date) || today()->gt($this->end_date)) return false;
         $limit = $this->max_attempts ?? $this->repeat_days;
         if ($this->attempts_used >= $limit) return false;
 

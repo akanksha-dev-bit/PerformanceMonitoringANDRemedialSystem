@@ -100,110 +100,6 @@ const FOUNDERS = [
   },
 ];
 
-function SEOManager() {
-  useEffect(() => {
-    document.title = "PMRS — Student Performance Tracking, Adaptive Quizzes & Early Remedial Plans for CBSE Schools";
-
-    const setMetaTag = (selector, attributeName, attributeValue, contentValue) => {
-      let meta = document.querySelector(selector);
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.setAttribute(attributeName, attributeValue);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute("content", contentValue);
-    };
-
-    setMetaTag('meta[name="description"]', 'name', 'description', 'PMRS empowers CBSE school administrators and teachers with real-time student performance tracking, attendance intelligence, adaptive quizzes, and early remedial plans.');
-    setMetaTag('meta[name="keywords"]', 'name', 'keywords', 'student performance tracking, adaptive quizzes, early remedial plans, CBSE school administrators, teachers, attendance intelligence, slow learner detection');
-    setMetaTag('meta[name="author"]', 'name', 'author', 'DevMax Educational Solutions');
-    setMetaTag('meta[name="robots"]', 'name', 'robots', 'index, follow');
-
-    setMetaTag('meta[property="og:title"]', 'property', 'og:title', 'PMRS — Student Performance Tracking & Early Remedial Plans');
-    setMetaTag('meta[property="og:description"]', 'property', 'og:description', 'Comprehensive student performance tracking platform for CBSE schools with adaptive quizzes and automated remedial plans.');
-    setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'website');
-    setMetaTag('meta[property="og:url"]', 'property', 'og:url', 'https://pmrs.live');
-    setMetaTag('meta[property="og:image"]', 'property', 'og:image', 'https://pmrs.live/logo.png');
-    setMetaTag('meta[property="og:site_name"]', 'property', 'og:site_name', 'PMRS');
-
-    setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
-    setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', 'PMRS — Student Performance Tracking for CBSE Schools');
-    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', 'Track student attendance, detect slow learners early, and assign adaptive quizzes and remedial plans.');
-    setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', 'https://pmrs.live/logo.png');
-
-    // JSON-LD: SoftwareApplication schema
-    let scriptApp = document.querySelector('script[data-schema="SoftwareApplication"]');
-    if (!scriptApp) {
-      scriptApp = document.createElement("script");
-      scriptApp.setAttribute("type", "application/ld+json");
-      scriptApp.setAttribute("data-schema", "SoftwareApplication");
-      document.head.appendChild(scriptApp);
-    }
-    scriptApp.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "PMRS - Performance Monitoring and Remedial System",
-      "operatingSystem": "Web-based",
-      "applicationCategory": "EducationalApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "INR"
-      },
-      "description": "Comprehensive student performance tracking system for CBSE schools featuring attendance analytics, slow learner detection, adaptive quizzes, and automated early remedial plans.",
-      "audience": {
-        "@type": "EducationalAudience",
-        "educationalRole": ["School Administrator", "Teacher", "Educator"]
-      },
-      "featureList": [
-        "Attendance Intelligence & Pattern Detection",
-        "Slow Learner Early Detection System",
-        "One-Click Automated Remedial Plan Workflows",
-        "Adaptive MCQ Quizzes and Gamified XP System",
-        "Interactive KPI Dashboards and Analytics"
-      ]
-    });
-
-    // JSON-LD: Organization schema with founders
-    let scriptOrg = document.querySelector('script[data-schema="Organization"]');
-    if (!scriptOrg) {
-      scriptOrg = document.createElement("script");
-      scriptOrg.setAttribute("type", "application/ld+json");
-      scriptOrg.setAttribute("data-schema", "Organization");
-      document.head.appendChild(scriptOrg);
-    }
-    scriptOrg.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "PMRS",
-      "url": "https://pmrs.live",
-      "description": "PMRS empowers CBSE school administrators and teachers with real-time student performance tracking, attendance intelligence, adaptive quizzes, and early remedial plans.",
-      "logo": "https://pmrs.live/logo.png",
-      "founder": [
-        {
-          "@type": "Person",
-          "name": "Abijith C G",
-          "jobTitle": "Founder",
-          "description": "Backend & Infrastructure"
-        },
-        {
-          "@type": "Person",
-          "name": "Akanksha",
-          "jobTitle": "Co-founder",
-          "description": "Client Relations & Coordination"
-        }
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer support",
-        "email": "pmrsteam.official@gmail.com"
-      }
-    });
-  }, []);
-
-  return null;
-}
-
 const NavButton = ({ children, className = "", as: Tag = "button", ...props }) => (
   <Tag
     className={`relative overflow-hidden font-geist font-medium text-[14px] tracking-tight px-6 py-2.5 rounded-full text-white shadow-md hover:shadow-xl transition-all duration-300 ease-out active:scale-95 group ${className}`}
@@ -533,7 +429,6 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-x-clip bg-[#faf9f6] selection:bg-[#152238] selection:text-white">
-      <SEOManager />
       <ScrollProgressBar />
 
       <header>
@@ -639,7 +534,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.7, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
                 className="text-[#1a1a1a]/70 font-medium leading-relaxed text-[17px] md:text-[20px] max-w-[700px]"
               >
-                PMRS empowers CBSE school administrators and teachers to perform real-time student performance tracking, analyze attendance intelligence, launch adaptive quizzes, and execute early remedial plans.
+                PMRS is school management software for CBSE schools. Administrators and teachers can manage attendance and marks, track student performance, identify learning gaps, and organize remedial support in one place.
               </motion.p>
 
               <motion.div

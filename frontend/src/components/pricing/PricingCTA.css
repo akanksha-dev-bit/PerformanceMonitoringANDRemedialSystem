@@ -1,0 +1,103 @@
+.pricing-cta-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+}
+
+.pricing-cta-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 0.7px, transparent 0.7px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, transparent, black 28%, black 72%, transparent);
+  opacity: 0.18;
+}
+
+.pricing-cta-orb {
+  position: absolute;
+  width: min(68vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+.pricing-cta-orb--gold {
+  left: -18%;
+  bottom: -58%;
+  background: radial-gradient(circle, rgba(242, 169, 59, 0.36) 0%, rgba(242, 169, 59, 0.13) 36%, transparent 70%);
+}
+
+.pricing-cta-orb--blue {
+  right: -18%;
+  top: -50%;
+  background: radial-gradient(circle, rgba(66, 143, 211, 0.32) 0%, rgba(66, 143, 211, 0.1) 38%, transparent 70%);
+}
+
+.pricing-cta-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(110vw, 1050px);
+  aspect-ratio: 1.9;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-16deg);
+}
+
+.pricing-cta-ring--two {
+  width: min(132vw, 1260px);
+  border-color: rgba(242, 169, 59, 0.1);
+  transform: translate(-50%, -50%) rotate(15deg);
+}
+
+.pricing-cta-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(11, 16, 28, 0.22), transparent 72%);
+}
+
+.pricing-cta-scene--active .pricing-cta-orb--gold {
+  animation: pricing-glow-gold 18s ease-in-out infinite alternate;
+}
+
+.pricing-cta-scene--active .pricing-cta-orb--blue {
+  animation: pricing-glow-blue 22s ease-in-out infinite alternate;
+}
+
+.pricing-cta-scene--active .pricing-cta-ring--one {
+  animation: pricing-ring-one 24s ease-in-out infinite alternate;
+}
+
+.pricing-cta-scene--active .pricing-cta-ring--two {
+  animation: pricing-ring-two 28s ease-in-out infinite alternate;
+}
+
+@keyframes pricing-glow-gold {
+  to { transform: translate3d(9%, -9%, 0) scale(1.08); }
+}
+
+@keyframes pricing-glow-blue {
+  to { transform: translate3d(-8%, 11%, 0) scale(1.06); }
+}
+
+@keyframes pricing-ring-one {
+  to { transform: translate(-50%, -50%) rotate(-9deg); }
+}
+
+@keyframes pricing-ring-two {
+  to { transform: translate(-50%, -50%) rotate(9deg); }
+}
+
+@media (max-width: 640px) {
+  .pricing-cta-orb { width: 150vw; }
+  .pricing-cta-orb--gold { left: -75%; bottom: -48%; }
+  .pricing-cta-orb--blue { right: -80%; top: -44%; }
+  .pricing-cta-ring { width: 180vw; }
+  .pricing-cta-ring--two { width: 220vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pricing-cta-scene * { animation: none !important; }
+}

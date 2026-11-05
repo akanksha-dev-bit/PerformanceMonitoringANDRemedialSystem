@@ -21,17 +21,24 @@
  */
 
 import { useState, useCallback, Suspense } from 'react';
-import { Outlet }   from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Navbar  } from '@/components/layout';
 import { Sidebar } from '@/components/layout';
 import ContentSkeleton from '@/components/ui/ContentSkeleton';
+import { useAuth } from '@/hooks/useAuth';
 
 function AppLayout({ children }) {
+  const { user } = useAuth();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleMenuOpen = useCallback(() => setSidebarOpen(true), []);
   const handleSidebarClose = useCallback(() => setSidebarOpen(false), []);
+
+  if (user?.subscription?.requires_payment && location.pathname !== '/billing') {
+    return <Navigate to="/billing" replace />;
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg,#f8fafc 0%,#eef2ff 100%)', backgroundAttachment: 'fixed' }}>

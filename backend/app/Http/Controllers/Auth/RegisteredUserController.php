@@ -39,12 +39,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
+use App\Services\PlanCatalog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -53,9 +55,10 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request, PlanCatalog $plans): View
     {
-        return view('auth.register');
+        $selectedPlan = $plans->find((string) $request->query('plan', 'starter')) ? $request->query('plan', 'starter') : 'starter';
+        return view('auth.register', ['plans' => $plans->publicPlans(), 'selectedPlan' => $selectedPlan]);
     }
 
     /**
@@ -63,14 +66,18 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, PlanCatalog $plans): RedirectResponse
     {
+        $request->merge(['plan' => $request->input('plan', 'starter')]);
         $request->validate([
             'school_name' => ['required', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'plan' => ['required', 'string', Rule::in(array_keys(config('plans.plans', [])))],
         ]);
+
+        $plans->require($request->plan);
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
@@ -88,13 +95,22 @@ class RegisteredUserController extends Controller
                 'profile_completed' => true,
             ]);
 
+            $school->subscription()->create([
+                'plan_slug' => $request->plan,
+                // Explicit temporary Starter access for schools registered
+                // before both checkout and enforcement are ready. It remains
+                // identifiable and never becomes a paid subscription by itself.
+                'status' => config('plans.checkout_enabled') && config('plans.enforcement_enabled')
+                    ? 'pending' : 'provisional',
+            ]);
+
             event(new Registered($user));
 
             \Illuminate\Support\Facades\DB::commit();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return back()->withInput()->withErrors([
-                'email' => 'Failed to send verification email. Registration cancelled. (' . $e->getMessage() . ')',
+                'email' => 'Registration could not be completed. Please try again.',
             ]);
         }
 

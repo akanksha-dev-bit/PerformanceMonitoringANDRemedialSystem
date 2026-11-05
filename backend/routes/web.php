@@ -51,15 +51,6 @@ use App\Http\Controllers\User\TeacherController;
 // Redirect root to dashboard (or login if unauthenticated)
 Route::get('/', fn() => redirect()->route('dashboard'));
 
-Route::get('/debug-user', function() {
-    $user = \App\Models\User::where('email', 'abijithc140@gmail.com')->first();
-    return [
-        'exists' => !!$user,
-        'hash_starts_with' => $user ? substr($user->password, 0, 7) : null,
-        'check_admin123' => $user ? \Illuminate\Support\Facades\Hash::check('Admin@123', $user->password) : false,
-    ];
-});
-
 // Route to serve the Lottie animation file from resources
 Route::get('/animations/Teacher.lottie', function () {
     $path = resource_path('animations/Teacher.lottie');
@@ -74,6 +65,9 @@ Route::get('/animations/Teacher.lottie', function () {
 // Auth routes (provided by Breeze)
 require __DIR__ . '/auth.php';
 
+Route::get('/api/plans', [\App\Http\Controllers\SubscriptionController::class, 'plans'])->name('api.plans');
+Route::post('/api/payments/webhook', [\App\Http\Controllers\PaymentController::class, 'webhook'])->middleware('throttle:60,1')->name('api.payments.webhook');
+
 // Public Invite Routes
 Route::middleware('guest')->group(function () {
     Route::get('/join/{school_code}', [JoinController::class, 'create'])->name('join.create');
@@ -81,7 +75,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Protected routes — require authentication and email verification
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureActiveStudent::class])->group(function () {
     
     // React SPA: current user endpoint
     Route::get('/api/user', fn() => response()->json([
@@ -93,11 +87,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'id'   => auth()->user()->school->id,
             'name' => auth()->user()->school->name,
         ] : null,
+        'subscription' => auth()->user()->school ? app(\App\Services\PlanCatalog::class)->state(auth()->user()->school) : null,
     ]));
+
+    Route::get('/api/subscription', [\App\Http\Controllers\SubscriptionController::class, 'state'])->name('api.subscription');
+    Route::get('/billing', [\App\Http\Controllers\SubscriptionController::class, 'billing'])->name('billing');
+    Route::middleware([\App\Http\Middleware\RoleMiddleware::class.':admin'])->group(function () {
+        Route::get('/api/payments', [\App\Http\Controllers\PaymentController::class, 'history'])->name('api.payments.index');
+        Route::post('/api/payments/order', [\App\Http\Controllers\PaymentController::class, 'order'])->middleware('throttle:10,1')->name('api.payments.order');
+        Route::post('/api/payments/verify', [\App\Http\Controllers\PaymentController::class, 'verify'])->middleware('throttle:20,1')->name('api.payments.verify');
+    });
     
     // Complete Profile (for Students)
-    Route::get('/complete-profile', [StudentProfileController::class, 'create'])->name('complete-profile');
-    Route::post('/complete-profile', [StudentProfileController::class, 'store'])->name('complete-profile.store');
+    Route::get('/complete-profile', [StudentProfileController::class, 'create'])->middleware(\App\Http\Middleware\RoleMiddleware::class.':student')->name('complete-profile');
+    Route::post('/complete-profile', [StudentProfileController::class, 'store'])->middleware(\App\Http\Middleware\RoleMiddleware::class.':student')->name('complete-profile.store');
+
+    // Account settings and billing remain available while payment is pending.
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::middleware([\App\Http\Middleware\EnsureSubscriptionActive::class, \App\Http\Middleware\EnsureProfileCompleted::class])->group(function () {
 
     // Dashboard Router & Specific Endpoints
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -109,13 +119,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(\App\Http\Middleware\EnsureProfileCompleted::class)->group(function () {
 
-        // Profile (Breeze default)
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
         // Students
-        Route::resource('students', StudentController::class);
+        Route::resource('students', StudentController::class)->middleware(\App\Http\Middleware\RoleMiddleware::class.':admin,teacher');
         Route::get('lookups/classes', [\App\Http\Controllers\Academic\LookupController::class, 'classes']);
         Route::get('lookups/teachers', [\App\Http\Controllers\Academic\LookupController::class, 'teachers']);
         Route::get('lookups/subjects', [\App\Http\Controllers\Academic\LookupController::class, 'subjects']);
@@ -157,9 +162,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::resource('teachers', TeacherController::class);
             Route::resource('classes', \App\Http\Controllers\Admin\AcademicClassController::class)->except(['show', 'create', 'edit']);
             Route::resource('classrooms', \App\Http\Controllers\Admin\ClassroomController::class)->except(['show', 'create', 'edit']);
-            Route::resource('teacher-allocations', \App\Http\Controllers\Admin\TeacherAllocationController::class)->only(['index', 'store', 'destroy']);
+            Route::resource('teacher-allocations', \App\Http\Controllers\Admin\TeacherAllocationController::class)->only(['index', 'store', 'destroy'])->middleware(\App\Http\Middleware\RequirePlanFeature::class.':allocations');
             Route::resource('timetables', \App\Http\Controllers\Admin\TimetableController::class)->only(['index', 'store', 'destroy']);
-            Route::get('/analytics/attendance', [\App\Http\Controllers\Admin\AdminAttendanceAnalyticsController::class, 'index'])->name('admin.attendance-analytics');
+            Route::get('/analytics/attendance', [\App\Http\Controllers\Admin\AdminAttendanceAnalyticsController::class, 'index'])->middleware(\App\Http\Middleware\RequirePlanFeature::class.':attendance_analytics')->name('admin.attendance-analytics');
 
             // ── JSON API routes (consumed by React frontend) ──────────────────
             Route::prefix('api')->name('api.')->group(function () {
@@ -186,9 +191,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('sections/{section}', [\App\Http\Controllers\Api\SectionController::class, 'destroy'])->name('sections.destroy');
 
                 // Allocations (teacher-subject-section assignments)
-                Route::get('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'index'])->name('allocations.index');
-                Route::post('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'store'])->name('allocations.store');
-                Route::delete('allocations/{allocation}', [\App\Http\Controllers\Api\AllocationController::class, 'destroy'])->name('allocations.destroy');
+                Route::get('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'index'])->middleware(\App\Http\Middleware\RequirePlanFeature::class.':allocations')->name('allocations.index');
+                Route::post('allocations', [\App\Http\Controllers\Api\AllocationController::class, 'store'])->middleware(\App\Http\Middleware\RequirePlanFeature::class.':allocations')->name('allocations.store');
+                Route::delete('allocations/{allocation}', [\App\Http\Controllers\Api\AllocationController::class, 'destroy'])->middleware(\App\Http\Middleware\RequirePlanFeature::class.':allocations')->name('allocations.destroy');
 
                 // Timetable Slots
                 Route::get('timetable-slots', [\App\Http\Controllers\Api\TimetableSlotController::class, 'index'])->name('timetable-slots.index');
@@ -215,4 +220,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/remedial/{remedial}/draft', [RemedialSubmissionController::class, 'saveDraft'])->name('remedial.submit.draft');
     Route::post('/remedial/{remedial}/submit', [RemedialSubmissionController::class, 'submit'])->name('remedial.submit.store');
     Route::post('/remedial/{remedial}/upload', [RemedialSubmissionController::class, 'uploadFile'])->name('remedial.submit.upload');
+    });
 });

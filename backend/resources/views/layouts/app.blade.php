@@ -183,13 +183,13 @@
     /* ── Profile Dropdown ── */
     .nb-profile-dropdown {
       display:none; position:absolute;
-      top:calc(100% + 12px); right:0; width:248px;
+      top:calc(100% + 12px); right:0; width:294px; max-width:calc(100vw - 24px);
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(22px);
       -webkit-backdrop-filter: blur(22px);
-      border: 1px solid rgba(255,255,255,0.6);
+      border: 1px solid #e9e7f4;
       border-radius:20px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 24px 58px rgba(28,22,79,.17), 0 2px 8px rgba(0,0,0,.04);
       overflow:hidden; z-index:300;
       animation:nbDropIn .2s cubic-bezier(.4,0,.2,1);
     }
@@ -207,7 +207,9 @@
     }
     .nb-dropdown-header .full-name { font-weight:700; color:var(--c-text); font-size:14px; line-height:1.3; letter-spacing:-0.01em; }
     .nb-dropdown-header .email { font-size:11.5px; color:var(--c-muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .nb-dropdown-section { padding:6px 8px; }
+    .nb-dropdown-section { padding:8px; }
+    .nb-profile-toggle { display:flex;align-items:center;gap:8px;border:0;background:transparent;cursor:pointer;padding:0;color:inherit;font:inherit; }
+    .nb-profile-toggle:focus-visible,.nb-dropdown-item:focus-visible { outline:3px solid #a78bfa;outline-offset:3px; }
     .nb-dropdown-sep { height:1px; background:rgba(0,0,0,0.05); margin:4px 0; }
     .nb-dropdown-item {
       display:flex; align-items:center; gap:10px;
@@ -222,7 +224,7 @@
       display:flex; align-items:center; justify-content:center; flex-shrink:0;
       font-size:14px;
     }
-    .nb-dropdown-item.danger { color:#dc2626; }
+    .nb-dropdown-item.danger { color:#dc2626; background:#fff6f6; font-weight:750; }
     .nb-dropdown-item.danger .dd-icon { background:rgba(239,68,68,0.08); }
     .nb-dropdown-item.danger:hover { background:rgba(239,68,68,0.08); color:#dc2626; transform:translateX(2px); }
 
@@ -486,13 +488,15 @@
 
       @auth
       {{-- Profile --}}
-      <div class="nb-profile" id="nb-profile-btn" onclick="toggleProfileMenu(this)">
+      <div class="nb-profile" id="nb-profile-btn">
+        <button type="button" class="nb-profile-toggle" id="nb-profile-toggle" onclick="toggleProfileMenu()" aria-haspopup="true" aria-expanded="false" aria-controls="nb-profile-menu" aria-label="Open profile menu">
         <div class="nb-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 2)) }}</div>
         <div class="nb-user-text">
           <span class="nb-user-name">{{ auth()->user()->name }}</span>
           <span class="nb-user-role">{{ auth()->user()->isAdmin() ? 'Administrator' : (auth()->user()->isTeacher() ? 'Teacher' : 'Student') }}</span>
         </div>
         <svg class="nb-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
 
         {{-- Dropdown --}}
         <div class="nb-profile-dropdown" id="nb-profile-menu">
@@ -526,6 +530,9 @@
               <a href="{{ route('dashboard.admin') }}" class="nb-dropdown-item">
                 <span class="dd-icon">🏠</span> Dashboard
               </a>
+              <a href="{{ route('profile.edit') }}" class="nb-dropdown-item"><span class="dd-icon">⚙️</span> Account Settings</a>
+              <a href="{{ route('billing') }}" class="nb-dropdown-item"><span class="dd-icon">💳</span> Subscription &amp; Billing</a>
+              <a href="{{ route('dashboard.admin') }}#academy-profile" class="nb-dropdown-item"><span class="dd-icon">🏫</span> Academy Profile</a>
             @endif
           </div>
 
@@ -661,11 +668,14 @@
   }
 
   // ── Profile dropdown ──
-  function toggleProfileMenu(el) {
+  function toggleProfileMenu() {
     const menu = document.getElementById('nb-profile-menu');
+    const el = document.getElementById('nb-profile-btn');
+    const toggle = document.getElementById('nb-profile-toggle');
     const isOpen = menu.classList.contains('open');
     menu.classList.toggle('open', !isOpen);
     el.classList.toggle('open', !isOpen);
+    toggle.setAttribute('aria-expanded', String(!isOpen));
   }
 
   document.addEventListener('click', (e) => {
@@ -674,10 +684,11 @@
     if (profileBtn && !profileBtn.contains(e.target)) {
       if (profileMenu) profileMenu.classList.remove('open');
       profileBtn.classList.remove('open');
+      document.getElementById('nb-profile-toggle')?.setAttribute('aria-expanded','false');
     }
   });
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); document.getElementById('nb-profile-menu')?.classList.remove('open'); document.getElementById('nb-profile-btn')?.classList.remove('open'); document.getElementById('nb-profile-toggle')?.setAttribute('aria-expanded','false'); } });
 
   // ── Global Loader Logic ──
   window.addEventListener('load', function () {

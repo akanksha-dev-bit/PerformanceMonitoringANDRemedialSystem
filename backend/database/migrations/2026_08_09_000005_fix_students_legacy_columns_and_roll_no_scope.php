@@ -22,21 +22,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Drop legacy free-text columns
+        // Drop dependent indexes before removing their columns (SQLite also requires this).
+        if (Schema::hasIndex('students', 'students_class_section_index')) {
+            Schema::table('students', fn (Blueprint $table) => $table->dropIndex('students_class_section_index'));
+        }
+        if (Schema::hasIndex('students', 'students_roll_no_unique')) {
+            Schema::table('students', fn (Blueprint $table) => $table->dropUnique('students_roll_no_unique'));
+        }
+
         Schema::table('students', function (Blueprint $table) {
             $table->dropColumn(['class', 'section']);
         });
 
-        // 2. Re-scope roll_no uniqueness: was global, now per-school
         Schema::table('students', function (Blueprint $table) {
-            // Drop the old global unique index (name may vary by DB)
-            try {
-                $table->dropUnique(['roll_no']);
-            } catch (\Exception $e) {
-                // Index may not exist under that exact name — ignore
-            }
-
-            // Add scoped composite unique: (school_id, roll_no)
             $table->unique(['school_id', 'roll_no'], 'students_school_roll_unique');
         });
     }

@@ -13,7 +13,7 @@ return new class extends Migration
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('ALTER TABLE remedial_actions DROP CONSTRAINT IF EXISTS remedial_actions_action_type_check');
             DB::statement("ALTER TABLE remedial_actions ADD CONSTRAINT remedial_actions_action_type_check CHECK (action_type IN ('extra_class','counseling','peer_tutoring','assignment','parent_meeting','other','quiz_test','practice_session'))");
-        } else {
+        } elseif (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE remedial_actions MODIFY COLUMN action_type ENUM('extra_class','counseling','peer_tutoring','assignment','parent_meeting','other','quiz_test','practice_session') NOT NULL");
         }
     }
@@ -23,7 +23,7 @@ return new class extends Migration
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('ALTER TABLE remedial_actions DROP CONSTRAINT IF EXISTS remedial_actions_action_type_check');
             DB::statement("ALTER TABLE remedial_actions ADD CONSTRAINT remedial_actions_action_type_check CHECK (action_type IN ('extra_class','counseling','peer_tutoring','assignment','parent_meeting','other'))");
-        } else {
+        } elseif (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE remedial_actions MODIFY COLUMN action_type ENUM('extra_class','counseling','peer_tutoring','assignment','parent_meeting','other') NOT NULL");
         }
     }

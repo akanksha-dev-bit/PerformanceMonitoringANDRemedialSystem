@@ -60,16 +60,17 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Mark;
 use App\Models\Student;
+use App\Services\StudentBadgeCatalog;
 
 class StudentDashboardController extends Controller
 {
-    public function index()
+    public function index(StudentBadgeCatalog $badgeCatalog)
     {
         $user = auth()->user();
         if (!$user->isStudent()) abort(403);
 
         $studentProfile = Student::where('user_id', $user->id)
-            ->with(['marks.subject', 'user'])
+            ->with(['marks.subject', 'user', 'quizAttempts'])
             ->first();
 
         if (!$studentProfile) {
@@ -110,14 +111,16 @@ class StudentDashboardController extends Controller
         ])->take(4);
 
         // ── Student rank within the same class ──────────────────────────
-        $classmates = Student::where('classroom_id', $studentProfile->classroom_id)
-            ->where('school_id', $studentProfile->school_id)
-            ->with('marks')
-            ->get();
+        $classmates = $studentProfile->classroom_id === null
+            ? collect()
+            : Student::where('classroom_id', $studentProfile->classroom_id)
+                ->where('school_id', $studentProfile->school_id)
+                ->with('marks')
+                ->get();
 
         $ranked = $classmates->sortByDesc(fn($s) => $s->average_percentage)->values();
         $rank   = $ranked->search(fn($s) => $s->id === $studentProfile->id);
-        $rank   = $rank !== false ? $rank + 1 : null;
+        $rank   = $rank !== false && $marks->isNotEmpty() ? $rank + 1 : null;
         $totalInClass = $classmates->count();
 
   
@@ -125,18 +128,16 @@ class StudentDashboardController extends Controller
         $chartData   = $subjectBreakdown->pluck('pct');
         $chartColors = $subjectBreakdown->pluck('color');
 
-        $badges = [];
-        if ($marks->count() >= 1)  $badges[] = ['icon' => '📝', 'label' => 'First Exam', 'theme' => 'badge-silver'];
-        if ($marks->count() >= 5)  $badges[] = ['icon' => '🔥', 'label' => '5 Exams Done', 'theme' => 'badge-fire'];
-        if ($averagePercentage >= 80) $badges[] = ['icon' => '🏆', 'label' => 'Top Scorer', 'theme' => 'badge-gold'];
-        if ($averagePercentage >= 60) $badges[] = ['icon' => '⭐', 'label' => 'Passing Grade', 'theme' => 'badge-blue'];
-        if ($weakSubjects->isEmpty() && $marks->count() > 0) $badges[] = ['icon' => '✅', 'label' => 'All Subjects Passing', 'theme' => 'badge-purple'];
-        if ($rank === 1) $badges[] = ['icon' => '🥇', 'label' => 'Class Topper', 'theme' => 'badge-gold'];
-
         $lastMarkDate = $marks->sortByDesc('created_at')->first()?->created_at;
         $streak       = $lastMarkDate ? max(0, 7 - (int) now()->diffInDays($lastMarkDate)) : 0;
 
-        $assignedTasks = $studentProfile->remedialActions()->orderBy('scheduled_date', 'asc')->get();
+        $assignedTasks = $studentProfile->remedialActions()
+            ->with('submission')
+            ->orderBy('scheduled_date', 'asc')
+            ->get();
+        $badges = $badgeCatalog->forDashboard(
+            $studentProfile, $subjectBreakdown, $averagePercentage, $rank, $totalInClass, $assignedTasks
+        );
 
         // Fetch Today's Classes for Student
         $todayName = now()->format('l');
@@ -236,12 +237,14 @@ class StudentDashboardController extends Controller
         $xpEarned = $studentProfile->xp_points;
         $streak   = $studentProfile->study_streak;
 
-        $classmates = \App\Models\Student::where('classroom_id', $studentProfile->classroom_id)
-            ->where('school_id', $studentProfile->school_id)
-            ->with('marks')->get();
+        $classmates = $studentProfile->classroom_id === null
+            ? collect()
+            : \App\Models\Student::where('classroom_id', $studentProfile->classroom_id)
+                ->where('school_id', $studentProfile->school_id)
+                ->with('marks')->get();
         $ranked = $classmates->sortByDesc(fn($s) => $s->average_percentage)->values();
         $rank   = $ranked->search(fn($s) => $s->id === $studentProfile->id);
-        $rank   = $rank !== false ? $rank + 1 : '-';
+        $rank   = $rank !== false && $studentProfile->marks->isNotEmpty() ? $rank + 1 : '-';
 
         // Weak subjects for recommendations
         $marks = $studentProfile->marks;

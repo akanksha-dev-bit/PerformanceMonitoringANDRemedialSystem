@@ -290,7 +290,7 @@ const StudentForm = ({
             placeholder="Create a strong password" 
             disabled={loading}
           />
-          <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px', display: 'block' }}>Leave blank to use default (password123)</small>
+          <small style={{ color: '#94a3b8', fontSize: '11px', marginTop: '4px', display: 'block' }}>{isEdit ? 'Leave blank to keep the current password.' : 'Required when adding an email login. The student verifies their email on first sign-in.'}</small>
           {errors?.password && <div className="form-error">{errors.password[0]}</div>}
         </div>
       </div>

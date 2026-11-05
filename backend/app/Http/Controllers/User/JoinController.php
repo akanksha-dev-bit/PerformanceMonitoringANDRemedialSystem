@@ -43,6 +43,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\School;
 use App\Models\User;
+use App\Services\PlanCatalog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,9 +58,13 @@ class JoinController extends Controller
         return view('auth.student-register', compact('school'));
     }
 
-    public function store(Request $request, $school_code)
+    public function store(Request $request, $school_code, PlanCatalog $plans)
     {
         $school = School::where('school_code', $school_code)->firstOrFail();
+        if (config('plans.enforcement_enabled') && $school->subscription
+            && !$school->subscription->isActive() && $school->subscription->status !== 'provisional') {
+            abort(403, 'This school must activate its subscription before enrolling students.');
+        }
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -69,6 +74,7 @@ class JoinController extends Controller
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
+            $plans->assertStudentCapacity($school->id);
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -76,16 +82,21 @@ class JoinController extends Controller
                 'role' => 'student',
                 'school_id' => $school->id,
                 'profile_completed' => false,
+                // Invited users need to sign in to complete their profile. Their
+                // active student record (and seat) is created at completion.
                 'is_active' => true,
             ]);
 
             event(new Registered($user));
 
             \Illuminate\Support\Facades\DB::commit();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
             return back()->withInput()->withErrors([
-                'email' => 'Failed to send verification email. Registration cancelled. (' . $e->getMessage() . ')',
+                'email' => 'Registration could not be completed. Please try again.',
             ]);
         }
 

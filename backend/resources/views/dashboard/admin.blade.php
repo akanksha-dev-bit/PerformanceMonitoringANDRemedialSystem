@@ -458,6 +458,36 @@
             position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
             width: 17px; height: 17px; color: #94a3b8; pointer-events: none;
         }
+        .admin-header, .premium-card, .inv-card, .kpi-box { box-shadow:0 12px 34px rgba(36,32,91,.055); }
+        .admin-header { padding:32px 36px; border-radius:24px; }
+        .admin-title { font-size:clamp(22px,2.3vw,30px); }
+        .kpi-box { border-radius:20px; transition:transform .2s ease,box-shadow .2s ease; }
+        .kpi-box:hover { transform:translateY(-4px); box-shadow:0 18px 36px rgba(36,32,91,.11); }
+        .premium-card { border-radius:22px; }
+        .inv-card { border-radius:22px; }
+        .trend-controls { display:flex; flex-wrap:wrap; gap:7px; margin:4px 0 18px; }
+        .trend-filter { border:1px solid #e7e4f5; background:#fff; color:#64748b; border-radius:999px; padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .trend-filter:hover,.trend-filter[aria-pressed="true"] { color:#5b38c0; border-color:#b8abf7; background:#f3efff; }
+        .trend-chart-wrap { height:280px; position:relative; min-width:0; }
+        .trend-legend { display:flex; align-items:center; gap:8px; color:#64748b; font-size:12px; font-weight:650; margin-top:14px; }
+        .trend-legend-dot { width:10px; height:10px; border-radius:50%; background:#6c5ce7; box-shadow:0 0 0 4px #eeeaff; }
+        .trend-empty { height:100%; display:flex; align-items:center; justify-content:center; text-align:center; color:#64748b; font-size:14px; background:#faf9ff; border:1px dashed #ddd6fe; border-radius:16px; padding:20px; }
+        .plan-widget { background:linear-gradient(145deg,#211d43,#392878); border:1px solid #514395; color:#fff; overflow:hidden; position:relative; }
+        .plan-widget::after { content:""; position:absolute; width:190px; height:190px; right:-60px; top:-70px; border-radius:50%; border:28px solid rgba(255,255,255,.055); pointer-events:none; }
+        .plan-widget .card-title { color:#fff; }
+        .plan-widget .card-subtitle { color:#c8c2ed; }
+        .plan-status { display:inline-flex; border:1px solid rgba(255,255,255,.23); background:rgba(255,255,255,.1); border-radius:999px; padding:5px 10px; font-size:11px; font-weight:750; text-transform:capitalize; }
+        .plan-current { font-size:27px; font-weight:850; letter-spacing:-.04em; margin:14px 0 3px; }
+        .plan-usage-row { display:flex; justify-content:space-between; gap:12px; font-size:12px; color:#ddd8f8; margin:17px 0 8px; }
+        .plan-meter { height:9px; background:rgba(255,255,255,.17); border-radius:99px; overflow:hidden; }
+        .plan-meter span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#b7a5ff,#76e3d5); }
+        .plan-features { font-size:12px; color:#d8d2f4; margin:15px 0 18px; line-height:1.55; }
+        .plan-tiers { display:flex; flex-wrap:wrap; gap:6px; }
+        .plan-tiers span { font-size:10px; font-weight:700; padding:5px 8px; background:rgba(255,255,255,.09); border-radius:7px; }
+        .plan-cta { display:inline-flex; justify-content:center; align-items:center; width:100%; margin-top:17px; padding:11px 16px; border-radius:11px; background:#fff; color:#4e36b0; font-size:13px; font-weight:800; text-decoration:none; transition:transform .2s,box-shadow .2s; }
+        .plan-cta:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,.15); }
+        @media(max-width:600px) { .admin-header { padding:23px; } .trend-chart-wrap { height:245px; } }
+        @media(prefers-reduced-motion:reduce) { .kpi-box,.trend-filter,.plan-cta { transition:none; } }
     </style>
     @endpush
 
@@ -479,7 +509,7 @@
     </div>
 
     {{-- Invite Section --}}
-    <div class="inv-card">
+    <div class="inv-card" id="academy-profile">
 
         {{-- LEFT STRIPE --}}
         <div class="inv-stripe">
@@ -605,9 +635,17 @@
                     </div>
                     <a href="{{ route('reports.index') }}" class="btn-solid-dark" style="padding: 8px 16px; font-size: 13px;">Full Report</a>
                 </div>
-                <div style="height: 300px; width: 100%; position: relative;">
+                <div class="trend-controls" role="group" aria-label="Assessment filter">
+                    <button type="button" class="trend-filter" data-trend-filter="all" aria-pressed="true">All assessments</button>
+                    <button type="button" class="trend-filter" data-trend-filter="unit_test" aria-pressed="false">Unit tests</button>
+                    <button type="button" class="trend-filter" data-trend-filter="midterm" aria-pressed="false">Mid-term</button>
+                    <button type="button" class="trend-filter" data-trend-filter="final" aria-pressed="false">Finals</button>
+                    <button type="button" class="trend-filter" data-trend-filter="practical" aria-pressed="false">Practical</button>
+                </div>
+                <div class="trend-chart-wrap">
                     <canvas id="performanceChart"></canvas>
                 </div>
+                <div class="trend-legend"><span class="trend-legend-dot"></span> Average marks <span id="trendPointCount" aria-live="polite"></span></div>
             </div>
 
             {{-- Recent Students Table --}}
@@ -669,6 +707,23 @@
 
         {{-- Right Column --}}
         <div style="display: flex; flex-direction: column; gap: 24px;">
+            {{-- School plan comes from the backend subscription state. Legacy schools keep full access. --}}
+            @if($subscriptionState)
+            @php
+                $planUsage = (int) ($subscriptionState['student_usage'] ?? 0);
+                $planLimit = $subscriptionState['student_limit'] ?? null;
+                $planPercent = $planLimit ? min(100, round($planUsage * 100 / $planLimit)) : 0;
+                $planName = $subscriptionState['plan_name'] ?? ($subscriptionState['status'] === 'legacy' ? 'Legacy access' : 'Select a plan');
+            @endphp
+            <section class="premium-card plan-widget" aria-label="School subscription">
+                <div class="card-header" style="margin-bottom:8px;"><div><h3 class="card-title">Your school plan</h3><p class="card-subtitle">Subscription and capacity at a glance</p></div><span class="plan-status">{{ $subscriptionState['status'] }}</span></div>
+                <div class="plan-current">{{ $planName }}</div>
+                <div class="plan-tiers" aria-label="Available tiers"><span>Starter</span><span>Growth / Professional</span><span>Enterprise</span></div>
+                <div class="plan-usage-row"><span>Active students</span><strong>{{ number_format($planUsage) }}{{ $planLimit ? ' / '.number_format($planLimit) : ' · no plan limit' }}</strong></div>
+                @if($planLimit)<div class="plan-meter" role="progressbar" aria-label="Student capacity used" aria-valuenow="{{ $planUsage }}" aria-valuemin="0" aria-valuemax="{{ $planLimit }}"><span style="width:{{ $planPercent }}%"></span></div>@endif
+                <p class="plan-features">{{ count($subscriptionState['features'] ?? []) }} features available{{ $planLimit ? ' · '.number_format(max(0, $planLimit - $planUsage)).' student places remaining' : '' }}</p>
+                <a href="{{ route('billing') }}" class="plan-cta">View billing &amp; plans →</a>
+            </section>
             
             {{-- Action Buttons --}}
             <div class="premium-card">
@@ -801,7 +856,6 @@
     @push('scripts')
     <!-- Must include QRCode.js before this template is rendered or locally here -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function openTeacherModal() {
             document.getElementById('teacherModal').classList.add('active');
@@ -875,70 +929,81 @@
             }
         });
 
-        // Performance Trend Chart - Premium UI
+        // Draw the actual, school-scoped assessment averages returned by PerformanceService.
         window.addEventListener('DOMContentLoaded', function() {
             var ctx = document.getElementById('performanceChart');
-            if(ctx) {
-                var trendData = {!! json_encode($trendData ?? []) !!};
-                var labels = trendData.map(d => d.date || d.label || d.assessment_name || 'Assessment');
-                var dataPoints = trendData.map(d => d.avg_score || d.value || d.score || 0);
-                
-                if(dataPoints.length === 0) {
-                    document.getElementById('performanceChart').style.display = 'none';
-                    ctx.parentElement.innerHTML = '<div style="display:flex; height:100%; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; font-weight:500;">No performance data available yet. Please add marks to view trends.</div>';
+            if (!ctx) return;
+            var trendData = {{ \Illuminate\Support\Js::from($trendData ?? []) }};
+            var chart = null;
+            var countLabel = document.getElementById('trendPointCount');
+            function renderTrend(filter) {
+                var rows = filter === 'all' ? trendData : trendData.filter(function(row) { return row.exam_type === filter; });
+                if (chart) { chart.destroy(); chart = null; }
+                var wrap = ctx.parentElement;
+                var empty = wrap.querySelector('.trend-empty');
+                if (empty) empty.remove();
+                ctx.hidden = rows.length === 0 || typeof Chart === 'undefined';
+                countLabel.textContent = rows.length ? '· ' + rows.length + ' assessment groups' : '';
+                if (ctx.hidden) {
+                    var message = document.createElement('div');
+                    message.className = 'trend-empty';
+                    message.textContent = typeof Chart === 'undefined' ? 'Chart could not load. Please refresh the page.' : 'No marks for this assessment type yet.';
+                    wrap.appendChild(message);
                     return;
                 }
-
-                Chart.defaults.font.family = "'Inter', 'Segoe UI', Roboto, sans-serif";
-                Chart.defaults.color = '#64748b';
-
-                new Chart(ctx, {
+                var gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 280);
+                gradient.addColorStop(0, 'rgba(108,92,231,.28)');
+                gradient.addColorStop(1, 'rgba(108,92,231,.015)');
+                chart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: labels,
+                        labels: rows.map(function(row) { return row.label; }),
                         datasets: [{
-                            label: 'Average Score (%)',
-                            data: dataPoints,
+                            label: 'Average marks',
+                            data: rows.map(function(row) { return row.avg; }),
                             borderColor: '#6C5CE7',
-                            backgroundColor: 'rgba(108, 92, 231, 0.1)',
+                            backgroundColor: gradient,
                             borderWidth: 3,
-                            tension: 0.4,
+                            tension: 0.35,
                             fill: true,
                             pointBackgroundColor: '#fff',
                             pointBorderColor: '#6C5CE7',
                             pointBorderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            pointHitRadius: 16
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                titleFont: { size: 13, weight: '700' },
-                                bodyFont: { size: 13 },
+                                titleFont: { size: 12, weight: '700' },
+                                bodyFont: { size: 13, weight: '600' },
                                 padding: 12,
-                                cornerRadius: 8,
-                                displayColors: false
+                                cornerRadius: 10,
+                                displayColors: false,
+                                callbacks: { label: function(item) { return item.parsed.y.toFixed(1) + '% average · ' + rows[item.dataIndex].count + ' marks'; } }
                             }
                         },
                         scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                max: 100, 
-                                grid: { color: '#f1f5f9', borderDash: [4, 4], drawBorder: false },
-                                border: { display: false }
-                            },
-                            x: { 
-                                grid: { display: false, drawBorder: false } 
-                            }
+                            y: { beginAtZero: true, max: 100, ticks: { callback: function(value) { return value + '%'; } }, grid: { color: '#f1f5f9' }, border: { display: false } },
+                            x: { grid: { display: false }, border: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 5 } }
                         }
                     }
                 });
             }
+            document.querySelectorAll('[data-trend-filter]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('[data-trend-filter]').forEach(function(item) { item.setAttribute('aria-pressed', String(item === button)); });
+                    renderTrend(button.dataset.trendFilter);
+                });
+            });
+            renderTrend('all');
         });
     </script>
     @endpush

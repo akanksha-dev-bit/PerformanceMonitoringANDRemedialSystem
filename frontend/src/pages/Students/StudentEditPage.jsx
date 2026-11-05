@@ -197,6 +197,9 @@ const StudentEditPage = () => {
       </div>
 
       <div className="premium-form-card">
+        {errors.student_limit && <div role="alert" className="m-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          {errors.student_limit[0]} <Link to="/billing" className="font-bold underline">View your school plan</Link>
+        </div>}
         <div className="pfc-header">
           <div style={{ fontWeight: 600, color: '#111827', fontSize: '16px' }}>Student Information</div>
           <Link to={`/students/${id}`} className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px' }} id="back-btn">

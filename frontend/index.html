@@ -5,26 +5,58 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Primary SEO -->
-    <title>PMRS — Student Performance Tracking, Adaptive Quizzes &amp; Early Remedial Plans for CBSE Schools</title>
-    <meta name="description" content="PMRS empowers CBSE school administrators and teachers with real-time student performance tracking, attendance intelligence, adaptive quizzes, and early remedial plans." />
+    <title>School Management &amp; Student Performance Tracking | PMRS</title>
+    <meta name="description" content="PMRS helps CBSE schools manage students, teachers, attendance, marks and remedial activities. Track student performance and spot learning gaps early." />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="DevMax Educational Solutions" />
-    <link rel="canonical" href="https://pmrs.live/" />
+    <link rel="canonical" href="https://www.pmrs.live/" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="PMRS — Student Performance Tracking &amp; Early Remedial Plans" />
-    <meta property="og:description" content="PMRS empowers CBSE school administrators and teachers with real-time student performance tracking, attendance intelligence, adaptive quizzes, and early remedial plans." />
-    <meta property="og:image" content="https://pmrs.live/logo.png" />
-    <meta property="og:url" content="https://pmrs.live/" />
+    <meta property="og:title" content="PMRS | School Management &amp; Student Performance Tracking" />
+    <meta property="og:description" content="Manage school academics, attendance, marks and remedial support in one platform for CBSE schools." />
+    <meta property="og:image" content="https://www.pmrs.live/logo.png" />
+    <meta property="og:url" content="https://www.pmrs.live/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PMRS" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PMRS — Student Performance Tracking for CBSE Schools" />
-    <meta name="twitter:description" content="Track student attendance, detect slow learners early, and assign adaptive quizzes and remedial plans." />
-    <meta name="twitter:image" content="https://pmrs.live/logo.png" />
+    <meta name="twitter:title" content="PMRS | School Management &amp; Student Performance Tracking" />
+    <meta name="twitter:description" content="Manage school academics, attendance, marks and remedial support in one platform for CBSE schools." />
+    <meta name="twitter:image" content="https://www.pmrs.live/logo.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.pmrs.live/#organization",
+            "name": "PMRS",
+            "url": "https://www.pmrs.live/",
+            "logo": "https://www.pmrs.live/logo.png",
+            "email": "pmrsteam.official@gmail.com"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.pmrs.live/#website",
+            "name": "PMRS",
+            "url": "https://www.pmrs.live/",
+            "publisher": { "@id": "https://www.pmrs.live/#organization" }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.pmrs.live/#software",
+            "name": "PMRS — Performance Monitoring and Remedial System",
+            "url": "https://www.pmrs.live/",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web browser",
+            "description": "School academic management software for CBSE schools, with student and teacher management, attendance, marks, performance monitoring and remedial activities.",
+            "publisher": { "@id": "https://www.pmrs.live/#organization" }
+          }
+        ]
+      }
+    </script>
 
     <!-- Fonts: Inter (UI) + Poppins (headings) + Geist (landing page) + Instrument Serif (landing page) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +64,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&family=Geist:wght@100..900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main style="max-width: 920px; margin: 7rem auto; padding: 0 1.5rem; font: 16px/1.6 system-ui, sans-serif; color: #152238">
+        <a href="/" aria-label="PMRS home"><img src="/logo.png" alt="PMRS" width="100" height="60" /></a>
+        <h1>Know which students need help before the term ends</h1>
+        <p>PMRS is school management software for CBSE schools. Administrators and teachers can manage attendance and marks, track student performance, identify learning gaps, and organize remedial support in one place.</p>
+        <h2>Academic management and attendance</h2>
+        <p>Keep student records, teacher accounts, classes, timetables, daily attendance and marks together. View class and school performance trends through dashboards and reports.</p>
+        <h2>Early support for every learner</h2>
+        <p>Use assessment results to identify students who need help, assign remedial activities and follow their progress. Adaptive quizzes support practice at the student's level.</p>
+        <p><a href="/pricing/">Explore PMRS school pricing and plans</a> or <a href="mailto:pmrsteam.official@gmail.com">contact the PMRS team</a>.</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

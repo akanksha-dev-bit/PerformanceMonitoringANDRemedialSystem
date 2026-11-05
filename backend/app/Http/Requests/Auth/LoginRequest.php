@@ -76,6 +76,13 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()->role === 'student' && (!Auth::user()->is_active
+            || (Auth::user()->profile_completed && !Auth::user()->studentProfile?->is_active))) {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages(['email' => trans('auth.failed')]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

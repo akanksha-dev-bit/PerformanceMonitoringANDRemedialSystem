@@ -33,10 +33,11 @@ const ADMIN_LINKS = [
   { label: 'Teachers',    to: ROUTES.TEACHERS },
   { label: 'Classes',     to: ROUTES.CLASSES },
   { label: 'Rooms',       to: ROUTES.CLASSROOMS },
-  { label: 'Allocations', to: ROUTES.ALLOCATIONS },
+  { label: 'Allocations', to: ROUTES.ALLOCATIONS, feature: 'allocations' },
   { label: 'Timetable',   to: ROUTES.TIMETABLE },
-  { label: 'Attendance',  to: ROUTES.ADMIN_ATTENDANCE_ANALYTICS },
+  { label: 'Attendance',  to: ROUTES.ADMIN_ATTENDANCE_ANALYTICS, feature: 'attendance_analytics' },
   { label: 'Reports',     to: ROUTES.REPORTS },
+  { label: 'Billing',     to: '/billing' },
 ];
 
 const TEACHER_LINKS = [
@@ -81,13 +82,20 @@ function Navbar({ onMenuOpen }) {
       }
     };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    const onKeyDown = (event) => { if (event.key === 'Escape') setProfileOpen(false); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('mousedown', handler); document.removeEventListener('keydown', onKeyDown); };
   }, [profileOpen]);
 
   // Profile dropdown items by role
   const profileItems = () => {
     if (isAdmin()) {
-      return [{ icon: '🏠', label: 'Dashboard', to: ROUTES.DASHBOARD_ADMIN }];
+      return [
+        { icon: '🏠', label: 'Dashboard', to: ROUTES.DASHBOARD_ADMIN },
+        { icon: '⚙️', label: 'Account Settings', to: ROUTES.PROFILE },
+        { icon: '💳', label: 'Subscription & Billing', to: '/billing' },
+        { icon: '🏫', label: 'Academy Profile', to: `${ROUTES.DASHBOARD_ADMIN}#academy-profile` },
+      ];
     }
     if (isTeacher()) {
       return [
@@ -142,7 +150,7 @@ function Navbar({ onMenuOpen }) {
               className={({ isActive }) => isActive ? 'active' : ''}
               end={link.to === ROUTES.DASHBOARD_ADMIN || link.to === ROUTES.DASHBOARD_TEACHER || link.to === ROUTES.DASHBOARD_STUDENT}
             >
-              {link.label}
+              {link.label}{link.feature && user?.subscription?.enforcement_enabled && !user.subscription.features?.includes(link.feature) && <span aria-label="Locked feature" title="Available on a higher plan"> 🔒</span>}
             </NavLink>
           ))}
         </nav>
@@ -160,7 +168,8 @@ function Navbar({ onMenuOpen }) {
         <div className="nb-spacer" />
 
         {/* ── Profile Pill ── */}
-        <div className="nb-profile" ref={profileRef} onClick={() => setProfileOpen((o) => !o)}>
+        <div className="nb-profile" ref={profileRef}>
+          <button type="button" className="nb-profile-toggle" onClick={() => setProfileOpen((o) => !o)} aria-expanded={profileOpen} aria-controls="react-profile-menu" aria-haspopup="true" aria-label="Open profile menu">
           <div className="nb-avatar">{getInitials(user?.name)}</div>
           <div className="nb-user-text">
             <span className="nb-user-name">{user?.name}</span>
@@ -169,12 +178,14 @@ function Navbar({ onMenuOpen }) {
           <svg className="nb-chevron" style={{ transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
+          </button>
 
           {/* ── Profile Dropdown ── */}
           <AnimatePresence>
             {profileOpen && (
               <motion.div
                 className="nb-profile-dropdown"
+                id="react-profile-menu"
                 initial={{ opacity: 0, y: -8, scale: 0.97 }}
                 animate={{ opacity: 1, y:  0, scale: 1 }}
                 exit={{   opacity: 0, y: -8, scale: 0.97 }}

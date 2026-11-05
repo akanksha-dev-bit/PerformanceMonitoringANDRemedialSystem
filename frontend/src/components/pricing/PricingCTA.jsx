@@ -1,19 +1,25 @@
-import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { CONTACT_EMAIL } from "@/config/pricing";
+import "./PricingCTA.css";
 
-const NAVY = "#152238";
-const MARIGOLD = "#F2A93B";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 export default function PricingCTA() {
   const reduceMotion = useReducedMotion();
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { margin: "-10% 0px -10% 0px" });
 
   return (
-    <section className="relative w-full bg-[#0c0d10] py-28 md:py-36 overflow-hidden px-6 border-t border-white/[0.04]">
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center" aria-hidden="true">
-        <div className="absolute w-[120vw] md:w-[70vw] max-w-[900px] aspect-square bg-[radial-gradient(circle_at_center,rgba(203,162,115,0.12)_0%,transparent_65%)] rounded-full blur-[100px]" />
+    <section ref={sectionRef} className="relative w-full overflow-hidden border-t border-white/[0.04] bg-[#0b101c] px-6 py-28 md:py-36">
+      <div className={`pricing-cta-scene ${isInView && !reduceMotion ? "pricing-cta-scene--active" : ""}`} aria-hidden="true">
+        <div className="pricing-cta-grid" />
+        <div className="pricing-cta-orb pricing-cta-orb--gold" />
+        <div className="pricing-cta-orb pricing-cta-orb--blue" />
+        <div className="pricing-cta-ring pricing-cta-ring--one" />
+        <div className="pricing-cta-ring pricing-cta-ring--two" />
+        <div className="pricing-cta-veil" />
       </div>
 
       <motion.div
@@ -29,7 +35,7 @@ export default function PricingCTA() {
         >
           Ready to modernize your school&rsquo;s academic management?
         </h2>
-        <p className="text-white/50 text-[17px] font-medium leading-relaxed max-w-lg">
+        <p className="max-w-lg text-[17px] font-medium leading-relaxed text-white/70">
           See how PMRS can help your institution manage students, monitor performance and deliver more personalized remedial support.
         </p>
 

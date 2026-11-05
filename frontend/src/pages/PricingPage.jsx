@@ -44,42 +44,6 @@ function FooterLink({ children, href = "#" }) {
   );
 }
 
-function SEOHead() {
-  useEffect(() => {
-    document.title = "PMRS Pricing | School Management & Performance Monitoring";
-
-    const setMeta = (name, content, attr = "name") => {
-      let el = document.querySelector(`meta[${attr}="${name}"]`);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, name);
-        document.head.appendChild(el);
-      }
-      el.setAttribute("content", content);
-    };
-
-    setMeta("description", "Explore PMRS pricing plans for school management, attendance, marks, performance monitoring, remedial activities and academic management.");
-    setMeta("og:title", "PMRS Pricing | School Management & Performance Monitoring", "property");
-    setMeta("og:description", "Explore PMRS plans for modern school academic and performance management.", "property");
-    setMeta("og:url", "https://pmrs.live/pricing", "property");
-    setMeta("og:type", "website", "property");
-
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", "https://pmrs.live/pricing");
-
-    return () => {
-      document.title = "PMRS";
-    };
-  }, []);
-
-  return null;
-}
-
 export default function PricingPage() {
   const reduceMotion = useReducedMotion();
   const [showTop, setShowTop] = useState(false);
@@ -92,7 +56,6 @@ export default function PricingPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-x-clip bg-[#faf9f6] selection:bg-[#152238] selection:text-white">
-      <SEOHead />
 
       {/* Navigation */}
       <header>
@@ -130,7 +93,7 @@ export default function PricingPage() {
       <main>
         <PricingHero />
 
-        <section className="px-6 pb-20 md:pb-28" id="plans">
+        <section className="px-5 pb-20 sm:px-6 md:pb-24" id="plans">
           <PricingCards />
           <div className="text-center mt-10">
             <p className="text-[#1a1a1a]/50 text-[15px] font-medium mb-1">Need a larger plan?</p>

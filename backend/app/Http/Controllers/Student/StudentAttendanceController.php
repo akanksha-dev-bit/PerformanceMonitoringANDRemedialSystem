@@ -23,6 +23,7 @@ class StudentAttendanceController extends Controller
             ->firstOrFail();
 
         $overallAttendance = $student->overall_attendance;
+        $attendanceTotal = $student->attendanceRecords()->count();
 
         // Fetch all subjects taught in this school
         $subjects = Subject::where('school_id', $user->school_id)->get();
@@ -62,37 +63,34 @@ class StudentAttendanceController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        // Calculate Monthly Trends (Presence percentage for the last 5 months)
-        $isPgsql = DB::getDriverName() === 'pgsql';
-        $monthExpr = $isPgsql 
-            ? "to_char(attendance_sessions.date, 'FMMonth YYYY')"
-            : "DATE_FORMAT(attendance_sessions.date, '%M %Y')";
-
-        $monthlyTrends = DB::table('attendance_records')
+        // Show the last five calendar months, including months without sessions.
+        $monthlyRecords = DB::table('attendance_records')
             ->join('attendance_sessions', 'attendance_records.attendance_session_id', '=', 'attendance_sessions.id')
-            ->select(
-                DB::raw("{$monthExpr} as month"),
-                DB::raw("COUNT(attendance_records.id) as total"),
-                DB::raw("SUM(CASE WHEN attendance_records.status = 'present' THEN 1 ELSE 0 END) as present")
-            )
+            ->select('attendance_sessions.date', 'attendance_records.status')
             ->where('attendance_records.student_id', $student->id)
-            ->groupBy(DB::raw($monthExpr))
-            ->orderBy(DB::raw("MIN(attendance_sessions.date)"))
-            ->take(5)
+            ->where('attendance_sessions.date', '>=', now()->startOfMonth()->subMonths(4)->toDateString())
             ->get()
-            ->map(function($row) {
+            ->groupBy(fn ($record) => substr((string) $record->date, 0, 7));
+
+        $monthlyTrends = collect(range(4, 0))->map(function ($monthsAgo) use ($monthlyRecords) {
+                $month = now()->startOfMonth()->subMonths($monthsAgo);
+                $records = $monthlyRecords->get($month->format('Y-m'), collect());
+                $total = $records->count();
+
                 return [
-                    'month' => $row->month,
-                    'pct' => $row->total > 0 ? round(($row->present / $row->total) * 100, 1) : 100.0
+                    'month' => $month->format('M'),
+                    'label' => $month->format('F Y'),
+                    'pct' => $total > 0 ? round($records->where('status', 'present')->count() / $total * 100, 1) : null,
+                    'total' => $total,
                 ];
             });
 
         // Trigger warning if overall is low
         $alertMessage = null;
-        if ($overallAttendance < 75) {
+        if ($attendanceTotal > 0 && $overallAttendance < 75) {
             $alertMessage = "⚠️ Low Attendance Alert: Your overall attendance is currently at {$overallAttendance}%. You need at least 75% to be compliant with school regulations.";
         }
 
-        return view('student.attendance.index', compact('student', 'overallAttendance', 'subjectBreakdown', 'absentHistory', 'monthlyTrends', 'alertMessage'));
+        return view('student.attendance.index', compact('student', 'overallAttendance', 'attendanceTotal', 'subjectBreakdown', 'absentHistory', 'monthlyTrends', 'alertMessage'));
     }
 }

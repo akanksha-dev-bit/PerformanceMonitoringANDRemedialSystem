@@ -24,6 +24,7 @@ use App\Services\PerformanceService;
 use App\Services\SlowLearnerService;
 use App\Models\Mark;
 use App\Models\RemedialAction;
+use App\Services\PlanCatalog;
 
 class AdminDashboardController extends Controller
 {
@@ -61,8 +62,9 @@ class AdminDashboardController extends Controller
         $recentStudents = Student::where('school_id', $user->school_id)
             ->with(['user', 'marks'])->latest()->take(8)->get();
 
-        $teacherCount = User::where('school_id', $user->school_id)->where('role', 'teacher')->count();
+        $teacherCount = User::where('school_id', $user->school_id)->where('role', 'teacher')->where('is_active', true)->count();
         $studentCount = User::where('school_id', $user->school_id)->where('role', 'student')->count();
+        $subscriptionState = $user->school ? app(PlanCatalog::class)->state($user->school) : null;
 
         $schoolCode = $user->school->school_code ?? 'PMRS-ERROR';
         $inviteLink = url('/join/' . $schoolCode);
@@ -100,12 +102,13 @@ class AdminDashboardController extends Controller
                 ])->values(),
                 'subject_rankings' => $subjectAvgs->sortByDesc('avg')->values(),
                 'trend_data' => $trendData ?? [],
+                'subscription' => $subscriptionState,
             ]);
         }
 
         return view('dashboard.admin', compact(
             'summary', 'slowLearners', 'trendData', 'activeRemedials',
-            'subjectAvgs', 'recentStudents', 'teacherCount', 'studentCount', 'schoolCode', 'inviteLink'
+            'subjectAvgs', 'recentStudents', 'teacherCount', 'studentCount', 'schoolCode', 'inviteLink', 'subscriptionState'
         ));
     }
 }

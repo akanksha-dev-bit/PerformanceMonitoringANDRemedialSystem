@@ -34,18 +34,16 @@
         <form method="POST" action="{{ route('complete-profile.store') }}">
           @csrf
 
-          <div class="cp-row">
-            <div class="form-group-modern cp-half">
-              <label class="cp-label">Class</label>
-              <input type="text" name="class" value="{{ old('class') }}" placeholder="e.g. 10th Standard" required autofocus>
-            </div>
-            <div class="form-group-modern cp-half">
-              <label class="cp-label">Section</label>
-              <input type="text" name="section" value="{{ old('section') }}" placeholder="e.g. A" required>
-            </div>
+          <div class="form-group-modern">
+            <label class="cp-label" for="classroom_id">Class and section</label>
+            <select id="classroom_id" name="classroom_id" required autofocus style="width:100%;padding:16px 20px;border-radius:12px;border:1px solid #eaeaea;background:#fff">
+              <option value="">Select your class and section</option>
+              @foreach($classrooms as $classroom)
+                <option value="{{ $classroom->id }}" @selected(old('classroom_id') == $classroom->id)>{{ $classroom->display_name }}</option>
+              @endforeach
+            </select>
           </div>
-          @error('class')<span class="form-error">{{ $message }}</span>@enderror
-          @error('section')<span class="form-error">{{ $message }}</span>@enderror
+          @error('classroom_id')<span class="form-error">{{ $message }}</span>@enderror
 
           <div class="form-group-modern">
             <label class="cp-label">Roll Number</label>

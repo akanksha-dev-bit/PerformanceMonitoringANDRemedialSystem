@@ -104,7 +104,7 @@ export default function StudentsPage() {
       setStudents(prev => 
         prev.map(s => s.id === id ? { ...s, is_active: currentStatus } : s)
       );
-      alert('Failed to update student status.');
+      setNotification({ type: 'error', message: err.response?.data?.errors?.student_limit?.[0] || 'Failed to update student status.' });
     }
   };
 

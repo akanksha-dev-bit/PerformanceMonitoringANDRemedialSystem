@@ -53,6 +53,10 @@ class AuthenticatedSessionController extends Controller
     {
         $user = \App\Models\User::where('email', $request->email)->first();
         if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            if ($user->role === 'student' && (!$user->is_active
+                || ($user->profile_completed && !$user->studentProfile?->is_active))) {
+                return back()->withErrors(['email' => trans('auth.failed')]);
+            }
             if (!$user->hasVerifiedEmail()) {
                 session(['verify_email' => $user->email]);
                 if (!$user->email_verification_otp) {

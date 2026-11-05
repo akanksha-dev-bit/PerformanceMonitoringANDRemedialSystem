@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { FEATURE_COMPARISON, USER_LIMITS, PLANS } from "@/config/pricing";
+import { FEATURE_GROUPS, FEATURE_LABELS } from "@/config/pricing";
+import { usePublicPlans } from "@/hooks/usePublicPlans";
 
 const NAVY = "#152238";
 const MARIGOLD = "#F2A93B";
@@ -13,10 +14,11 @@ function CellValue({ value }) {
 
 export default function FeatureComparison() {
   const reduceMotion = useReducedMotion();
-  const planNames = PLANS.map((p) => p.name);
+  const { plans, error } = usePublicPlans();
+  if (error || !plans) return null;
 
   return (
-    <section className="py-20 md:py-28 px-6">
+    <section id="compare-plans" className="scroll-mt-24 px-6 py-20 md:py-28">
       <motion.div
         initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -42,15 +44,15 @@ export default function FeatureComparison() {
             <thead>
               <tr className="border-b-2 border-black/10">
                 <th className="text-left py-4 pr-4 text-[14px] font-bold text-[#1a1a1a]/40 uppercase tracking-wider w-[40%]">Feature</th>
-                {planNames.map((name, i) => (
-                  <th key={name} className="text-center py-4 px-3 text-[14px] font-bold uppercase tracking-wider" style={{ color: PLANS[i].highlighted ? MARIGOLD : NAVY }}>
-                    {name}
+                {plans.map((plan) => (
+                  <th key={plan.slug} className="text-center py-4 px-3 text-[14px] font-bold uppercase tracking-wider" style={{ color: plan.slug === 'professional' ? MARIGOLD : NAVY }}>
+                    {plan.name}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {FEATURE_COMPARISON.map((group) => (
+              {FEATURE_GROUPS.map((group) => (
                 <React.Fragment key={group.category}>
                   <tr>
                     <td colSpan={4} className="pt-8 pb-3 text-[13px] font-bold uppercase tracking-widest" style={{ color: MARIGOLD }}>
@@ -58,11 +60,9 @@ export default function FeatureComparison() {
                     </td>
                   </tr>
                   {group.features.map((feature) => (
-                    <tr key={feature.name} className="border-b border-black/[0.04] hover:bg-black/[0.01] transition-colors">
-                      <td className="py-3.5 pr-4 text-[14px] font-medium text-[#1a1a1a]/70">{feature.name}</td>
-                      <td className="py-3.5 px-3 text-center"><CellValue value={feature.starter} /></td>
-                      <td className="py-3.5 px-3 text-center"><CellValue value={feature.professional} /></td>
-                      <td className="py-3.5 px-3 text-center"><CellValue value={feature.enterprise} /></td>
+                    <tr key={feature} className="border-b border-black/[0.04] hover:bg-black/[0.01] transition-colors">
+                      <td className="py-3.5 pr-4 text-[14px] font-medium text-[#1a1a1a]/70">{FEATURE_LABELS[feature]}</td>
+                      {plans.map((plan) => <td key={plan.slug} className="py-3.5 px-3 text-center"><CellValue value={plan.features.includes(feature)} /></td>)}
                     </tr>
                   ))}
                 </React.Fragment>
@@ -85,17 +85,13 @@ export default function FeatureComparison() {
                 <tr className="border-b-2 border-black/10">
                   <th className="text-left py-3 pr-4 text-[13px] font-bold text-[#1a1a1a]/40 uppercase tracking-wider">Plan</th>
                   <th className="text-center py-3 px-3 text-[13px] font-bold text-[#1a1a1a]/40 uppercase tracking-wider">Students</th>
-                  <th className="text-center py-3 px-3 text-[13px] font-bold text-[#1a1a1a]/40 uppercase tracking-wider">Teachers</th>
-                  <th className="text-center py-3 px-3 text-[13px] font-bold text-[#1a1a1a]/40 uppercase tracking-wider">Admins</th>
                 </tr>
               </thead>
               <tbody>
-                {USER_LIMITS.map((row) => (
-                  <tr key={row.plan} className="border-b border-black/[0.04]">
-                    <td className="py-3.5 pr-4 text-[14px] font-bold" style={{ color: NAVY }}>{row.plan}</td>
-                    <td className="py-3.5 px-3 text-center text-[14px] font-medium text-[#1a1a1a]/70">{row.students}</td>
-                    <td className="py-3.5 px-3 text-center text-[14px] font-medium text-[#1a1a1a]/70">{row.teachers}</td>
-                    <td className="py-3.5 px-3 text-center text-[14px] font-medium text-[#1a1a1a]/70">{row.admins}</td>
+                {plans.map((plan) => (
+                  <tr key={plan.slug} className="border-b border-black/[0.04]">
+                    <td className="py-3.5 pr-4 text-[14px] font-bold" style={{ color: NAVY }}>{plan.name}</td>
+                    <td className="py-3.5 px-3 text-center text-[14px] font-medium text-[#1a1a1a]/70">Up to {plan.student_limit.toLocaleString('en-IN')}</td>
                   </tr>
                 ))}
               </tbody>

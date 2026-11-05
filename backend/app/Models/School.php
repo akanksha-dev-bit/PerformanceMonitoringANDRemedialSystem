@@ -20,6 +20,11 @@ class School extends Model
         return $this->hasMany(User::class);
     }
 
+    public function subscription()
+    {
+        return $this->hasOne(SchoolSubscription::class);
+    }
+
     public function teacherAssignments()
     {
         return $this->hasMany(TeacherAssignment::class);

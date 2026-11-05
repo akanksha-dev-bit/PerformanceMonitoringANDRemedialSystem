@@ -40,6 +40,12 @@ api.interceptors.response.use(
     const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
     const isUserEndpoint = error.config?.url?.includes('/api/user');
 
+    if (status === 403 && currentPath !== '/billing' &&
+        ['SUBSCRIPTION_REQUIRED', 'PLAN_FEATURE_REQUIRED'].includes(error.response?.data?.code)) {
+      window.location.assign(`/billing?reason=${encodeURIComponent(error.response.data.code)}`);
+      return Promise.reject(error);
+    }
+
     if (status === 401 && !isRedirecting && !isPublicRoute && !isUserEndpoint) {
       isRedirecting = true;
       window.location.href = `${BACKEND_URL}/login`;

@@ -70,6 +70,13 @@ class VerifyEmailController extends Controller
             return redirect()->route('login');
         }
 
+        if ($user->role === 'student' && (!$user->is_active
+            || ($user->profile_completed && !$user->studentProfile?->is_active))) {
+            session()->forget('verify_email');
+            \Illuminate\Support\Facades\Auth::guard('web')->logout();
+            return redirect()->route('login')->withErrors(['email' => trans('auth.failed')]);
+        }
+
         if ($user->hasVerifiedEmail()) {
             if (!\Illuminate\Support\Facades\Auth::check()) {
                 \Illuminate\Support\Facades\Auth::login($user);

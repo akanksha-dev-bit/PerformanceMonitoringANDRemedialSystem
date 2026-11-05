@@ -53,6 +53,10 @@ class EnsureProfileCompleted
         $user = $request->user();
 
         if ($user && $user->role === 'student' && !$user->profile_completed) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['code' => 'PROFILE_INCOMPLETE',
+                    'message' => 'Complete your student profile before using this feature.'], 403);
+            }
             return redirect()->route('complete-profile');
         }
 

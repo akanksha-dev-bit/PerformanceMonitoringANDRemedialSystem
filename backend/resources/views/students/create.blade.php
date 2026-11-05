@@ -209,7 +209,7 @@
           <div>
             <label class="premium-label" for="password">Password</label>
             <input type="password" id="password" name="password" class="premium-input" placeholder="Create a strong password" />
-            <small style="color:#94a3b8; font-size:11px; margin-top:4px; display:block;">Leave blank to use default (password123)</small>
+            <small style="color:#94a3b8; font-size:11px; margin-top:4px; display:block;">Required when adding an email login. The student must verify their email before signing in.</small>
             @error('password')<div class="form-error">{{ $message }}</div>@enderror
           </div>
         </div>
@@ -280,7 +280,7 @@
       </h3>
       <ul class="info-list">
         <li><strong>Email Login:</strong> The email provided will be used as the student's username to access the dashboard.</li>
-        <li><strong>Default Password:</strong> If left blank, the default password <code>password123</code> is assigned automatically.</li>
+        <li><strong>Account password:</strong> Provide a strong password with an email login. Students without an email have no usable login until their account is updated.</li>
         <li><strong>Class & Section:</strong> Ensure these match your existing system exactly (e.g., "10" and "A").</li>
         <li><strong>Roll Numbers:</strong> Must be unique within the school to prevent data conflicts.</li>
       </ul>

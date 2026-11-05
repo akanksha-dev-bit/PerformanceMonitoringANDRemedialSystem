@@ -21,12 +21,13 @@
  * ============================================================================
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import AppLayout     from '@/layouts/AppLayout';
 import GuestLayout   from '@/layouts/GuestLayout';
 import ProtectedRoute from './ProtectedRoute';
+import FeatureRoute from './FeatureRoute';
 import Loader        from '@/components/ui/Loader';
 import { ROLES }     from '@/constants/roles';
 
@@ -37,6 +38,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 const NotFoundPage  = lazy(() => import('@/pages/NotFoundPage'));
 const LandingPage   = lazy(() => import('@/pages/LandingPage'));
 const PricingPage   = lazy(() => import('@/pages/PricingPage'));
+const BillingPage   = lazy(() => import('@/pages/BillingPage'));
 const SubjectsPage  = lazy(() => import('@/pages/Subjects/SubjectsPage'));
 const SubjectCreatePage = lazy(() => import('@/pages/Subjects/SubjectCreatePage'));
 const SubjectEditPage   = lazy(() => import('@/pages/Subjects/SubjectEditPage'));
@@ -62,6 +64,12 @@ const TimetablePage      = lazy(() => import('@/pages/Academic/TimetablePage'));
 
 // â”€â”€ Loading fallback (Lottie loader) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PageLoader = () => <Loader visible />;
+const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').replace(/\/$/, '');
+
+function AttendanceAnalyticsPage() {
+  useEffect(() => { window.location.replace(`${BACKEND_URL}/analytics/attendance`); }, []);
+  return <PageLoader />;
+}
 
 function AppRouter() {
   return (
@@ -81,6 +89,7 @@ function AppRouter() {
           }
         >
           {/* Dashboard */}
+          <Route path="/billing"           element={<BillingPage />} />
           <Route path="/dashboard"         element={<AdminDashboardPage />} />
           <Route path="/dashboard/admin"   element={<AdminDashboardPage />} />
           <Route path="/dashboard/teacher" element={<DashboardPage role="teacher" />} />
@@ -101,7 +110,7 @@ function AppRouter() {
 
           <Route path="/classes"             element={<ClassesPage />} />
           <Route path="/classrooms"          element={<SectionsPage />} />
-          <Route path="/teacher-allocations" element={<AllocationsPage />} />
+          <Route path="/teacher-allocations" element={<FeatureRoute feature="allocations"><AllocationsPage /></FeatureRoute>} />
           <Route path="/timetables"          element={<TimetablePage />} />
 
           <Route path="/marks"               element={<MarksPage />} />
@@ -134,7 +143,7 @@ function AppRouter() {
           <Route path="/quiz/attempt/:id"    element={<DashboardPage stub="Quiz Attempt" />} />
           <Route path="/quiz/attempt/:id/results" element={<DashboardPage stub="Quiz Results" />} />
 
-          <Route path="/analytics/attendance" element={<DashboardPage stub="Attendance Analytics" />} />
+          <Route path="/analytics/attendance" element={<FeatureRoute feature="attendance_analytics"><AttendanceAnalyticsPage /></FeatureRoute>} />
 
           <Route path="/reports"             element={<DashboardPage stub="Reports" />} />
           <Route path="/profile"             element={<DashboardPage stub="Profile" />} />

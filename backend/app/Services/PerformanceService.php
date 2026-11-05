@@ -95,23 +95,27 @@ class PerformanceService
         ];
     }
 
-    /**
-     * Get performance trend data for charting (last 6 exams/years).
-     */
+    /** Average marks by actual assessment type and academic year, most recent first. */
     public function getTrendData(): array
     {
-        // Group by academic_year and calculate average
-        $data = \App\Models\Mark::selectRaw(
-            'academic_year, ROUND(SUM(marks_obtained) * 100.0 / SUM(max_marks), 2) as avg_pct'
-        )
-            ->groupBy('academic_year')
-            ->orderBy('academic_year')
-            ->limit(6)
-            ->get();
-
-        return [
-            'labels' => $data->pluck('academic_year')->toArray(),
-            'values' => $data->pluck('avg_pct')->toArray(),
-        ];
+        return \App\Models\Mark::query()
+            ->where('max_marks', '>', 0)
+            ->selectRaw('academic_year, exam_type, ROUND(SUM(marks_obtained) * 100.0 / SUM(max_marks), 2) as avg_pct, COUNT(*) as marks_count, MAX(created_at) as assessed_at')
+            ->groupBy('academic_year', 'exam_type')
+            ->orderByDesc('assessed_at')
+            ->limit(12)
+            ->get()
+            ->reverse()
+            ->values()
+            ->map(fn ($row) => [
+                'label' => $row->academic_year . ' · ' . match ($row->exam_type) {
+                    'unit_test' => 'Unit test', 'midterm' => 'Mid-term',
+                    'final' => 'Finals', 'practical' => 'Practical',
+                    default => ucfirst(str_replace('_', ' ', $row->exam_type)),
+                },
+                'exam_type' => $row->exam_type,
+                'avg' => (float) $row->avg_pct,
+                'count' => (int) $row->marks_count,
+            ])->all();
     }
 }

@@ -241,6 +241,9 @@ const StudentCreatePage = () => {
       <div className="page-layout">
         {/* Main Form Card */}
         <div className="student-create-card">
+          {errors.student_limit && <div role="alert" className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+            {errors.student_limit[0]} <Link to="/billing" className="font-bold underline">View your school plan</Link>
+          </div>}
           <StudentForm
             formData={formData}
             setFormData={setFormData}
@@ -265,7 +268,7 @@ const StudentCreatePage = () => {
           </h3>
           <ul className="info-list">
             <li><strong>Email Login:</strong> The email provided will be used as the student's username to access the dashboard.</li>
-            <li><strong>Default Password:</strong> If left blank, the default password <code>password123</code> is assigned automatically.</li>
+            <li><strong>Account password:</strong> Provide a strong password with an email login. Students without an email cannot sign in until their account is updated.</li>
             <li><strong>Section:</strong> Select the section from the dropdown — sections are year-scoped and managed under Academic → Sections.</li>
             <li><strong>Roll Numbers:</strong> Must be unique within the school to prevent data conflicts.</li>
           </ul>

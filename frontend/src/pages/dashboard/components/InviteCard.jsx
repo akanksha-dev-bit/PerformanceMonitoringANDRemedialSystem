@@ -45,7 +45,7 @@ export default function InviteCard({ school }) {
   };
 
   return (
-    <div className="inv-card">
+    <div className="inv-card" id="academy-profile">
       {/* Left Stripe */}
       <div className="inv-stripe">
         <div className="inv-stripe-circles"></div>

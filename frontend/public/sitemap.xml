@@ -1,16 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-    <!-- Main landing page -->
   <url>
-    <loc>https://pmrs.live/pricing</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.pmrs.live/</loc>
+    <lastmod>2026-10-09</lastmod>
   </url>
   <url>
-    <loc>https://pmrs.live/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>https://www.pmrs.live/pricing/</loc>
+    <lastmod>2026-10-09</lastmod>
   </url>
 
 </urlset>

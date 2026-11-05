@@ -16,7 +16,7 @@ return new class extends Migration
                 'extra_class','counseling','peer_tutoring','assignment','parent_meeting',
                 'other','quiz_test','practice_session','written_assignment','essay','file_upload'
             ))");
-        } else {
+        } elseif (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE remedial_actions MODIFY COLUMN action_type ENUM(
                 'extra_class','counseling','peer_tutoring','assignment','parent_meeting',
                 'other','quiz_test','practice_session','written_assignment','essay','file_upload'
@@ -44,7 +44,7 @@ return new class extends Migration
                 'extra_class','counseling','peer_tutoring','assignment','parent_meeting',
                 'other','quiz_test','practice_session'
             ))");
-        } else {
+        } elseif (DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE remedial_actions MODIFY COLUMN action_type ENUM(
                 'extra_class','counseling','peer_tutoring','assignment','parent_meeting',
                 'other','quiz_test','practice_session'

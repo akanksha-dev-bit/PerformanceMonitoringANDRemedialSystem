@@ -40,38 +40,47 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\PlanCatalog;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class StudentProfileController extends Controller
 {
     public function create()
     {
-        return view('students.complete-profile');
+        $classrooms = \App\Models\Classroom::where('school_id', auth()->user()->school_id)
+            ->with('academicClass')->orderBy('name')->get();
+        return view('students.complete-profile', compact('classrooms'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, PlanCatalog $plans)
     {
-        $request->validate([
-            'class' => ['required', 'string', 'max:255'],
-            'section' => ['required', 'string', 'max:255'],
-            'roll_number' => ['required', 'string', 'max:255'],
+        $user = auth()->user();
+        if (config('plans.enforcement_enabled') && $user->school?->subscription
+            && !$user->school->subscription->isActive() && $user->school->subscription->status !== 'provisional') {
+            abort(403, 'This school must activate its subscription before completing student enrollment.');
+        }
+        $validated = $request->validate([
+            'classroom_id' => ['required', Rule::exists('classrooms', 'id')->where('school_id', $user->school_id)],
+            'roll_number' => ['required', 'string', 'max:255', Rule::unique('students', 'roll_no')->where('school_id', $user->school_id)->ignore($user->studentProfile?->id)],
             'phone' => ['required', 'string', 'max:20'],
         ]);
-
-        $user = auth()->user();
-
-        $user->studentProfile()->updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'school_id' => $user->school_id,
-                'class' => $request->class,
-                'section' => $request->section,
-                'roll_no' => $request->roll_number,
-                'phone' => $request->phone,
-                'is_active' => true,
-            ]
-        );
-
-        $user->update(['profile_completed' => true]);
+        DB::transaction(function () use ($user, $validated, $plans) {
+            if (!$user->studentProfile?->is_active) {
+                $plans->assertStudentCapacity($user->school_id);
+            }
+            $user->studentProfile()->updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'school_id' => $user->school_id,
+                    'classroom_id' => $validated['classroom_id'],
+                    'roll_no' => $validated['roll_number'],
+                    'phone' => $validated['phone'],
+                    'is_active' => true,
+                ]
+            );
+            $user->update(['profile_completed' => true, 'is_active' => true]);
+        });
 
         return redirect()->route('dashboard');
     }

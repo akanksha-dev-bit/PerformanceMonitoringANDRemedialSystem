@@ -45,6 +45,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Services\PlanCatalog;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -102,14 +103,14 @@ class StudentController extends Controller
 
     public function create() { return view('students.create'); }
 
-    public function store(Request $request)
+    public function store(Request $request, PlanCatalog $plans)
     {
         $schoolId = auth()->user()->school_id;
 
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'nullable|email|unique:users,email',
-            'password'      => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
+            'password'      => [\Illuminate\Validation\Rule::requiredIf(fn () => $request->filled('email')), 'nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
             'roll_no'       => 'required|string|unique:students,roll_no,NULL,id,school_id,' . $schoolId,
             'classroom_id'  => 'nullable|exists:classrooms,id',
             'dob'           => 'nullable|date',
@@ -126,33 +127,39 @@ class StudentController extends Controller
                 ->firstOrFail();
         }
 
-        $email = $validated['email'];
+        $email = $validated['email'] ?? null;
         if (empty($email)) {
             $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . $schoolId . '@example.com';
         }
 
-        $user = \App\Models\User::create([
+        $student = \Illuminate\Support\Facades\DB::transaction(function () use ($plans, $schoolId, $validated, $email) {
+            $isActive = filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN);
+            if ($isActive) {
+                $plans->assertStudentCapacity($schoolId);
+            }
+
+            $user = \App\Models\User::create([
             'name'               => $validated['name'],
             'email'              => $email,
-            'email_verified_at'  => now(),
-            'password'           => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
+            'password'           => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? \Illuminate\Support\Str::random(64)),
             'role'               => 'student',
             'school_id'          => $schoolId,
             'profile_completed'  => true,
-            'is_active'          => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'is_active'          => $isActive,
         ]);
 
-        $student = Student::create([
+            return Student::create([
             'user_id'      => $user->id,
             'school_id'    => $schoolId,
             'classroom_id' => $validated['classroom_id'] ?? null,
             'roll_no'      => $validated['roll_no'],
-            'dob'          => $validated['dob'],
-            'gender'       => $validated['gender'],
-            'phone'        => $validated['phone'],
-            'guardian_name'=> $validated['guardian_name'],
-            'is_active'    => filter_var($validated['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            'dob'          => $validated['dob'] ?? null,
+            'gender'       => $validated['gender'] ?? null,
+            'phone'        => $validated['phone'] ?? null,
+            'guardian_name'=> $validated['guardian_name'] ?? null,
+            'is_active'    => $isActive,
         ]);
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -167,6 +174,7 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
+        abort_unless($student->school_id === auth()->user()->school_id, 404);
         $student->load(['marks.subject', 'remedialActions', 'attendanceRecords.session.subject', 'classroom.academicClass']);
         
         if (request()->expectsJson()) {
@@ -237,6 +245,7 @@ class StudentController extends Controller
 
     public function edit(Student $student)
     {
+        abort_unless($student->school_id === auth()->user()->school_id, 404);
         if (request()->expectsJson()) {
             $student->load(['user', 'classroom.academicClass']);
             return response()->json([
@@ -256,16 +265,20 @@ class StudentController extends Controller
         return view('students.edit', compact('student'));
     }
 
-    public function update(Request $request, Student $student)
+    public function update(Request $request, Student $student, PlanCatalog $plans)
     {
         $schoolId = auth()->user()->school_id;
+        abort_unless($student->school_id === $schoolId, 404);
 
         if ($request->expectsJson() && $request->has('is_active') && count($request->all()) <= 2) {
             $validated = $request->validate(['is_active' => 'required|boolean']);
-            $student->update(['is_active' => $validated['is_active']]);
-            if ($student->user) {
-                $student->user->update(['is_active' => $validated['is_active']]);
-            }
+            \Illuminate\Support\Facades\DB::transaction(function () use ($student, $validated, $plans, $schoolId) {
+                if (!$student->is_active && $validated['is_active']) {
+                    $plans->assertStudentCapacity($schoolId);
+                }
+                $student->update(['is_active' => $validated['is_active']]);
+                $student->user?->update(['is_active' => $validated['is_active']]);
+            });
             return response()->json([
                 'success' => true,
                 'message' => 'Status updated successfully!',
@@ -276,7 +289,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
             'email'         => 'nullable|email|unique:users,email,' . ($student->user_id ?? 'NULL'),
-            'password'      => ['nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
+            'password'      => [\Illuminate\Validation\Rule::requiredIf(fn () => $request->filled('email') && $request->input('email') !== $student->user?->email && str_ends_with((string) $student->user?->email, '@example.com')), 'nullable', 'string', \Illuminate\Validation\Rules\Password::defaults()],
             'roll_no'       => 'required|string|unique:students,roll_no,' . $student->id . ',id,school_id,' . $schoolId,
             'classroom_id'  => 'nullable|exists:classrooms,id',
             'dob'           => 'nullable|date',
@@ -294,14 +307,19 @@ class StudentController extends Controller
                 ->firstOrFail();
         }
 
-        $isActive = true;
+        $isActive = (bool) $student->is_active;
         if ($request->has('is_active')) {
             $isActive = filter_var($validated['is_active'], FILTER_VALIDATE_BOOLEAN);
         } elseif ($request->has('status')) {
             $isActive = $validated['status'] === 'active';
         }
 
-        $email = $validated['email'];
+        \Illuminate\Support\Facades\DB::transaction(function () use ($student, $validated, $schoolId, $isActive, $plans) {
+        if (!$student->is_active && $isActive) {
+            $plans->assertStudentCapacity($schoolId);
+        }
+
+        $email = array_key_exists('email', $validated) ? $validated['email'] : $student->user?->email;
         if (empty($email)) {
             $email = strtolower(str_replace(' ', '', $validated['roll_no'])) . '_' . $schoolId . '@example.com';
         }
@@ -312,15 +330,22 @@ class StudentController extends Controller
                 'email'     => $email,
                 'is_active' => $isActive,
             ];
+            $emailChanged = $student->user->email !== $email;
             if (!empty($validated['password'])) {
                 $userData['password'] = \Illuminate\Support\Facades\Hash::make($validated['password']);
             }
             $student->user->update($userData);
+            if ($emailChanged) {
+                $student->user->forceFill([
+                    'email_verified_at' => null,
+                    'email_verification_otp' => null,
+                ])->save();
+            }
         } else {
             $user = \App\Models\User::create([
                 'name'              => $validated['name'],
                 'email'             => $email,
-                'password'          => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? 'password123'),
+                'password'          => \Illuminate\Support\Facades\Hash::make($validated['password'] ?? \Illuminate\Support\Str::random(64)),
                 'role'              => 'student',
                 'school_id'         => $student->school_id,
                 'profile_completed' => true,
@@ -332,12 +357,13 @@ class StudentController extends Controller
         $student->update([
             'roll_no'      => $validated['roll_no'],
             'classroom_id' => $validated['classroom_id'] ?? $student->classroom_id,
-            'dob'          => $validated['dob'],
-            'gender'       => $validated['gender'],
-            'phone'        => $validated['phone'],
-            'guardian_name'=> $validated['guardian_name'],
+            'dob'          => array_key_exists('dob', $validated) ? $validated['dob'] : $student->dob,
+            'gender'       => array_key_exists('gender', $validated) ? $validated['gender'] : $student->gender,
+            'phone'        => array_key_exists('phone', $validated) ? $validated['phone'] : $student->phone,
+            'guardian_name'=> array_key_exists('guardian_name', $validated) ? $validated['guardian_name'] : $student->guardian_name,
             'is_active'    => $isActive,
         ]);
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -352,6 +378,7 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
+        abort_unless($student->school_id === auth()->user()->school_id, 404);
         if ($student->user) {
             $student->user->delete();
         } else {

@@ -13,6 +13,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import dashboardService from '@/services/dashboardService';
 import ContentSkeleton from '@/components/ui/ContentSkeleton';
+import { Link } from 'react-router-dom';
+import { useAuthContext } from '@/context/AuthContext';
 
 import DashboardHeader from './components/DashboardHeader';
 import InviteCard from './components/InviteCard';
@@ -25,6 +27,7 @@ import QuickActions from './components/QuickActions';
 import AddTeacherModal from './components/AddTeacherModal';
 
 export default function AdminDashboardPage() {
+  const { user: signedInUser } = useAuthContext();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -214,6 +217,42 @@ export default function AdminDashboardPage() {
         .form-control:focus { border-color: #6C5CE7; outline:none; background: #fff; }
         .input-icon-wrapper { position: relative; margin-top: 6px; margin-bottom: 16px; }
         .input-icon-wrapper svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: #94a3b8; pointer-events: none; }
+        .admin-header,.premium-card,.inv-card,.kpi-box { box-shadow:0 12px 34px rgba(36,32,91,.055); }
+        .admin-header { padding:32px 36px; border-radius:24px; }
+        .kpi-box { border-radius:20px; transition:transform .2s ease,box-shadow .2s ease; }
+        .kpi-box:hover { transform:translateY(-4px); box-shadow:0 18px 36px rgba(36,32,91,.11); }
+        .premium-card,.inv-card { border-radius:22px; }
+        .btn-quick-action { transition:transform .2s ease,background .2s ease,box-shadow .2s ease; }
+        .btn-quick-action:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(108,92,231,.2); }
+        .trend-controls { display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px; }
+        .trend-filter { border:1px solid #e7e4f5;background:#fff;color:#64748b;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer; }
+        .trend-filter:hover,.trend-filter[aria-pressed="true"] { color:#5b38c0;border-color:#b8abf7;background:#f3efff; }
+        .trend-graph { display:flex;height:250px;gap:10px; }
+        .trend-y-axis { display:flex;flex-direction:column;justify-content:space-between;color:#94a3b8;font-size:10px;font-weight:700;padding:27px 0 25px; }
+        .trend-plot { position:relative;flex:1;min-width:0; }
+        .trend-plot svg { width:100%;height:100%;overflow:visible; }
+        .trend-hit { position:absolute;transform:translate(-50%,-50%);width:27px;height:27px;border-radius:50%;border:0;background:transparent;cursor:pointer; }
+        .trend-hit:focus-visible { outline:3px solid #6c5ce7; }
+        .trend-tooltip { position:absolute;transform:translate(-50%,-110%);min-width:165px;display:flex;flex-direction:column;gap:3px;padding:9px 12px;background:#172033;color:#fff;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,.2);font-size:11px;pointer-events:none;z-index:2; }
+        .trend-tooltip span { color:#dbe2ef; }
+        .trend-x-labels { display:flex;justify-content:space-between;gap:5px;padding-left:40px;color:#64748b;font-size:10px; }
+        .trend-x-labels span { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;max-width:90px; }
+        .trend-legend { display:flex;align-items:center;gap:8px;color:#64748b;font-size:12px;font-weight:650;margin-top:18px; }
+        .trend-legend-dot { width:10px;height:10px;border-radius:50%;background:#6c5ce7;box-shadow:0 0 0 4px #eeeaff; }
+        .trend-empty { display:flex;min-height:240px;align-items:center;justify-content:center;text-align:center;padding:22px;color:#64748b;background:#faf9ff;border:1px dashed #ddd6fe;border-radius:16px;font-size:13px; }
+        .plan-widget { background:linear-gradient(145deg,#211d43,#392878);border:1px solid #514395;color:#fff;overflow:hidden;position:relative; }
+        .plan-widget::after { content:'';position:absolute;width:190px;height:190px;right:-60px;top:-70px;border-radius:50%;border:28px solid rgba(255,255,255,.055);pointer-events:none; }
+        .plan-widget .card-title { color:#fff; }.plan-widget .card-subtitle { color:#c8c2ed; }
+        .plan-status { border:1px solid rgba(255,255,255,.23);background:rgba(255,255,255,.1);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:750;text-transform:capitalize; }
+        .plan-current { font-size:27px;font-weight:850;letter-spacing:-.04em;margin:14px 0 3px; }
+        .plan-tiers { display:flex;flex-wrap:wrap;gap:6px; }.plan-tiers span { font-size:10px;font-weight:700;padding:5px 8px;background:rgba(255,255,255,.09);border-radius:7px; }
+        .plan-usage-row { display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#ddd8f8;margin:17px 0 8px; }
+        .plan-meter { height:9px;background:rgba(255,255,255,.17);border-radius:99px;overflow:hidden; }.plan-meter span { display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#b7a5ff,#76e3d5); }
+        .plan-features { font-size:12px;color:#d8d2f4;margin:15px 0 18px;line-height:1.55; }
+        .plan-cta { display:inline-flex;justify-content:center;width:100%;margin-top:4px;padding:11px 16px;border-radius:11px;background:#fff;color:#4e36b0;font-size:13px;font-weight:800;text-decoration:none; }
+        .plan-cta:hover { color:#4e36b0;transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.15); }
+        @media(max-width:600px) { .admin-header { padding:23px; } .trend-graph { height:210px; } }
+        @media(prefers-reduced-motion:reduce) { .kpi-box,.btn-quick-action { transition:none; } }
       `}</style>
 
       {notification && (
@@ -250,6 +289,21 @@ export default function AdminDashboardPage() {
 
         {/* Right Column */}
         <div className="space-y-6">
+          {(() => {
+            const plan = data?.subscription || signedInUser?.subscription;
+            if (!plan) return null;
+            const limit = plan.student_limit;
+            const usage = Number(plan.student_usage) || 0;
+            return <section className="premium-card plan-widget" aria-label="School subscription">
+              <div className="card-header" style={{ marginBottom: 8 }}><div><h3 className="card-title">Your school plan</h3><p className="card-subtitle">Subscription and capacity at a glance</p></div><span className="plan-status">{plan.status}</span></div>
+              <div className="plan-current">{plan.plan_name || (plan.status === 'legacy' ? 'Legacy access' : 'Select a plan')}</div>
+              <div className="plan-tiers"><span>Starter</span><span>Growth / Professional</span><span>Enterprise</span></div>
+              <div className="plan-usage-row"><span>Active students</span><strong>{usage.toLocaleString()}{limit ? ` / ${Number(limit).toLocaleString()}` : ' · no plan limit'}</strong></div>
+              {limit && <div className="plan-meter" role="progressbar" aria-label="Student capacity used" aria-valuenow={usage} aria-valuemin="0" aria-valuemax={limit}><span style={{ width: `${Math.min(100, usage * 100 / limit)}%` }} /></div>}
+              <p className="plan-features">{plan.features?.length || 0} features available{limit ? ` · ${Math.max(0, limit - usage).toLocaleString()} student places remaining` : ''}</p>
+              <Link to="/billing" className="plan-cta">View billing &amp; plans →</Link>
+            </section>;
+          })()}
           <QuickActions />
           <ActionRequiredAlerts alerts={alerts} />
           <SubjectRankings rankings={subject_rankings} />

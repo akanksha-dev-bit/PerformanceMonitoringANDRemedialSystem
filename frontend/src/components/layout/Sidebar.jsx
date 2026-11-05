@@ -24,10 +24,11 @@ const ADMIN_LINKS = [
   { label: 'Teachers',    to: ROUTES.TEACHERS },
   { label: 'Classes',     to: ROUTES.CLASSES },
   { label: 'Rooms',       to: ROUTES.CLASSROOMS },
-  { label: 'Allocations', to: ROUTES.ALLOCATIONS },
+  { label: 'Allocations', to: ROUTES.ALLOCATIONS, feature: 'allocations' },
   { label: 'Timetable',   to: ROUTES.TIMETABLE },
-  { label: 'Attendance',  to: ROUTES.ADMIN_ATTENDANCE_ANALYTICS },
+  { label: 'Attendance',  to: ROUTES.ADMIN_ATTENDANCE_ANALYTICS, feature: 'attendance_analytics' },
   { label: 'Reports',     to: ROUTES.REPORTS },
+  { label: 'Billing',     to: '/billing' },
 ];
 
 const TEACHER_LINKS = [
@@ -101,7 +102,7 @@ function Sidebar({ open, onClose }) {
                   onClick={onClose}
                   end={link.to === ROUTES.DASHBOARD_ADMIN || link.to === ROUTES.DASHBOARD_TEACHER || link.to === ROUTES.DASHBOARD_STUDENT}
                 >
-                  {link.label}
+                  {link.label}{link.feature && user?.subscription?.enforcement_enabled && !user.subscription.features?.includes(link.feature) && <span aria-label="Locked feature" title="Available on a higher plan"> 🔒</span>}
                 </NavLink>
               ))}
             </nav>
